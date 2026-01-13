@@ -1,31 +1,92 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Project Overview
+
+A production-ready Next.js application with App Router designed for Instagram story rendering and management. Features server-side image processing with Sharp and SVG overlays, integrated with n8n Cloud workflows.
+
+### Key Features
+- **API Routes**: `/api/render-story` for generating Instagram stories, `/api/upload-image` for image uploads
+- **Image Processing**: Server-side rendering using Sharp and SVG for text overlays
+- **Storage**: S3-compatible object storage (Cloudflare R2, AWS S3)
+- **Authentication**: Placeholder for admin authentication
+- **Deployment**: Optimized for Vercel with Node.js runtime
+
+## Environment Variables
+
+Create a `.env.local` file with the following variables:
+
+```env
+# Storage Configuration (S3-compatible)
+STORAGE_ACCESS_KEY_ID=your_access_key
+STORAGE_SECRET_ACCESS_KEY=your_secret_key
+STORAGE_REGION=auto
+STORAGE_ENDPOINT=https://your-endpoint.com
+STORAGE_BUCKET=your-bucket-name
+STORAGE_PUBLIC_URL=https://your-public-url.com
+
+# Optional: Authentication secrets (when implemented)
+# NEXTAUTH_SECRET=your_secret
+# NEXTAUTH_URL=http://localhost:3000
+```
+
 ## Getting Started
 
-First, run the development server:
+First, install dependencies:
+
+```bash
+npm install
+```
+
+Then, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## API Usage
 
-## Learn More
+### Render Story
+POST `/api/render-story`
 
-To learn more about Next.js, take a look at the following resources:
+Request body:
+```json
+{
+  "text": "Your story text here",
+  "templateId": "optional-template-id"
+}
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Response:
+```json
+{
+  "image_url": "https://storage.example.com/stories/123456-abc123.jpg",
+  "success": true
+}
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Upload Image
+POST `/api/upload-image`
+
+Form data with `image` field containing the image file.
+
+## Project Structure
+
+```
+/app
+  /login          # Login page
+  /admin          # Admin dashboard
+    /images       # Image management
+    /templates    # Template management
+  /api
+    /render-story # Story rendering API
+    /upload-image # Image upload API
+/lib
+  auth.ts         # Authentication utilities
+  render.ts       # Image rendering logic
+  storage.ts      # Storage abstraction
+```
 
 ## Deploy on Vercel
 
