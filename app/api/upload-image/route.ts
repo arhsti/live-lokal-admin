@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
     const storageKey = `uploads/raw/${imageId}.jpg`;
 
     // Upload to object storage
+    console.log('Uploading to R2:', { bucket: process.env.R2_BUCKET_NAME, key: storageKey });
     const uploadResult = await uploadImage(buffer, storageKey, file.type);
 
     // Create metadata
@@ -91,7 +92,11 @@ export async function POST(request: NextRequest) {
     // TODO: Store metadata in database
     // await saveImageMetadata(metadata);
 
-    console.log('Image uploaded successfully:', metadata);
+    console.log('Image uploaded successfully:', {
+      id: metadata.id,
+      url: metadata.publicUrl,
+      size: metadata.size
+    });
 
     return NextResponse.json({
       id: metadata.id,

@@ -20,20 +20,34 @@ export async function uploadImage(
   key: string,
   contentType: string = 'image/jpeg'
 ): Promise<UploadResult> {
-  const command = new PutObjectCommand({
-    Bucket: process.env.R2_BUCKET_NAME!,
-    Key: key,
-    Body: buffer,
-    ContentType: contentType,
-    ACL: 'public-read', // Make images publicly accessible
-  });
+  try {
+    const command = new PutObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME!,
+      Key: key,
+      Body: buffer,
+      ContentType: contentType,
+      // ACL not needed for R2 - permissions are handled at bucket level
+    });
 
-  await s3Client.send(command);
+    console.log('R2 Upload:', {
+      bucket: process.env.R2_BUCKET_NAME,
+      key,
+      contentType,
+      size: buffer.length
+    });
 
-  // Build public URL using R2 public base URL
-  const url = `${process.env.R2_PUBLIC_BASE_URL}/${key}`;
+    await s3Client.send(command);
 
-  return { url, key };
+    // Build public URL using R2 public base URL
+    const url = `${process.env.R2_PUBLIC_BASE_URL}/${key}`;
+
+    console.log('R2 Upload successful:', { key, url });
+
+    return { url, key };
+  } catch (error) {
+    console.error('R2 Upload failed:', error);
+    throw error;
+  }
 }
 
 export function generateImageKey(prefix: string = 'stories'): string {
