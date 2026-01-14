@@ -1,12 +1,12 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
-// S3-compatible client (works with Cloudflare R2, AWS S3, etc.)
+// Cloudflare R2 S3-compatible client
 const s3Client = new S3Client({
-  region: process.env.STORAGE_REGION || 'auto',
-  endpoint: process.env.STORAGE_ENDPOINT,
+  region: 'auto', // R2 requires 'auto' region
+  endpoint: process.env.R2_ENDPOINT!,
   credentials: {
-    accessKeyId: process.env.STORAGE_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.STORAGE_SECRET_ACCESS_KEY!,
+    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
   },
 });
 
@@ -21,7 +21,7 @@ export async function uploadImage(
   contentType: string = 'image/jpeg'
 ): Promise<UploadResult> {
   const command = new PutObjectCommand({
-    Bucket: process.env.STORAGE_BUCKET!,
+    Bucket: process.env.R2_BUCKET_NAME!,
     Key: key,
     Body: buffer,
     ContentType: contentType,
@@ -30,8 +30,8 @@ export async function uploadImage(
 
   await s3Client.send(command);
 
-  const baseUrl = process.env.STORAGE_PUBLIC_URL || `https://${process.env.STORAGE_BUCKET}.s3.amazonaws.com`;
-  const url = `${baseUrl}/${key}`;
+  // Build public URL using R2 public base URL
+  const url = `${process.env.R2_PUBLIC_BASE_URL}/${key}`;
 
   return { url, key };
 }
