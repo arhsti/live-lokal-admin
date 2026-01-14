@@ -1,52 +1,54 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { ImageStore } from '@/lib/images';
-
-const s3Client = new S3Client({
-  region: process.env.CLOUDFLARE_R2_REGION || 'auto',
-  endpoint: process.env.CLOUDFLARE_R2_ENDPOINT,
-  credentials: {
-    accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY!,
-  },
-});
+import { uploadImage, generateImageKey } from '@/lib/storage';
+import { imageStore } from '@/lib/image-store';
+import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const file = formData.get('file') as File;
+    const file = formData.get('image') as File;
 
     if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'No image file provided' },
+        { status: 400 }
+      );
     }
 
-    // Generate unique filename
-    const fileExtension = file.name.split('.').pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`;
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      return NextResponse.json(
+        { error: 'File must be an image' },
+        { status: 400 }
+      );
+    }
+
+    // Convert file to buffer
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    // Generate unique key for R2 storage
+    const key = generateImageKey('uploads');
 
     // Upload to R2
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const uploadCommand = new PutObjectCommand({
-      Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME!,
-      Key: fileName,
-      Body: buffer,
-      ContentType: file.type,
-    });
-
-    await s3Client.send(uploadCommand);
-
-    // Construct the public URL
-    const imageUrl = `${process.env.CLOUDFLARE_R2_PUBLIC_URL}/${fileName}`;
+    const uploadResult = await uploadImage(buffer, key, file.type);
 
     // Persist metadata
-    const savedImage = await ImageStore.add({ image_url: imageUrl });
+    const imageData = await imageStore.add({
+      id: uuidv4(),
+      image_url: uploadResult.url,
+    });
 
     return NextResponse.json({
-      success: true,
-      image: savedImage,
+      id: imageData.id,
+      image_url: imageData.image_url,
+      created_at: imageData.created_at,
     });
+
   } catch (error) {
-    console.error('Error uploading image:', error);
-    return NextResponse.json({ error: 'Failed to upload image' }, { status: 500 });
+    console.error('Upload error:', error);
+    return NextResponse.json(
+      { error: 'Failed to upload image' },
+      { status: 500 }
+    );
   }
 }
