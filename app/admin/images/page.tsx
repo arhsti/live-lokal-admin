@@ -14,7 +14,7 @@ export default function ImagesPage() {
     setUploading(true);
     try {
       const formData = new FormData();
-      formData.append('image', file);
+      formData.append('file', file); // Changed from 'image' to 'file' to match backend
 
       const response = await fetch('/api/upload-image', {
         method: 'POST',
@@ -24,18 +24,20 @@ export default function ImagesPage() {
       if (response.ok) {
         const result = await response.json();
         setImages(prev => [...prev, {
-          id: Date.now().toString(),
-          url: result.image_url,
+          id: result.id, // Use the ID from backend response
+          url: result.image_url, // Use the URL from backend response
           name: file.name,
           uploadedAt: new Date().toISOString(),
         }]);
-        alert('Image uploaded successfully!');
+        // Clear the file input
+        event.target.value = '';
       } else {
-        alert('Failed to upload image');
+        const errorData = await response.json();
+        alert(`Failed to upload image: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Error uploading image');
+      alert('Error uploading image. Please try again.');
     } finally {
       setUploading(false);
     }
@@ -49,7 +51,7 @@ export default function ImagesPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Link href="/admin" className="text-xl font-bold text-gray-900">
-                Story Manager
+                Live Lokal
               </Link>
               <span className="text-gray-500">•</span>
               <span className="text-gray-600">Image Library</span>

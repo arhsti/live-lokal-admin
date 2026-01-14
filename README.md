@@ -1,6 +1,6 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Instagram Story Manager
+## Live Lokal - Instagram Story Manager
 
 A professional web application for managing Instagram Story content creation and publishing. Built with Next.js App Router, designed for Vercel deployment, and optimized for integration with n8n Cloud workflows.
 

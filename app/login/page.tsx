@@ -25,7 +25,7 @@ export default function LoginPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="text-2xl font-bold text-gray-900">
-            Story Manager
+            Live Lokal
           </Link>
           <p className="text-gray-600 mt-2">Sign in to your account</p>
         </div>

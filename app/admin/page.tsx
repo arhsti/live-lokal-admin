@@ -14,7 +14,7 @@ export default function AdminPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Link href="/" className="text-xl font-bold text-gray-900">
-                Story Manager
+                Live Lokal
               </Link>
               <span className="text-gray-500">•</span>
               <span className="text-gray-600">Admin Dashboard</span>
