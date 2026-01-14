@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface ImageData {
   id: string;
@@ -12,6 +12,8 @@ export default function ImagesPage() {
   const [images, setImages] = useState<ImageData[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement | null>(null);
 
   // Load images from backend on component mount
   useEffect(() => {
@@ -36,34 +38,36 @@ export default function ImagesPage() {
 
   const handleUpload = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const file = formData.get('image') as File;
+    setUploadError(null);
+    if (!formRef.current) return;
 
-    if (!file) return;
+    const formData = new FormData(formRef.current);
+    const file = formData.get('file') as File;
+
+    if (!file) {
+      setUploadError('No file selected');
+      return;
+    }
 
     setUploading(true);
 
     try {
-      const uploadFormData = new FormData();
-      uploadFormData.append('image', file);
-
       const response = await fetch('/api/upload-image', {
         method: 'POST',
-        body: uploadFormData,
+        body: formData,
       });
 
       if (response.ok) {
-        // Reload images from backend to get the updated list
         await loadImages();
-        // Clear the file input
-        event.currentTarget.reset();
+        formRef.current.reset();
       } else {
-        const errorData = await response.json();
-        alert(`Failed to upload image: ${errorData.error || 'Unknown error'}`);
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('Upload failed response:', errorData);
+        setUploadError(errorData.error || 'Upload failed');
       }
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Failed to upload image');
+      setUploadError('Upload failed');
     } finally {
       setUploading(false);
     }
@@ -81,11 +85,11 @@ export default function ImagesPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-bold">Image Library</h1>
-        <form onSubmit={handleUpload} className="flex items-center space-x-4">
+        <form ref={formRef} onSubmit={handleUpload} encType="multipart/form-data" className="flex items-center space-x-4">
           <input
             type="file"
-            name="image"
-            accept="image/*"
+            name="file"
+            accept="image/jpeg,image/png"
             required
             className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
           />
@@ -97,6 +101,7 @@ export default function ImagesPage() {
             {uploading ? 'Uploading...' : 'Upload'}
           </button>
         </form>
+        {uploadError && <p className="text-red-600 mt-2">{uploadError}</p>}
       </div>
 
       {images.length === 0 ? (

@@ -1,29 +1,38 @@
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
-import { NextRequest, NextResponse } from 'next/server';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const file = formData.get('file');
 
     if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+      console.error('No file provided in formData');
+      return new Response(JSON.stringify({ error: 'No file provided' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // Validate that we received a web File/Blob
-    if (!(file instanceof File)) {
-      return NextResponse.json({ error: 'Invalid file upload' }, { status: 400 });
+    // Some runtimes may not have a global File constructor; be defensive
+    const isFile = (typeof File !== 'undefined' && file instanceof File) || (file && typeof (file as any).arrayBuffer === 'function');
+    if (!isFile) {
+      console.error('Uploaded part is not a File:', typeof file);
+      return new Response(JSON.stringify({ error: 'Invalid file upload' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // Accept only jpeg or png
-    if (file.type !== 'image/jpeg' && file.type !== 'image/png') {
-      return NextResponse.json({ error: 'Unsupported file type' }, { status: 400 });
+    const f = file as File;
+    if (typeof f.size !== 'number' || f.size <= 0) {
+      console.error('Empty file uploaded');
+      return new Response(JSON.stringify({ error: 'Empty file' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
+    if (f.type !== 'image/jpeg' && f.type !== 'image/png') {
+      console.error('Unsupported file type:', f.type);
+      return new Response(JSON.stringify({ error: 'Unsupported file type' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    const buffer = Buffer.from(await f.arrayBuffer());
     const id = uuidv4();
     const key = `uploads/raw/${id}.jpg`;
 
@@ -31,25 +40,25 @@ export async function POST(request: NextRequest) {
       region: 'auto',
       endpoint: process.env.R2_ENDPOINT,
       credentials: {
-        accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+        accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
+        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
       },
     });
 
     const put = new PutObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME!,
+      Bucket: process.env.R2_BUCKET_NAME || '',
       Key: key,
       Body: buffer,
-      ContentType: file.type,
+      ContentType: f.type,
     });
 
     await s3.send(put);
 
     const image_url = `${process.env.R2_PUBLIC_BASE_URL}/uploads/raw/${id}.jpg`;
 
-    return NextResponse.json({ id, image_url });
+    return new Response(JSON.stringify({ id, image_url }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (err) {
     console.error('Upload failed:', err);
-    return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
+    return new Response(JSON.stringify({ error: 'Upload failed' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }
