@@ -70,19 +70,21 @@ Upload images to object storage.
 
 ### ⚙️ Environment Variables
 
-Create a `.env.local` file with:
+Create a `.env.local` file with your Cloudflare R2 credentials:
 
 ```env
-# Storage Configuration (S3-compatible)
-STORAGE_ACCESS_KEY_ID=your_access_key
-STORAGE_SECRET_ACCESS_KEY=your_secret_key
-STORAGE_REGION=auto
-STORAGE_ENDPOINT=https://your-endpoint.com
-STORAGE_BUCKET=your-bucket-name
-STORAGE_PUBLIC_URL=https://your-public-url.com
+# Cloudflare R2 Configuration
+R2_ACCOUNT_ID=your_account_id
+R2_ACCESS_KEY_ID=your_access_key
+R2_SECRET_ACCESS_KEY=your_secret_key
+R2_BUCKET_NAME=your_bucket_name
+R2_ENDPOINT=https://your_account_id.r2.cloudflarestorage.com
+R2_PUBLIC_BASE_URL=https://your_public_domain.com
 
 # Optional: Authentication (when implemented)
 NEXTAUTH_SECRET=your_secret
+NEXTAUTH_URL=https://your-app.vercel.app
+```
 NEXTAUTH_URL=https://your-app.vercel.app
 ```
 
