@@ -130,82 +130,91 @@ export default function ImagesPage() {
           {images.map((image) => {
             const current = editing[image.id] || { player: image.tags?.player || '', number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
             return (
-              <div key={image.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-transparent hover:border-gray-200 transition">
-                <div className="w-full h-72 md:h-80 bg-gray-50 overflow-hidden">
-                  <img src={image.image_url} alt={`Image ${image.id}`} className="w-full h-full object-cover transform hover:scale-105 transition duration-200" />
-                </div>
-
-                <div className="p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-gray-600">{image.created_at ? new Date(image.created_at).toLocaleDateString() : ''}</p>
-                    <a href="/" className="text-sm text-gray-600 hover:underline">Back to Home</a>
+              <div key={image.id} className="bg-white rounded-lg shadow-lg overflow-hidden border border-transparent hover:border-gray-200 transition">
+                {/* Image area (portrait-style) */}
+                <div className="relative bg-gray-100">
+                  <div className="w-full h-96 overflow-hidden bg-black">
+                    <img src={image.image_url} alt={`Image ${image.id}`} className="w-full h-full object-cover transform hover:scale-105 transition duration-300" />
                   </div>
 
-                  <div className="text-sm text-gray-700">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs text-gray-500">Spiller</label>
-                        <input
-                          value={current.player}
-                          onChange={(e) => {
-                            const v = e.target.value;
-                            setEditing(prev => ({ ...prev, [image.id]: { ...current, player: v } }));
-                            setSaveErrors(prev => ({ ...prev, [image.id]: null }));
-                            setSaveSuccess(prev => ({ ...prev, [image.id]: false }));
-                            const original = image.tags?.player || '';
-                            setDirty(prev => ({ ...prev, [image.id]: v !== original || (current.number !== (image.tags?.number || '')) || current.eventType !== (image.tags?.eventType || 'Alle') }));
-                          }}
-                          className="input w-full text-sm mt-1"
-                          aria-label="Spiller"
-                        />
-                      </div>
+                  {/* Draktnummer badge overlay */}
+                  <div className="absolute top-4 left-4 bg-red-600 text-white font-extrabold px-3 py-1 rounded-full text-xl shadow-lg">
+                    #{current.number || image.tags?.number || '—'}
+                  </div>
+                </div>
 
-                      <div>
-                        <label className="text-xs text-gray-500">Draktnummer</label>
-                        <input
-                          type="number"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          min={1}
-                          max={99}
-                          value={current.number}
-                          onChange={(e) => {
-                            let v = e.target.value.replace(/\D/g, '');
-                            if (v) {
-                              let n = parseInt(v, 10);
-                              if (n < 1) n = 1;
-                              if (n > 99) n = 99;
-                              v = String(n);
-                            }
-                            setEditing(prev => ({ ...prev, [image.id]: { ...current, number: v } }));
-                            setSaveErrors(prev => ({ ...prev, [image.id]: null }));
-                            setSaveSuccess(prev => ({ ...prev, [image.id]: false }));
-                            const originalN = image.tags?.number || '';
-                            setDirty(prev => ({ ...prev, [image.id]: current.player !== (image.tags?.player || '') || v !== originalN || current.eventType !== (image.tags?.eventType || 'Alle') }));
-                          }}
-                          className="input w-full text-sm mt-1"
-                          aria-label="Draktnummer"
-                        />
-                      </div>
+                {/* Info panel (solid color) */}
+                <div className="px-4 py-3 bg-gray-900 text-white">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="text-xs text-gray-400">Spiller</div>
+                      <input
+                        value={current.player}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          setEditing(prev => ({ ...prev, [image.id]: { ...current, player: v } }));
+                          setSaveErrors(prev => ({ ...prev, [image.id]: null }));
+                          setSaveSuccess(prev => ({ ...prev, [image.id]: false }));
+                          const original = image.tags?.player || '';
+                          setDirty(prev => ({ ...prev, [image.id]: v !== original || (current.number !== (image.tags?.number || '')) || current.eventType !== (image.tags?.eventType || 'Alle') }));
+                        }}
+                        className="bg-transparent border-0 text-white font-semibold text-lg mt-1 w-full placeholder-gray-400 focus:outline-none"
+                        placeholder="Spiller navn"
+                        aria-label="Spiller"
+                      />
+                    </div>
 
-                      <div className="sm:col-span-2">
-                        <label className="text-xs text-gray-500">Hendelse</label>
-                        <select
-                          value={current.eventType}
-                          onChange={(e) => { const v = e.target.value; setEditing(prev => ({ ...prev, [image.id]: { ...current, eventType: v } })); setSaveSuccess(prev => ({ ...prev, [image.id]: false })); setSaveErrors(prev => ({ ...prev, [image.id]: null })); setDirty(prev => ({ ...prev, [image.id]: current.player !== (image.tags?.player || '') || current.number !== (image.tags?.number || '') || v !== (image.tags?.eventType || 'Alle') })); }}
-                          className="input w-full text-sm mt-1"
-                          aria-label="Hendelse"
-                        >
-                          <option value="Alle">Alle</option>
-                          <option value="Mål">Mål</option>
-                          <option value="Kort">Kort</option>
-                          <option value="Bytte">Bytte</option>
-                        </select>
-                      </div>
+                    <div className="ml-4 text-right">
+                      <div className="text-xs text-gray-400">Hendelse</div>
+                      <select
+                        value={current.eventType}
+                        onChange={(e) => { const v = e.target.value; setEditing(prev => ({ ...prev, [image.id]: { ...current, eventType: v } })); setSaveSuccess(prev => ({ ...prev, [image.id]: false })); setSaveErrors(prev => ({ ...prev, [image.id]: null })); setDirty(prev => ({ ...prev, [image.id]: current.player !== (image.tags?.player || '') || current.number !== (image.tags?.number || '') || v !== (image.tags?.eventType || 'Alle') })); }}
+                        className="bg-transparent border-0 text-white font-medium mt-1 focus:outline-none"
+                        aria-label="Hendelse"
+                      >
+                        <option value="Alle">Alle</option>
+                        <option value="Mål">Mål</option>
+                        <option value="Kort">Kort</option>
+                        <option value="Bytte">Bytte</option>
+                      </select>
+
+                      <div className="text-xs text-gray-400 mt-2">Dato</div>
+                      <div className="text-sm text-gray-300">{image.created_at ? new Date(image.created_at).toLocaleDateString() : '—'}</div>
                     </div>
                   </div>
 
+                  <div className="mt-4 flex items-center justify-between">
+                    <div>
+                      {saveErrors[image.id] && <div className="text-sm text-red-400">{saveErrors[image.id]}</div>}
+                      {saveSuccess[image.id] && <div className="text-sm text-green-400">Lagret ✓</div>}
+                    </div>
+
                     <div className="flex items-center space-x-2">
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        min={1}
+                        max={99}
+                        value={current.number}
+                        onChange={(e) => {
+                          let v = e.target.value.replace(/\D/g, '');
+                          if (v) {
+                            let n = parseInt(v, 10);
+                            if (n < 1) n = 1;
+                            if (n > 99) n = 99;
+                            v = String(n);
+                          }
+                          setEditing(prev => ({ ...prev, [image.id]: { ...current, number: v } }));
+                          setSaveErrors(prev => ({ ...prev, [image.id]: null }));
+                          setSaveSuccess(prev => ({ ...prev, [image.id]: false }));
+                          const originalN = image.tags?.number || '';
+                          setDirty(prev => ({ ...prev, [image.id]: current.player !== (image.tags?.player || '') || v !== originalN || current.eventType !== (image.tags?.eventType || 'Alle') }));
+                        }}
+                        className="w-20 bg-white text-gray-900 rounded-md px-2 py-1 text-sm font-semibold"
+                        aria-label="Draktnummer"
+                      />
+
                       <button
                         onClick={async () => {
                           const toSave = editing[image.id] || { player: image.tags?.player || '', number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
@@ -254,14 +263,13 @@ export default function ImagesPage() {
                             setSaving(prev => ({ ...prev, [image.id]: false }));
                           }
                         }}
-                        className="btn-accent text-white px-3 py-1 rounded text-sm disabled:opacity-50"
+                        className="bg-white text-gray-900 px-3 py-1 rounded text-sm font-semibold disabled:opacity-50"
                         disabled={saving[image.id]}
                       >
-                        {saving[image.id] ? 'Saving...' : 'Save Tags'}
+                        {saving[image.id] ? 'Saving...' : 'Save'}
                       </button>
-                      {saveErrors[image.id] && <p className="field-error ml-2">{saveErrors[image.id]}</p>}
-                      {saveSuccess[image.id] && <p className="ml-2 text-sm text-green-600">Lagret ✓</p>}
                     </div>
+                  </div>
                 </div>
               </div>
             );
