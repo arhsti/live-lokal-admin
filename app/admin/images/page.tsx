@@ -158,11 +158,11 @@ export default function ImagesPage() {
 
       {uploadError && <div className="text-sm text-red-500 mb-4">{uploadError}</div>}
 
-      <div className="flex flex-wrap" style={{ gap: '2.5%' }}>
+      <div className="flex flex-wrap" style={{ columnGap: '2.5%', rowGap: '2.5%' }}>
         {images.map(image => {
           const current = editing[image.id] || { number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
           return (
-            <div key={image.id} style={{ flex: '0 1 30%', maxWidth: '30%', width: '100%' }} className="bg-white rounded-lg shadow-md overflow-hidden border">
+            <div key={image.id} style={{ flex: '0 1 30%', maxWidth: '30%', width: '100%' }} className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="relative bg-gray-100" style={{ height: 160 }}>
                 {image.image_url ? (
                   <img src={image.image_url} alt={`Image ${image.id}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
