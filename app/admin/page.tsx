@@ -14,6 +14,13 @@ export default function AdminPage() {
     }
   }, [activeTab]);
 
+  // Listen for image updates from the images page and refresh count
+  useEffect(() => {
+    const handler = () => fetchImageCount();
+    window.addEventListener('images:updated', handler);
+    return () => window.removeEventListener('images:updated', handler);
+  }, []);
+
   const fetchImageCount = async () => {
     try {
       const response = await fetch('/api/images');

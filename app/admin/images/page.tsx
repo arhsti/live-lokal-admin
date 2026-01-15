@@ -14,6 +14,8 @@ export default function ImagesPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
+  
+  // Back to home navigation helper will be a link rendered below
 
   // Load images from backend on component mount
   useEffect(() => {
@@ -60,6 +62,8 @@ export default function ImagesPage() {
       if (response.ok) {
         await loadImages();
         formRef.current.reset();
+        // Notify other parts of the admin UI that images changed
+        try { window.dispatchEvent(new CustomEvent('images:updated')); } catch (e) {}
       } else {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
         console.error('Upload failed response:', errorData);
@@ -84,7 +88,10 @@ export default function ImagesPage() {
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">Image Library</h1>
+        <div className="flex items-center space-x-4">
+          <h1 className="text-2xl font-bold">Image Library</h1>
+          <a href="/" className="text-sm text-blue-600 hover:underline">Back to Home</a>
+        </div>
         <form ref={formRef} onSubmit={handleUpload} encType="multipart/form-data" className="flex items-center space-x-4">
           <input
             type="file"
