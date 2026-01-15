@@ -7,13 +7,8 @@ export const metadata = {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Link href="/admin" className="text-2xl font-bold text-gray-900">Live Lokal</Link>
-            <div className="text-sm text-gray-600">Live Lokal – Bildegalleri</div>
-          </div>
-
+      <div className="bg-white border-b">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <nav className="hidden md:flex items-center space-x-3">
             <Link href="/admin" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100">Dashboard</Link>
             <Link href="/admin/images" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100">Images</Link>
@@ -25,7 +20,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link href="/login" className="text-sm px-3 py-2 rounded-md border">Logout</Link>
           </div>
         </div>
-      </header>
+      </div>
 
       <main className="container mx-auto px-4 py-8">{children}</main>
     </div>
