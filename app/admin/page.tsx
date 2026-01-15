@@ -36,17 +36,18 @@ export default function AdminPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-white">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Link href="/" className="text-xl font-bold text-gray-900">
-                Live Lokal
-              </Link>
-              <span className="text-gray-500">•</span>
-              <span className="text-gray-600">Admin Dashboard</span>
+              <div>
+                <Link href="/" className="text-xl font-bold text-gray-900">
+                  Live Lokal
+                </Link>
+                <div className="text-sm text-gray-600">Live Lokal – Admin Dashboard</div>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <Link
@@ -74,9 +75,10 @@ export default function AdminPage() {
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   activeTab === tab.id
-                    ? 'bg-blue-600 text-white'
+                    ? ''
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
+                style={activeTab === tab.id ? { background: 'rgb(151, 191, 195)', color: '#ffffff' } : undefined}
               >
                 <span>{tab.icon}</span>
                 <span>{tab.label}</span>
@@ -99,7 +101,7 @@ function DashboardContent({ imageCount, loading }: { imageCount: number; loading
     <div className="space-y-8">
       {/* Stats Cards */}
       <div className="grid md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm">
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Total Images</p>
@@ -107,63 +109,57 @@ function DashboardContent({ imageCount, loading }: { imageCount: number; loading
                 {loading ? '...' : imageCount}
               </p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">🖼️</span>
+            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'rgb(151, 191, 195)' }}>
+              <span className="text-2xl text-white">🖼️</span>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm">
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Templates</p>
               <p className="text-2xl font-bold text-gray-900">0</p>
             </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">📝</span>
+            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'rgb(151, 191, 195)' }}>
+              <span className="text-2xl text-white">📝</span>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm">
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Stories Rendered</p>
               <p className="text-2xl font-bold text-gray-900">0</p>
             </div>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">📸</span>
+            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'rgb(151, 191, 195)' }}>
+              <span className="text-2xl text-white">📸</span>
             </div>
           </div>
         </div>
       </div>
-
       {/* Quick Actions */}
-      <div className="bg-white p-6 rounded-lg shadow-sm">
-        <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-        <div className="grid md:grid-cols-2 gap-4">
-          <Link
-            href="/admin/images"
-            className="flex items-center space-x-3 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors"
-          >
-            <span className="text-2xl">📤</span>
-            <div>
-              <p className="font-medium">Upload New Image</p>
-              <p className="text-sm text-gray-600">Add images to your library</p>
-            </div>
-          </Link>
+      <div className="grid md:grid-cols-2 gap-6">
+        <Link href="/admin/images" className="bg-white p-4 rounded-lg shadow-sm border flex items-start space-x-4 hover:shadow-md transition">
+          <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'rgb(151, 191, 195)' }}>
+            <span className="text-xl text-white">📤</span>
+          </div>
+          <div>
+            <p className="font-semibold">Upload New Image</p>
+            <p className="text-sm text-gray-600">Add images to your library</p>
+          </div>
+        </Link>
 
-          <Link
-            href="/admin/templates"
-            className="flex items-center space-x-3 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-400 hover:bg-green-50 transition-colors"
-          >
-            <span className="text-2xl">🎨</span>
-            <div>
-              <p className="font-medium">Create Template</p>
-              <p className="text-sm text-gray-600">Design reusable story templates</p>
-            </div>
-          </Link>
-        </div>
+        <Link href="/admin/templates" className="bg-white p-4 rounded-lg shadow-sm border flex items-start space-x-4 hover:shadow-md transition">
+          <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'rgb(151, 191, 195)' }}>
+            <span className="text-xl text-white">🎨</span>
+          </div>
+          <div>
+            <p className="font-semibold">Create Template</p>
+            <p className="text-sm text-gray-600">Design reusable story templates</p>
+          </div>
+        </Link>
       </div>
 
       {/* API Information */}
