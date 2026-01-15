@@ -14,7 +14,7 @@ interface TextBox {
   width: number;
   height: number;
   fontSize: number;
-  alignment: 'left' | 'center' | 'right';
+  textAlign: 'left' | 'center' | 'right';
   placeholderKey: string;
 }
 
@@ -43,6 +43,7 @@ export default function TemplatesPage() {
   const [draft, setDraft] = useState<Template | null>(null);
   const [selectedBoxId, setSelectedBoxId] = useState<string | null>(null);
   const [showImagePicker, setShowImagePicker] = useState(false);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const dragRef = useRef<null | {
@@ -107,7 +108,12 @@ export default function TemplatesPage() {
       const safeTemplates = Array.isArray(templatesData)
         ? templatesData.map((template: Template) => ({
             ...template,
-            text_boxes: Array.isArray(template.text_boxes) ? template.text_boxes : [],
+            text_boxes: Array.isArray(template.text_boxes)
+              ? template.text_boxes.map((box: any) => ({
+                  ...box,
+                  textAlign: box?.textAlign ?? box?.alignment ?? 'left',
+                }))
+              : [],
           }))
         : [];
       setTemplates(safeTemplates);
@@ -134,12 +140,14 @@ export default function TemplatesPage() {
     });
     setSelectedBoxId(null);
     setShowImagePicker(true);
+    setIsEditorOpen(true);
   };
 
   const handleSelectTemplate = (template: Template) => {
     setDraft(template);
     setSelectedBoxId(null);
     setShowImagePicker(false);
+    setIsEditorOpen(true);
   };
 
   const handleSelectImage = (image: ImageData) => {
@@ -161,7 +169,7 @@ export default function TemplatesPage() {
         width: 180,
         height: 48,
         fontSize: 22,
-        alignment: 'left',
+        textAlign: 'left',
         placeholderKey: PLACEHOLDERS[0],
       };
       return { ...prev, text_boxes: [...prev.text_boxes, nextBox] };
@@ -252,209 +260,235 @@ export default function TemplatesPage() {
 
       {error && <div className="text-sm text-red-500">{error}</div>}
 
-      <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr_260px] gap-6">
-        <div className="card p-4 space-y-3">
-          <h2 className="text-sm font-semibold text-gray-600">Templates</h2>
-          <div className="space-y-2">
-            {templates.length === 0 && (
-              <div className="text-xs text-gray-500">Ingen templates enda.</div>
-            )}
+      <div className="card p-5">
+        <div className="text-sm font-semibold text-gray-600 mb-3">Templates</div>
+        {templates.length === 0 && (
+          <div className="text-sm text-gray-500">Ingen templates opprettet enda</div>
+        )}
+        {templates.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {templates.map(template => (
               <button
                 key={template.id}
                 onClick={() => handleSelectTemplate(template)}
-                className={`w-full text-left px-3 py-2 rounded-lg border text-sm ${draft?.id === template.id ? 'border-blue-400 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}
+                className="text-left border border-gray-200 rounded-lg p-3 hover:border-gray-300"
               >
-                <div className="font-medium text-gray-800">{template.name}</div>
-                <div className="text-xs text-gray-500">{template.text_boxes?.length || 0} tekstfelt</div>
+                <div className="font-medium text-gray-900">{template.name}</div>
+                <div className="text-xs text-gray-500 mt-1">{template.text_boxes?.length || 0} tekstfelt</div>
               </button>
             ))}
           </div>
-        </div>
+        )}
+      </div>
 
-        <div className="space-y-4">
-          <div className="card p-4 space-y-3">
-            <div className="flex flex-wrap items-center gap-3">
-              <input
-                value={draft?.name || ''}
-                onChange={(e) => setDraft(prev => (prev ? { ...prev, name: e.target.value } : prev))}
-                placeholder="Templatename"
-                className="input text-sm h-9 px-3 flex-1 min-w-[180px]"
-              />
-              <button className="bg-white border border-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50" onClick={() => setShowImagePicker(prev => !prev)}>
-                {draft?.image_id ? 'Bytt bilde' : 'Velg bilde'}
-              </button>
-              <button className="bg-white border border-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50 disabled:opacity-50" onClick={handleAddTextBox} disabled={!draft}>
-                Add text box
-              </button>
-              <button className="btn-primary" onClick={handleSave} disabled={!draft || saving}>
-                {saving ? 'Saving...' : 'Save template'}
+      {isEditorOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-5xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4 border-b">
+              <h2 className="text-lg font-semibold">Ny template</h2>
+              <button
+                className="text-sm text-gray-500 hover:text-gray-700"
+                onClick={() => setIsEditorOpen(false)}
+              >
+                Lukk
               </button>
             </div>
 
-            {showImagePicker && (
-              <div className="border rounded-lg p-3 bg-gray-50">
-                <div className="text-xs text-gray-600 mb-2">Velg bilde</div>
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                  {images.map(img => (
-                    <button
-                      key={img.id}
-                      onClick={() => handleSelectImage(img)}
-                      className={`relative rounded-md overflow-hidden border ${draft?.image_id === img.id ? 'border-blue-500' : 'border-gray-200'}`}
-                    >
-                      <img src={img.image_url} alt={img.id} className="w-full h-16 object-cover" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="card p-4">
-            <div className="text-sm font-semibold text-gray-700 mb-3">Canvas</div>
-            <div
-              className="mx-auto bg-gray-100 rounded-lg overflow-hidden relative"
-              style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
-              onMouseDown={() => setSelectedBoxId(null)}
-            >
-              {draft?.image_url ? (
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    backgroundImage: `url(${draft.image_url})`,
-                    backgroundSize: 'contain',
-                    backgroundRepeat: 'no-repeat',
-                    backgroundPosition: 'center',
-                  }}
+            <div className="p-6 space-y-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <input
+                  value={draft?.name || ''}
+                  onChange={(e) => setDraft(prev => (prev ? { ...prev, name: e.target.value } : prev))}
+                  placeholder="Templatename"
+                  className="input text-sm h-9 px-3 flex-1 min-w-[180px]"
                 />
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-500">
-                  Velg et bilde for å starte
+                <button
+                  className="bg-white border border-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50"
+                  onClick={() => setShowImagePicker(prev => !prev)}
+                >
+                  Velg bilde
+                </button>
+                <button
+                  className="bg-white border border-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50 disabled:opacity-50"
+                  onClick={handleAddTextBox}
+                  disabled={!draft?.image_id}
+                >
+                  Legg til tekstfelt
+                </button>
+                <button className="btn-primary" onClick={handleSave} disabled={!draft || saving}>
+                  {saving ? 'Saving...' : 'Save template'}
+                </button>
+              </div>
+
+              {showImagePicker && (
+                <div className="border rounded-lg p-3 bg-gray-50">
+                  <div className="text-xs text-gray-600 mb-2">Velg bilde</div>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                    {images.map(img => (
+                      <button
+                        key={img.id}
+                        onClick={() => handleSelectImage(img)}
+                        className={`relative rounded-md overflow-hidden border ${draft?.image_id === img.id ? 'border-blue-500' : 'border-gray-200'}`}
+                      >
+                        <img src={img.image_url} alt={img.id} className="w-full h-16 object-cover" />
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
 
-              {(draft?.text_boxes || []).map(box => (
-                <div
-                  key={box.id}
-                  onMouseDown={(e) => {
-                    e.stopPropagation();
-                    setSelectedBoxId(box.id);
-                    dragRef.current = {
-                      id: box.id,
-                      type: 'move',
-                      startX: e.clientX,
-                      startY: e.clientY,
-                      origin: { x: box.x, y: box.y, width: box.width, height: box.height },
-                    };
-                  }}
-                  className={`absolute cursor-move border ${selectedBoxId === box.id ? 'border-blue-500' : 'border-white/70'} bg-white/60`}
-                  style={{
-                    left: box.x,
-                    top: box.y,
-                    width: box.width,
-                    height: box.height,
-                    fontSize: box.fontSize,
-                    textAlign: box.alignment as any,
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '4px 6px',
-                    color: '#1f2937',
-                    backdropFilter: 'blur(2px)',
-                  }}
-                >
-                  {box.placeholderKey}
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-6">
+                <div className="card p-4">
+                  <div className="text-sm font-semibold text-gray-700 mb-3">Canvas</div>
                   <div
-                    onMouseDown={(e) => {
-                      e.stopPropagation();
-                      setSelectedBoxId(box.id);
-                      dragRef.current = {
-                        id: box.id,
-                        type: 'resize',
-                        startX: e.clientX,
-                        startY: e.clientY,
-                        origin: { x: box.x, y: box.y, width: box.width, height: box.height },
-                      };
-                    }}
-                    className="absolute -right-2 -bottom-2 w-4 h-4 bg-white border border-gray-300 rounded-sm cursor-se-resize"
-                  />
+                    className="mx-auto bg-gray-100 rounded-lg overflow-hidden relative"
+                    style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
+                    onMouseDown={() => setSelectedBoxId(null)}
+                  >
+                    {draft?.image_url ? (
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          backgroundImage: `url(${draft.image_url})`,
+                          backgroundSize: 'contain',
+                          backgroundRepeat: 'no-repeat',
+                          backgroundPosition: 'center',
+                        }}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-500">
+                        Velg et bilde for å starte
+                      </div>
+                    )}
+
+                    {(draft?.text_boxes || []).map(box => (
+                      <div
+                        key={box.id}
+                        onMouseDown={(e) => {
+                          e.stopPropagation();
+                          setSelectedBoxId(box.id);
+                          dragRef.current = {
+                            id: box.id,
+                            type: 'move',
+                            startX: e.clientX,
+                            startY: e.clientY,
+                            origin: { x: box.x, y: box.y, width: box.width, height: box.height },
+                          };
+                        }}
+                        className={`absolute cursor-move border ${selectedBoxId === box.id ? 'border-blue-500' : 'border-white/70'} bg-white/70`}
+                        style={{
+                          left: box.x,
+                          top: box.y,
+                          width: box.width,
+                          height: box.height,
+                          fontSize: box.fontSize,
+                          textAlign: box.textAlign as any,
+                          display: 'flex',
+                          alignItems: 'center',
+                          padding: '4px 6px',
+                          color: '#1f2937',
+                          backdropFilter: 'blur(2px)',
+                        }}
+                      >
+                        {box.placeholderKey}
+                        <div
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                            setSelectedBoxId(box.id);
+                            dragRef.current = {
+                              id: box.id,
+                              type: 'resize',
+                              startX: e.clientX,
+                              startY: e.clientY,
+                              origin: { x: box.x, y: box.y, width: box.width, height: box.height },
+                            };
+                          }}
+                          className="absolute -right-2 -bottom-2 w-4 h-4 bg-white border border-gray-300 rounded-sm cursor-se-resize"
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
+
+                <div className="card p-4 space-y-4">
+                  <h3 className="text-sm font-semibold text-gray-600">Egenskaper</h3>
+                  {!selectedBox && (
+                    <div className="text-xs text-gray-500">Velg et tekstfelt for å redigere.</div>
+                  )}
+                  {selectedBox && (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs text-gray-500">Placeholder</label>
+                        <select
+                          value={selectedBox.placeholderKey}
+                          onChange={(e) => updateSelectedBox({ placeholderKey: e.target.value })}
+                          className="input text-sm h-9 w-full mt-1"
+                        >
+                          {PLACEHOLDERS.map(p => (
+                            <option key={p} value={p}>{p}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs text-gray-500">Font size</label>
+                          <input
+                            type="number"
+                            value={selectedBox.fontSize}
+                            onChange={(e) => updateSelectedBox({ fontSize: Number(e.target.value) || 12 })}
+                            className="input text-sm h-9 w-full mt-1"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-500">Text align</label>
+                          <select
+                            value={selectedBox.textAlign}
+                            onChange={(e) => updateSelectedBox({ textAlign: e.target.value as TextBox['textAlign'] })}
+                            className="input text-sm h-9 w-full mt-1"
+                          >
+                            <option value="left">Left</option>
+                            <option value="center">Center</option>
+                            <option value="right">Right</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs text-gray-500">Width</label>
+                          <input
+                            type="number"
+                            value={selectedBox.width}
+                            onChange={(e) => updateSelectedBox({ width: Math.max(40, Number(e.target.value) || 40) })}
+                            className="input text-sm h-9 w-full mt-1"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-500">Height</label>
+                          <input
+                            type="number"
+                            value={selectedBox.height}
+                            onChange={(e) => updateSelectedBox({ height: Math.max(24, Number(e.target.value) || 24) })}
+                            className="input text-sm h-9 w-full mt-1"
+                          />
+                        </div>
+                      </div>
+
+                      <button
+                        className="bg-white border border-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50"
+                        onClick={() => handleDeleteBox(selectedBox.id)}
+                      >
+                        Remove text box
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
-
-        <div className="card p-4 space-y-4">
-          <h2 className="text-sm font-semibold text-gray-600">Egenskaper</h2>
-          {!selectedBox && (
-            <div className="text-xs text-gray-500">Velg et tekstfelt for å redigere.</div>
-          )}
-          {selectedBox && (
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs text-gray-500">Placeholder</label>
-                <select
-                  value={selectedBox.placeholderKey}
-                  onChange={(e) => updateSelectedBox({ placeholderKey: e.target.value })}
-                  className="input text-sm h-9 w-full mt-1"
-                >
-                  {PLACEHOLDERS.map(p => (
-                    <option key={p} value={p}>{p}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-gray-500">Font size</label>
-                  <input
-                    type="number"
-                    value={selectedBox.fontSize}
-                    onChange={(e) => updateSelectedBox({ fontSize: Number(e.target.value) || 12 })}
-                    className="input text-sm h-9 w-full mt-1"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500">Alignment</label>
-                  <select
-                    value={selectedBox.alignment}
-                    onChange={(e) => updateSelectedBox({ alignment: e.target.value as TextBox['alignment'] })}
-                    className="input text-sm h-9 w-full mt-1"
-                  >
-                    <option value="left">Left</option>
-                    <option value="center">Center</option>
-                    <option value="right">Right</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-gray-500">Width</label>
-                  <input
-                    type="number"
-                    value={selectedBox.width}
-                    onChange={(e) => updateSelectedBox({ width: Math.max(40, Number(e.target.value) || 40) })}
-                    className="input text-sm h-9 w-full mt-1"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500">Height</label>
-                  <input
-                    type="number"
-                    value={selectedBox.height}
-                    onChange={(e) => updateSelectedBox({ height: Math.max(24, Number(e.target.value) || 24) })}
-                    className="input text-sm h-9 w-full mt-1"
-                  />
-                </div>
-              </div>
-
-              <button className="bg-white border border-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50" onClick={() => handleDeleteBox(selectedBox.id)}>
-                Remove text box
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
+      )}
     </div>
   );
 }
