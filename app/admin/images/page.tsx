@@ -186,13 +186,27 @@ export default function ImagesPage() {
 
               <div className="p-3">
                 <div className="mb-2">
-                  <div className="grid gap-2 items-end grid-cols-1 sm:grid-cols-[2fr_2fr_1fr]">
+                  <div className="grid gap-2 items-end" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))' }}>
                     <div>
-                      <label className="text-xs text-gray-500">Draktnummer</label>
+                      <label className="text-xs text-gray-500 flex items-center gap-1">
+                        Draktnummer
+                        <span className="relative group text-[10px] text-gray-400 cursor-help">ℹ
+                          <span className="pointer-events-none absolute left-1/2 top-full z-10 mt-2 w-56 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                            Bilde tilknyttet spiller. Dette vil velges når en hendelse om denne spilleren skjer.
+                          </span>
+                        </span>
+                      </label>
                       <input type="number" min={1} max={99} value={current.number} onChange={(e) => { let v=e.target.value.replace(/\D/g,''); setEditing(prev=>({...prev,[image.id]:{...current,number:v}})); setSaveErrors(prev => ({ ...prev, [image.id]: null })); setSaveSuccess(prev => ({ ...prev, [image.id]: false })); }} className="w-full mt-1 input text-xs h-8" />
                     </div>
                     <div>
-                      <label className="text-xs text-gray-500">Hendelse</label>
+                      <label className="text-xs text-gray-500 flex items-center gap-1">
+                        Hendelse
+                        <span className="relative group text-[10px] text-gray-400 cursor-help">ℹ
+                          <span className="pointer-events-none absolute left-1/2 top-full z-10 mt-2 w-52 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                            Velg hvilken type hendelse som dette bildet skal brukes til
+                          </span>
+                        </span>
+                      </label>
                       <select value={current.eventType} onChange={(e) => { setEditing(prev => ({ ...prev, [image.id]: { ...current, eventType: e.target.value } })); setSaveErrors(prev => ({ ...prev, [image.id]: null })); setSaveSuccess(prev => ({ ...prev, [image.id]: false })); }} className="w-full mt-1 input text-xs h-8">
                         <option value="Alle">Alle</option>
                         <option value="Mål">Mål</option>
