@@ -11,12 +11,20 @@ export async function PUT(request: NextRequest, context: any) {
     const { player, number, eventType } = body || {};
 
     const allowed = ['Mål', 'Kort', 'Bytte', 'Alle'];
-    if (typeof player !== 'string' || typeof number !== 'string' || typeof eventType !== 'string' || !allowed.includes(eventType)) {
-      return NextResponse.json({ error: 'player, number and valid eventType are required' }, { status: 400 });
+    if (typeof player !== 'string' || typeof eventType !== 'string' || !allowed.includes(eventType)) {
+      return NextResponse.json({ error: 'player and valid eventType are required' }, { status: 400 });
     }
 
+    // Validate draktnummer: must be numeric between 1 and 99
+    const parsed = parseInt(String(number ?? ''), 10);
+    if (Number.isNaN(parsed) || parsed < 1 || parsed > 99) {
+      return NextResponse.json({ error: 'number must be an integer between 1 and 99' }, { status: 400 });
+    }
+
+    const numberStr = String(parsed);
+
     const { imageStore } = await import('@/lib/image-store');
-    const tags = { player, number, eventType } as ImageTags;
+    const tags = { player, number: numberStr, eventType } as ImageTags;
     const meta = await imageStore.upsertTags(id, tags);
 
     return NextResponse.json({ id: meta.id, tags: meta.tags, created_at: meta.created_at });

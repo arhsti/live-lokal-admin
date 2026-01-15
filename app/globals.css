@@ -1,1 +1,45 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+	--accent: rgb(151, 191, 195);
+	--accent-foreground: #ffffff;
+	--muted: #f7fafc;
+}
+
+html, body {
+	height: 100%;
+	background: #ffffff;
+	color: #111827;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+/* Accent button */
+.btn-accent {
+	background: var(--accent);
+	color: var(--accent-foreground);
+	transition: background .15s ease;
+}
+.btn-accent:hover { background: color-mix(in srgb, var(--accent) 80%, black 10%); }
+
+/* Subtle inputs */
+.input {
+	background: #f8fafb;
+	border: 1px solid rgba(0,0,0,0.06);
+	padding: 0.375rem 0.5rem;
+	border-radius: 0.375rem;
+}
+.input:focus {
+	outline: none;
+	box-shadow: 0 0 0 3px rgba(151,191,195,0.25);
+	border-color: var(--accent);
+}
+
+/* File input tweaks */
+input[type="file"] { background: transparent; }
+
+/* Small helpers */
+.field-error { color: #dc2626; font-size: 0.875rem; }
+

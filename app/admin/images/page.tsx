@@ -17,6 +17,7 @@ export default function ImagesPage() {
   const formRef = useRef<HTMLFormElement | null>(null);
   const [editing, setEditing] = useState<Record<string, { player: string; number: string; eventType: string }>>({});
   const [saving, setSaving] = useState<Record<string, boolean>>({});
+  const [saveErrors, setSaveErrors] = useState<Record<string, string | null>>({});
   
   // Back to home navigation helper will be a link rendered below
 
@@ -101,12 +102,12 @@ export default function ImagesPage() {
             name="file"
             accept="image/jpeg,image/png"
             required
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100"
           />
           <button
             type="submit"
             disabled={uploading}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-2 rounded-lg font-medium"
+            className="btn-accent disabled:opacity-50 text-white px-4 py-2 rounded-lg font-medium"
           >
             {uploading ? 'Uploading...' : 'Upload'}
           </button>
@@ -144,16 +145,30 @@ export default function ImagesPage() {
                       <input
                         value={current.player}
                         onChange={(e) => setEditing(prev => ({ ...prev, [image.id]: { ...current, player: e.target.value } }))}
-                        className="border rounded px-2 py-1 text-sm"
+                        className="input w-full text-sm"
                       />
                     </div>
 
                     <div className="flex items-center space-x-2 mt-2">
                       <span className="text-gray-500">Draktnummer:</span>
                       <input
+                        type="number"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        min={1}
+                        max={99}
                         value={current.number}
-                        onChange={(e) => setEditing(prev => ({ ...prev, [image.id]: { ...current, number: e.target.value } }))}
-                        className="border rounded px-2 py-1 text-sm"
+                        onChange={(e) => {
+                          let v = e.target.value.replace(/\D/g, '');
+                          if (v) {
+                            let n = parseInt(v, 10);
+                            if (n < 1) n = 1;
+                            if (n > 99) n = 99;
+                            v = String(n);
+                          }
+                          setEditing(prev => ({ ...prev, [image.id]: { ...current, number: v } }));
+                        }}
+                        className="input w-24 text-sm"
                       />
                     </div>
 
@@ -162,7 +177,7 @@ export default function ImagesPage() {
                       <select
                         value={current.eventType}
                         onChange={(e) => setEditing(prev => ({ ...prev, [image.id]: { ...current, eventType: e.target.value } }))}
-                        className="border rounded px-2 py-1 text-sm"
+                        className="input text-sm"
                       >
                         <option value="Alle">Alle</option>
                         <option value="Mål">Mål</option>
@@ -172,41 +187,57 @@ export default function ImagesPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={async () => {
-                        const toSave = editing[image.id] || { player: image.tags?.player || '', number: image.tags?.number || '' };
-                        setSaving(prev => ({ ...prev, [image.id]: true }));
-                        try {
-                          const res = await fetch(`/api/images/${image.id}`, {
-                              method: 'PUT',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ player: toSave.player, number: toSave.number, eventType: toSave.eventType }),
-                            });
-                          if (res.ok) {
-                            const updated = await res.json();
-                            // Update images state
-                            setImages(prev => prev.map(im => im.id === image.id ? { ...im, tags: updated.tags, created_at: updated.created_at || im.created_at } : im));
-                            // Dispatch global update
-                            try { window.dispatchEvent(new CustomEvent('images:updated')); } catch (e) {}
-                          } else {
-                            const err = await res.json().catch(() => ({ error: 'Unknown error' }));
-                            console.error('Failed to save tags', err);
-                            setUploadError(err.error || 'Failed to save tags');
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={async () => {
+                          const toSave = editing[image.id] || { player: image.tags?.player || '', number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
+
+                          // Frontend validation
+                          if (!toSave.player || String(toSave.player).trim() === '') {
+                            setSaveErrors(prev => ({ ...prev, [image.id]: 'Spiller må fylles ut' }));
+                            return;
                           }
-                        } catch (err) {
-                          console.error('Save tags error', err);
-                          setUploadError('Failed to save tags');
-                        } finally {
-                          setSaving(prev => ({ ...prev, [image.id]: false }));
-                        }
-                      }}
-                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
-                      disabled={saving[image.id]}
-                    >
-                      {saving[image.id] ? 'Saving...' : 'Save Tags'}
-                    </button>
-                  </div>
+                          const num = parseInt(String(toSave.number || ''), 10);
+                          if (isNaN(num) || num < 1 || num > 99) {
+                            setSaveErrors(prev => ({ ...prev, [image.id]: 'Draktnummer må være et tall mellom 1 og 99' }));
+                            return;
+                          }
+
+                          setSaveErrors(prev => ({ ...prev, [image.id]: null }));
+                          setSaving(prev => ({ ...prev, [image.id]: true }));
+                          try {
+                            const res = await fetch(`/api/images/${image.id}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ player: toSave.player, number: String(num), eventType: toSave.eventType }),
+                              });
+                            if (res.ok) {
+                              const updated = await res.json();
+                              // Update images state
+                              setImages(prev => prev.map(im => im.id === image.id ? { ...im, tags: updated.tags, created_at: updated.created_at || im.created_at } : im));
+                              // Clear any save error
+                              setSaveErrors(prev => ({ ...prev, [image.id]: null }));
+                              // Dispatch global update
+                              try { window.dispatchEvent(new CustomEvent('images:updated')); } catch (e) {}
+                            } else {
+                              const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+                              console.error('Failed to save tags', err);
+                              setSaveErrors(prev => ({ ...prev, [image.id]: err.error || 'Failed to save tags' }));
+                            }
+                          } catch (err) {
+                            console.error('Save tags error', err);
+                            setSaveErrors(prev => ({ ...prev, [image.id]: 'Failed to save tags' }));
+                          } finally {
+                            setSaving(prev => ({ ...prev, [image.id]: false }));
+                          }
+                        }}
+                        className="btn-accent text-white px-3 py-1 rounded text-sm disabled:opacity-50"
+                        disabled={saving[image.id]}
+                      >
+                        {saving[image.id] ? 'Saving...' : 'Save Tags'}
+                      </button>
+                      {saveErrors[image.id] && <p className="field-error ml-2">{saveErrors[image.id]}</p>}
+                    </div>
                 </div>
               </div>
             );
