@@ -202,7 +202,13 @@ export default function ImagesPage() {
                     </div>
                     <div>
                       <label className="text-xs text-gray-500">&nbsp;</label>
-                      <button onClick={() => handleSave(image)} disabled={saving[image.id]} className="w-full mt-1 bg-blue-600 text-white px-2 py-0.5 rounded-md text-xs disabled:opacity-50">{saving[image.id] ? 'Saving...' : 'Save'}</button>
+                      <button
+                        onClick={() => handleSave(image)}
+                        disabled={saving[image.id]}
+                        className="w-full mt-1 h-8 rounded-lg bg-blue-100 text-blue-700 text-xs font-semibold shadow-sm hover:bg-blue-200 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        {saving[image.id] ? 'Saving...' : 'Save'}
+                      </button>
                     </div>
                   </div>
                 </div>

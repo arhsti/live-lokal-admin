@@ -25,21 +25,31 @@ export default function GlobalHeader() {
   const title = getTitleForPath(pathname);
 
   return (
-    <header className="bg-blue-50/80 border-b border-blue-100/80 backdrop-blur">
-      <div className="container mx-auto px-4">
+    <header className="bg-gray-50/90 backdrop-blur">
+      <div className="mx-auto max-w-6xl px-5 sm:px-6">
         <div className="h-12 sm:h-14 flex items-center">
           <div className="grid grid-cols-[1fr_auto_1fr] items-center w-full">
             <div className="justify-self-start">
-              <Link href="/" className="text-base sm:text-lg font-semibold text-blue-900">
+              <Link
+                href="/"
+                className="text-base sm:text-lg font-semibold text-gray-900 no-underline hover:text-gray-800 transition-colors"
+              >
                 Live lokal
               </Link>
             </div>
 
-            <div className="justify-self-center text-sm sm:text-base font-semibold text-blue-900 truncate max-w-[60vw]">
+            <div className="justify-self-center text-sm sm:text-base font-semibold text-gray-800 truncate max-w-[60vw]">
               {title}
             </div>
 
-            <div className="justify-self-end" />
+            <div className="justify-self-end">
+              <Link
+                href="/login"
+                className="text-sm text-gray-500 no-underline hover:text-gray-800 transition-colors"
+              >
+                Logg ut
+              </Link>
+            </div>
           </div>
         </div>
       </div>
