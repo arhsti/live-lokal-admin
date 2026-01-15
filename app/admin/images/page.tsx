@@ -16,6 +16,7 @@ export default function ImagesPage() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
   const [editing, setEditing] = useState<Record<string, { player: string; number: string; eventType: string }>>({});
+  const [dirty, setDirty] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [saveErrors, setSaveErrors] = useState<Record<string, string | null>>({});
   const [saveSuccess, setSaveSuccess] = useState<Record<string, boolean>>({});
@@ -147,9 +148,12 @@ export default function ImagesPage() {
                         <input
                           value={current.player}
                           onChange={(e) => {
-                            setEditing(prev => ({ ...prev, [image.id]: { ...current, player: e.target.value } }));
+                            const v = e.target.value;
+                            setEditing(prev => ({ ...prev, [image.id]: { ...current, player: v } }));
                             setSaveErrors(prev => ({ ...prev, [image.id]: null }));
                             setSaveSuccess(prev => ({ ...prev, [image.id]: false }));
+                            const original = image.tags?.player || '';
+                            setDirty(prev => ({ ...prev, [image.id]: v !== original || (current.number !== (image.tags?.number || '')) || current.eventType !== (image.tags?.eventType || 'Alle') }));
                           }}
                           className="input w-full text-sm mt-1"
                           aria-label="Spiller"
@@ -176,6 +180,8 @@ export default function ImagesPage() {
                             setEditing(prev => ({ ...prev, [image.id]: { ...current, number: v } }));
                             setSaveErrors(prev => ({ ...prev, [image.id]: null }));
                             setSaveSuccess(prev => ({ ...prev, [image.id]: false }));
+                            const originalN = image.tags?.number || '';
+                            setDirty(prev => ({ ...prev, [image.id]: current.player !== (image.tags?.player || '') || v !== originalN || current.eventType !== (image.tags?.eventType || 'Alle') }));
                           }}
                           className="input w-full text-sm mt-1"
                           aria-label="Draktnummer"
@@ -186,7 +192,7 @@ export default function ImagesPage() {
                         <label className="text-xs text-gray-500">Hendelse</label>
                         <select
                           value={current.eventType}
-                          onChange={(e) => { setEditing(prev => ({ ...prev, [image.id]: { ...current, eventType: e.target.value } })); setSaveSuccess(prev => ({ ...prev, [image.id]: false })); setSaveErrors(prev => ({ ...prev, [image.id]: null })); }}
+                          onChange={(e) => { const v = e.target.value; setEditing(prev => ({ ...prev, [image.id]: { ...current, eventType: v } })); setSaveSuccess(prev => ({ ...prev, [image.id]: false })); setSaveErrors(prev => ({ ...prev, [image.id]: null })); setDirty(prev => ({ ...prev, [image.id]: current.player !== (image.tags?.player || '') || current.number !== (image.tags?.number || '') || v !== (image.tags?.eventType || 'Alle') })); }}
                           className="input w-full text-sm mt-1"
                           aria-label="Hendelse"
                         >
@@ -232,6 +238,8 @@ export default function ImagesPage() {
                                 // Show success briefly
                                 setSaveSuccess(prev => ({ ...prev, [image.id]: true }));
                                 setTimeout(() => setSaveSuccess(prev => ({ ...prev, [image.id]: false })), 2500);
+                                // mark not dirty
+                                setDirty(prev => ({ ...prev, [image.id]: false }));
                                 // Dispatch global update
                                 try { window.dispatchEvent(new CustomEvent('images:updated')); } catch (e) {}
                               } else {

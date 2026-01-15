@@ -64,7 +64,7 @@ export default function AdminPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Navigation Tabs */}
         <div className="mb-8">
-          <nav className="flex space-x-1 bg-white p-1 rounded-lg shadow-sm">
+          <nav className="flex space-x-2 bg-white p-1 rounded-lg">
             {[
               { id: 'dashboard', label: 'Dashboard', icon: '📊' },
               { id: 'images', label: 'Images', icon: '🖼️' },
@@ -101,7 +101,7 @@ function DashboardContent({ imageCount, loading }: { imageCount: number; loading
     <div className="space-y-8">
       {/* Stats Cards */}
       <div className="grid md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="card p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Total Images</p>
@@ -109,31 +109,31 @@ function DashboardContent({ imageCount, loading }: { imageCount: number; loading
                 {loading ? '...' : imageCount}
               </p>
             </div>
-            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'rgb(151, 191, 195)' }}>
+            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'var(--accent)' }}>
               <span className="text-2xl text-white">🖼️</span>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="card p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Templates</p>
               <p className="text-2xl font-bold text-gray-900">0</p>
             </div>
-            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'rgb(151, 191, 195)' }}>
+            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'var(--accent)' }}>
               <span className="text-2xl text-white">📝</span>
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="card p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Stories Rendered</p>
               <p className="text-2xl font-bold text-gray-900">0</p>
             </div>
-            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'rgb(151, 191, 195)' }}>
+            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'var(--accent)' }}>
               <span className="text-2xl text-white">📸</span>
             </div>
           </div>
@@ -141,8 +141,8 @@ function DashboardContent({ imageCount, loading }: { imageCount: number; loading
       </div>
       {/* Quick Actions */}
       <div className="grid md:grid-cols-2 gap-6">
-        <Link href="/admin/images" className="bg-white p-4 rounded-lg shadow-sm border flex items-start space-x-4 hover:shadow-md transition">
-          <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'rgb(151, 191, 195)' }}>
+        <Link href="/admin/images" className="card p-4 flex items-start space-x-4 hover:shadow-md transition">
+          <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'var(--accent)' }}>
             <span className="text-xl text-white">📤</span>
           </div>
           <div>
@@ -151,8 +151,8 @@ function DashboardContent({ imageCount, loading }: { imageCount: number; loading
           </div>
         </Link>
 
-        <Link href="/admin/templates" className="bg-white p-4 rounded-lg shadow-sm border flex items-start space-x-4 hover:shadow-md transition">
-          <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'rgb(151, 191, 195)' }}>
+        <Link href="/admin/templates" className="card p-4 flex items-start space-x-4 hover:shadow-md transition">
+          <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'var(--accent)' }}>
             <span className="text-xl text-white">🎨</span>
           </div>
           <div>
