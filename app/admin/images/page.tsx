@@ -163,9 +163,21 @@ export default function ImagesPage() {
           const current = editing[image.id] || { number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
           return (
             <div key={image.id} style={{ flex: '0 1 30%', maxWidth: '30%', width: '100%' }} className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="relative bg-gray-100" style={{ height: 160 }}>
+              <div className="relative bg-gray-100 overflow-hidden" style={{ height: 160 }}>
                 {image.image_url ? (
-                  <img src={image.image_url} alt={`Image ${image.id}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  <img
+                    src={image.image_url}
+                    alt={`Image ${image.id}`}
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '100%',
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                      objectPosition: 'center',
+                      display: 'block',
+                    }}
+                  />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-500">Ingen bilde</div>
                 )}
