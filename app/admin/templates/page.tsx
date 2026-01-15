@@ -1,495 +1,244 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface ImageData {
   id: string;
   image_url: string;
+  created_at?: string;
+  tags?: { number: string; eventType?: string };
 }
 
-interface TextBox {
-  id: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  fontSize: number;
-  textAlign: 'left' | 'center' | 'right';
-  placeholderKey: string;
-}
-
-interface Template {
-  id: string;
-  name: string;
-  image_id: string;
-  image_url: string;
-  text_boxes: TextBox[];
-}
-
-const PLACEHOLDERS = [
-  '{{player_number}}',
-  '{{event_type}}',
-  '{{team_name}}',
-  '{{custom_text}}',
-];
-
-const CANVAS_WIDTH = 360;
-const CANVAS_HEIGHT = 640;
-
-export default function TemplatesPage() {
+export default function ImagesPage() {
   const [images, setImages] = useState<ImageData[]>([]);
-  const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
-  const [draft, setDraft] = useState<Template | null>(null);
-  const [selectedBoxId, setSelectedBoxId] = useState<string | null>(null);
-  const [showImagePicker, setShowImagePicker] = useState(false);
-  const [isEditorOpen, setIsEditorOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const dragRef = useRef<null | {
-    id: string;
-    type: 'move' | 'resize';
-    startX: number;
-    startY: number;
-    origin: { x: number; y: number; width: number; height: number };
-  }>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const [editing, setEditing] = useState<Record<string, { number: string; eventType: string }>>({});
+  const [saving, setSaving] = useState<Record<string, boolean>>({});
+  const [saveErrors, setSaveErrors] = useState<Record<string, string | null>>({});
+  const [saveSuccess, setSaveSuccess] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    loadData();
+    loadImages();
   }, []);
 
-  useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      if (!dragRef.current) return;
-      const { id, type, startX, startY, origin } = dragRef.current;
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-
-      setDraft(prev => {
-        if (!prev) return prev;
-        const next = prev.text_boxes.map(box => {
-          if (box.id !== id) return box;
-          if (type === 'move') {
-            const nextX = Math.min(Math.max(0, origin.x + dx), CANVAS_WIDTH - box.width);
-            const nextY = Math.min(Math.max(0, origin.y + dy), CANVAS_HEIGHT - box.height);
-            return { ...box, x: nextX, y: nextY };
-          }
-          const nextWidth = Math.min(Math.max(40, origin.width + dx), CANVAS_WIDTH - box.x);
-          const nextHeight = Math.min(Math.max(24, origin.height + dy), CANVAS_HEIGHT - box.y);
-          return { ...box, width: nextWidth, height: nextHeight };
-        });
-        return { ...prev, text_boxes: next };
-      });
-    };
-
-    const onUp = () => {
-      dragRef.current = null;
-    };
-
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-    return () => {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
-    };
-  }, []);
-
-  async function loadData() {
-    setLoading(true);
-    setError(null);
+  async function loadImages() {
     try {
-      const [imagesRes, templatesRes] = await Promise.all([
-        fetch('/api/images'),
-        fetch('/api/templates'),
-      ]);
-      const imagesData = imagesRes.ok ? await imagesRes.json() : [];
-      const templatesData = templatesRes.ok ? await templatesRes.json() : [];
-      setImages(Array.isArray(imagesData) ? imagesData : []);
-      const safeTemplates = Array.isArray(templatesData)
-        ? templatesData.map((template: Template) => ({
-            ...template,
-            text_boxes: Array.isArray(template.text_boxes)
-              ? template.text_boxes.map((box: any) => ({
-                  ...box,
-                  textAlign: box?.textAlign ?? box?.alignment ?? 'left',
-                }))
-              : [],
-          }))
-        : [];
-      setTemplates(safeTemplates);
+      const res = await fetch('/api/images');
+      if (res.ok) {
+        const data = await res.json();
+        setImages(data);
+      }
     } catch (e) {
       console.error(e);
-      setError('Kunne ikke laste data. Prøv igjen.');
     } finally {
       setLoading(false);
     }
   }
 
-  const selectedBox = useMemo(() => {
-    if (!draft || !selectedBoxId) return null;
-    return draft.text_boxes.find(b => b.id === selectedBoxId) || null;
-  }, [draft, selectedBoxId]);
+  const handleUpload = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setUploadError(null);
+    if (!formRef.current) return;
 
-  const handleCreateTemplate = () => {
-    setDraft({
-      id: '',
-      name: '',
-      image_id: '',
-      image_url: '',
-      text_boxes: [],
-    });
-    setSelectedBoxId(null);
-    setShowImagePicker(true);
-    setIsEditorOpen(true);
-  };
+    const formData = new FormData(formRef.current);
+    const file = formData.get('file') as File;
 
-  const handleSelectTemplate = (template: Template) => {
-    setDraft(template);
-    setSelectedBoxId(null);
-    setShowImagePicker(false);
-    setIsEditorOpen(true);
-  };
-
-  const handleSelectImage = (image: ImageData) => {
-    setDraft(prev => {
-      if (!prev) return prev;
-      return { ...prev, image_id: image.id, image_url: image.image_url };
-    });
-    setShowImagePicker(false);
-  };
-
-  const handleAddTextBox = () => {
-    const nextId = `box_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-    setDraft(prev => {
-      if (!prev) return prev;
-      const nextBox: TextBox = {
-        id: nextId,
-        x: 24,
-        y: 24,
-        width: 180,
-        height: 48,
-        fontSize: 22,
-        textAlign: 'left',
-        placeholderKey: PLACEHOLDERS[0],
-      };
-      return { ...prev, text_boxes: [...prev.text_boxes, nextBox] };
-    });
-    setSelectedBoxId(nextId);
-  };
-
-  const handleDeleteBox = (boxId: string) => {
-    setDraft(prev => {
-      if (!prev) return prev;
-      return { ...prev, text_boxes: prev.text_boxes.filter(box => box.id !== boxId) };
-    });
-    if (selectedBoxId === boxId) setSelectedBoxId(null);
-  };
-
-  const updateSelectedBox = (changes: Partial<TextBox>) => {
-    setDraft(prev => {
-      if (!prev || !selectedBoxId) return prev;
-      const next = prev.text_boxes.map(box => (box.id === selectedBoxId ? { ...box, ...changes } : box));
-      return { ...prev, text_boxes: next };
-    });
-  };
-
-  const handleSave = async () => {
-    if (!draft) return;
-    if (!draft.name.trim()) {
-      setError('Gi templaten et navn før du lagrer.');
-      return;
-    }
-    if (!draft.image_id || !draft.image_url) {
-      setError('Velg et bilde før du lagrer.');
+    if (!file) {
+      setUploadError('No file selected');
       return;
     }
 
-    setSaving(true);
-    setError(null);
+    setUploading(true);
+
     try {
-      const payload = {
-        name: draft.name,
-        image_id: draft.image_id,
-        image_url: draft.image_url,
-        text_boxes: draft.text_boxes,
-      };
+      const response = await fetch('/api/upload-image', {
+        method: 'POST',
+        body: formData,
+      });
 
-      const res = draft.id
-        ? await fetch(`/api/templates/${draft.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          })
-        : await fetch('/api/templates', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: 'Failed to save' }));
-        throw new Error(err.error || 'Failed to save');
+      if (response.ok) {
+        await loadImages();
+        formRef.current.reset();
+        try { window.dispatchEvent(new CustomEvent('images:updated')); } catch (e) {}
+      } else {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('Upload failed response:', errorData);
+        setUploadError(errorData.error || 'Upload failed');
       }
-
-      const saved = await res.json().catch(() => null);
-      if (saved) {
-        setDraft(saved);
-      }
-      await loadData();
-    } catch (e: any) {
-      console.error(e);
-      setError(e?.message || 'Kunne ikke lagre template.');
+    } catch (error) {
+      console.error('Upload error:', error);
+      setUploadError('Upload failed');
     } finally {
-      setSaving(false);
+      setUploading(false);
     }
   };
 
-  if (loading) {
-    return <div className="p-8">Laster templates...</div>;
-  }
+  // Tags are persisted server-side via PUT /api/images/{id} (stored in the backend metadata store),
+  // so values survive refreshes and deployments and are not kept only in frontend state.
+  const handleSave = async (image: ImageData) => {
+    const toSave = editing[image.id] || { number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
+    const num = parseInt(String(toSave.number || ''), 10);
+    if (isNaN(num) || num < 1 || num > 99) {
+      setSaveErrors(prev => ({ ...prev, [image.id]: 'Draktnummer må være et tall mellom 1 og 99' }));
+      return;
+    }
+
+    setSaveErrors(prev => ({ ...prev, [image.id]: null }));
+    setSaving(prev => ({ ...prev, [image.id]: true }));
+    try {
+      const res = await fetch(`/api/images/${image.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ number: String(num), eventType: toSave.eventType }),
+      });
+      if (res.ok) {
+        setSaveErrors(prev => ({ ...prev, [image.id]: null }));
+        setSaveSuccess(prev => ({ ...prev, [image.id]: true }));
+        setTimeout(() => setSaveSuccess(prev => ({ ...prev, [image.id]: false })), 2500);
+
+        const contentType = res.headers.get('content-type') || '';
+        const hasJson = contentType.includes('application/json');
+        if (hasJson) {
+          const updated = await res.json().catch(() => null);
+          const nextTags = updated?.tags ?? { number: String(num), eventType: toSave.eventType };
+          setImages(prev => prev.map(im => im.id === image.id ? { ...im, tags: nextTags } : im));
+        } else {
+          setImages(prev => prev.map(im => im.id === image.id ? { ...im, tags: { number: String(num), eventType: toSave.eventType } } : im));
+        }
+        return;
+      }
+
+      const contentType = res.headers.get('content-type') || '';
+      const hasJson = contentType.includes('application/json');
+      const err = hasJson ? await res.json().catch(() => ({ error: 'Unknown error' })) : { error: 'Failed to save' };
+      setSaveErrors(prev => ({ ...prev, [image.id]: err.error || 'Failed to save' }));
+    } catch (e) {
+      console.error(e);
+      setSaveErrors(prev => ({ ...prev, [image.id]: 'Failed to save' }));
+    } finally {
+      setSaving(prev => ({ ...prev, [image.id]: false }));
+    }
+  };
+
+  if (loading) return <div className="p-8">Loading images...</div>;
 
   return (
-    <div className="p-8 space-y-6">
-      <div className="flex items-start justify-between gap-4">
+    <div className="p-8">
+      <div className="flex items-start justify-between mb-6 gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Templates</h1>
-          <p className="text-sm text-gray-600 mt-1">Lag maler med bilde og tekstplassholdere.</p>
-          <p className="text-xs text-gray-500 mt-1">UI marker: Templates v2</p>
+          <h1 className="text-3xl font-extrabold">Templates</h1>
+          <p className="text-sm text-gray-600 mt-1">Template management surface (cloned mechanism).</p>
+          <p className="text-sm font-semibold text-blue-700 mt-2">TEMPLATES PAGE (NEW)</p>
         </div>
-        <button className="btn-primary" onClick={handleCreateTemplate}>Create template</button>
+        <div className="flex items-center space-x-3">
+          <form ref={formRef} onSubmit={handleUpload} encType="multipart/form-data" className="hidden">
+            <input
+              id="file-input"
+              type="file"
+              name="file"
+              accept="image/jpeg,image/png"
+              required
+              onChange={() => { try { formRef.current?.requestSubmit(); } catch (e) {} }}
+            />
+          </form>
+          <button
+            onClick={() => {
+              const el = document.getElementById('file-input') as HTMLInputElement | null;
+              el?.click();
+            }}
+            className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-5 py-2.5 rounded-xl font-semibold border border-blue-200"
+            disabled={uploading}
+          >
+            {uploading ? 'Uploading...' : 'Upload Image'}
+          </button>
+        </div>
       </div>
 
-      {error && <div className="text-sm text-red-500">{error}</div>}
+      {uploadError && <div className="text-sm text-red-500 mb-4">{uploadError}</div>}
 
-      <div className="card p-5">
-        <div className="text-sm font-semibold text-gray-600 mb-3">Templates</div>
-        {templates.length === 0 && (
-          <div className="text-sm text-gray-500">Ingen templates opprettet enda</div>
-        )}
-        {templates.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {templates.map(template => (
-              <button
-                key={template.id}
-                onClick={() => handleSelectTemplate(template)}
-                className="text-left border border-gray-200 rounded-lg p-3 hover:border-gray-300"
-              >
-                <div className="font-medium text-gray-900">{template.name}</div>
-                <div className="text-xs text-gray-500 mt-1">{template.text_boxes?.length || 0} tekstfelt</div>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {isEditorOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-5xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-6 py-4 border-b">
-              <h2 className="text-lg font-semibold">Ny template</h2>
-              <button
-                className="text-sm text-gray-500 hover:text-gray-700"
-                onClick={() => setIsEditorOpen(false)}
-              >
-                Lukk
-              </button>
-            </div>
-
-            <div className="p-6 space-y-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <input
-                  value={draft?.name || ''}
-                  onChange={(e) => setDraft(prev => (prev ? { ...prev, name: e.target.value } : prev))}
-                  placeholder="Templatename"
-                  className="input text-sm h-9 px-3 flex-1 min-w-[180px]"
-                />
-                <button
-                  className="bg-white border border-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50"
-                  onClick={() => setShowImagePicker(prev => !prev)}
-                >
-                  Velg bilde
-                </button>
-                <button
-                  className="bg-white border border-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50 disabled:opacity-50"
-                  onClick={handleAddTextBox}
-                  disabled={!draft?.image_id}
-                >
-                  Legg til tekstfelt
-                </button>
-                <button className="btn-primary" onClick={handleSave} disabled={!draft || saving}>
-                  {saving ? 'Saving...' : 'Save template'}
-                </button>
+      <div className="flex flex-wrap" style={{ columnGap: '2rem', rowGap: '2rem' }}>
+        {images.map(image => {
+          const current = editing[image.id] || { number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
+          return (
+            <div key={image.id} style={{ flex: '0 1 28%', maxWidth: '28%', width: '100%' }} className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="relative bg-gray-100 overflow-hidden" style={{ height: 180 }}>
+                {image.image_url ? (
+                  <img
+                    src={image.image_url}
+                    alt={`Image ${image.id}`}
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '100%',
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                      objectPosition: 'center',
+                      display: 'block',
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-500">Ingen bilde</div>
+                )}
+                <div className="absolute top-2 left-2 bg-red-600 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center text-xs shadow">{current.number || image.tags?.number || '—'}</div>
               </div>
 
-              {showImagePicker && (
-                <div className="border rounded-lg p-3 bg-gray-50">
-                  <div className="text-xs text-gray-600 mb-2">Velg bilde</div>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                    {images.map(img => (
+              <div className="p-3">
+                <div className="mb-2">
+                  <div className="grid gap-2 items-end" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))' }}>
+                    <div>
+                      <label className="text-xs text-gray-500 flex items-center gap-2">
+                        Draktnummer
+                        <span className="relative group inline-flex items-center justify-center text-[12px] text-gray-500 cursor-help leading-none">ℹ
+                          <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-2.5 w-max max-w-[280px] -translate-x-1/2 rounded-md bg-gray-800 px-3 py-2 text-[11px] leading-snug text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 whitespace-normal break-words overflow-visible">
+                            Bilde tilknyttet spiller. Dette vil velges når en hendelse om denne spilleren skjer.
+                          </span>
+                        </span>
+                      </label>
+                      <input type="number" min={1} max={99} value={current.number} onChange={(e) => { let v=e.target.value.replace(/\D/g,''); setEditing(prev=>({...prev,[image.id]:{...current,number:v}})); setSaveErrors(prev => ({ ...prev, [image.id]: null })); setSaveSuccess(prev => ({ ...prev, [image.id]: false })); }} className="w-full mt-1 input text-xs h-8" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500 flex items-center gap-2">
+                        Hendelse
+                        <span className="relative group inline-flex items-center justify-center text-[12px] text-gray-500 cursor-help leading-none">ℹ
+                          <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-2.5 w-max max-w-[280px] -translate-x-1/2 rounded-md bg-gray-800 px-3 py-2 text-[11px] leading-snug text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 whitespace-normal break-words overflow-visible">
+                            Velg hvilken type hendelse som dette bildet skal brukes til
+                          </span>
+                        </span>
+                      </label>
+                      <select value={current.eventType} onChange={(e) => { setEditing(prev => ({ ...prev, [image.id]: { ...current, eventType: e.target.value } })); setSaveErrors(prev => ({ ...prev, [image.id]: null })); setSaveSuccess(prev => ({ ...prev, [image.id]: false })); }} className="w-full mt-1 input text-xs h-8">
+                        <option value="Alle">Alle</option>
+                        <option value="Mål">Mål</option>
+                        <option value="Kort">Kort</option>
+                        <option value="Bytte">Bytte</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-500">&nbsp;</label>
                       <button
-                        key={img.id}
-                        onClick={() => handleSelectImage(img)}
-                        className={`relative rounded-md overflow-hidden border ${draft?.image_id === img.id ? 'border-blue-500' : 'border-gray-200'}`}
+                        onClick={() => handleSave(image)}
+                        disabled={saving[image.id]}
+                        className="w-full mt-1 h-8 rounded-lg bg-blue-100 text-blue-700 text-xs font-semibold shadow-sm hover:bg-blue-200 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                       >
-                        <img src={img.image_url} alt={img.id} className="w-full h-16 object-cover" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-6">
-                <div className="card p-4">
-                  <div className="text-sm font-semibold text-gray-700 mb-3">Canvas</div>
-                  <div
-                    className="mx-auto bg-gray-100 rounded-lg overflow-hidden relative"
-                    style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
-                    onMouseDown={() => setSelectedBoxId(null)}
-                  >
-                    {draft?.image_url ? (
-                      <div
-                        className="absolute inset-0"
-                        style={{
-                          backgroundImage: `url(${draft.image_url})`,
-                          backgroundSize: 'contain',
-                          backgroundRepeat: 'no-repeat',
-                          backgroundPosition: 'center',
-                        }}
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-500">
-                        Velg et bilde for å starte
-                      </div>
-                    )}
-
-                    {(draft?.text_boxes || []).map(box => (
-                      <div
-                        key={box.id}
-                        onMouseDown={(e) => {
-                          e.stopPropagation();
-                          setSelectedBoxId(box.id);
-                          dragRef.current = {
-                            id: box.id,
-                            type: 'move',
-                            startX: e.clientX,
-                            startY: e.clientY,
-                            origin: { x: box.x, y: box.y, width: box.width, height: box.height },
-                          };
-                        }}
-                        className={`absolute cursor-move border ${selectedBoxId === box.id ? 'border-blue-500' : 'border-white/70'} bg-white/70`}
-                        style={{
-                          left: box.x,
-                          top: box.y,
-                          width: box.width,
-                          height: box.height,
-                          fontSize: box.fontSize,
-                          textAlign: box.textAlign as any,
-                          display: 'flex',
-                          alignItems: 'center',
-                          padding: '4px 6px',
-                          color: '#1f2937',
-                          backdropFilter: 'blur(2px)',
-                        }}
-                      >
-                        {box.placeholderKey}
-                        <div
-                          onMouseDown={(e) => {
-                            e.stopPropagation();
-                            setSelectedBoxId(box.id);
-                            dragRef.current = {
-                              id: box.id,
-                              type: 'resize',
-                              startX: e.clientX,
-                              startY: e.clientY,
-                              origin: { x: box.x, y: box.y, width: box.width, height: box.height },
-                            };
-                          }}
-                          className="absolute -right-2 -bottom-2 w-4 h-4 bg-white border border-gray-300 rounded-sm cursor-se-resize"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="card p-4 space-y-4">
-                  <h3 className="text-sm font-semibold text-gray-600">Egenskaper</h3>
-                  {!selectedBox && (
-                    <div className="text-xs text-gray-500">Velg et tekstfelt for å redigere.</div>
-                  )}
-                  {selectedBox && (
-                    <div className="space-y-3">
-                      <div>
-                        <label className="text-xs text-gray-500">Placeholder</label>
-                        <select
-                          value={selectedBox.placeholderKey}
-                          onChange={(e) => updateSelectedBox({ placeholderKey: e.target.value })}
-                          className="input text-sm h-9 w-full mt-1"
-                        >
-                          {PLACEHOLDERS.map(p => (
-                            <option key={p} value={p}>{p}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="text-xs text-gray-500">Font size</label>
-                          <input
-                            type="number"
-                            value={selectedBox.fontSize}
-                            onChange={(e) => updateSelectedBox({ fontSize: Number(e.target.value) || 12 })}
-                            className="input text-sm h-9 w-full mt-1"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-xs text-gray-500">Text align</label>
-                          <select
-                            value={selectedBox.textAlign}
-                            onChange={(e) => updateSelectedBox({ textAlign: e.target.value as TextBox['textAlign'] })}
-                            className="input text-sm h-9 w-full mt-1"
-                          >
-                            <option value="left">Left</option>
-                            <option value="center">Center</option>
-                            <option value="right">Right</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="text-xs text-gray-500">Width</label>
-                          <input
-                            type="number"
-                            value={selectedBox.width}
-                            onChange={(e) => updateSelectedBox({ width: Math.max(40, Number(e.target.value) || 40) })}
-                            className="input text-sm h-9 w-full mt-1"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-xs text-gray-500">Height</label>
-                          <input
-                            type="number"
-                            value={selectedBox.height}
-                            onChange={(e) => updateSelectedBox({ height: Math.max(24, Number(e.target.value) || 24) })}
-                            className="input text-sm h-9 w-full mt-1"
-                          />
-                        </div>
-                      </div>
-
-                      <button
-                        className="bg-white border border-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50"
-                        onClick={() => handleDeleteBox(selectedBox.id)}
-                      >
-                        Remove text box
+                        {saving[image.id] ? 'Saving...' : 'Save'}
                       </button>
                     </div>
-                  )}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    {saveErrors[image.id] && <div className="text-sm text-red-500">{saveErrors[image.id]}</div>}
+                    {saveSuccess[image.id] && <div className="text-sm text-green-600">Lagret ✓</div>}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          );
+        })}
+      </div>
     </div>
   );
 }
