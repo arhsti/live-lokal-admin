@@ -93,37 +93,74 @@ export default function ImagesPage() {
 
   return (
     <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-2xl font-bold" style={{ color: 'rgb(151, 191, 195)' }}>Image Library</h1>
-          <a href="/" className="text-sm text-blue-600 hover:underline">Back to Home</a>
+      {/* Tab navigation like reference */}
+      <div className="mb-6">
+        <div className="bg-white rounded-full p-2 shadow-sm max-w-full overflow-auto">
+          <div className="flex items-center space-x-2">
+            <a href="/admin" className="px-4 py-2 rounded-full text-sm flex items-center space-x-2">
+              <span>📊</span>
+              <span>Dashboard</span>
+            </a>
+            <button className="px-4 py-2 rounded-full text-sm bg-blue-600 text-white flex items-center space-x-2">
+              <span>🖼️</span>
+              <span>Images</span>
+            </button>
+            <a href="/admin/templates" className="px-4 py-2 rounded-full text-sm flex items-center space-x-2">
+              <span>📝</span>
+              <span>Templates</span>
+            </a>
+          </div>
         </div>
-        <form ref={formRef} onSubmit={handleUpload} encType="multipart/form-data" className="flex items-center space-x-4">
-          <input
-            type="file"
-            name="file"
-            accept="image/jpeg,image/png"
-            required
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100"
-          />
+      </div>
+
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold">Image Library</h1>
+          <p className="text-sm text-gray-600">Manage uploaded images and metadata</p>
+        </div>
+
+        <div className="flex items-center space-x-4">
+          <form ref={formRef} onSubmit={handleUpload} encType="multipart/form-data" className="hidden">
+            <input
+              id="file-input"
+              type="file"
+              name="file"
+              accept="image/jpeg,image/png"
+              required
+              onChange={() => { try { formRef.current?.requestSubmit(); } catch (e) {} }}
+            />
+          </form>
+
           <button
-            type="submit"
-            disabled={uploading}
-            className="btn-accent disabled:opacity-50 text-white px-4 py-2 rounded-lg font-medium"
+            onClick={() => {
+              const el = document.getElementById('file-input') as HTMLInputElement | null;
+              el?.click();
+            }}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium"
           >
-            {uploading ? 'Uploading...' : 'Upload'}
+            Upload Image
           </button>
-        </form>
-        {uploadError && <p className="text-red-600 mt-2">{uploadError}</p>}
+        </div>
       </div>
 
       {images.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl">🖼️</span>
+        <div className="bg-white rounded-lg shadow-sm border p-12 text-center">
+          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <span className="text-3xl">🖼️</span>
           </div>
-          <h3 className="text-lg font-medium mb-2">No images uploaded yet</h3>
-          <p className="text-gray-600">Upload your first image to get started.</p>
+          <h3 className="text-xl font-semibold mb-2">No images uploaded yet</h3>
+          <p className="text-gray-600 mb-6">Upload your first image to get started with story creation.</p>
+          <div>
+            <button
+              onClick={() => {
+                const el = document.getElementById('file-input') as HTMLInputElement | null;
+                el?.click();
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full font-medium"
+            >
+              Upload Your First Image
+            </button>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
