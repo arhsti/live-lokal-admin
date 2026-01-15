@@ -77,6 +77,8 @@ export default function ImagesPage() {
     }
   };
 
+  // Tags are persisted server-side via PUT /api/images/{id} (stored in the backend metadata store),
+  // so values survive refreshes and deployments and are not kept only in frontend state.
   const handleSave = async (image: ImageData) => {
     const toSave = editing[image.id] || { player: image.tags?.player || '', number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
     if (!toSave.player || String(toSave.player).trim() === '') {
@@ -132,7 +134,7 @@ export default function ImagesPage() {
     <div className="p-6">
       <div className="flex items-start justify-between mb-6 gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold">Images</h1>
+          <h1 className="text-3xl font-extrabold">Bildegalleri</h1>
           <p className="text-sm text-gray-600 mt-1">A modern gallery-style view for managing images and metadata.</p>
         </div>
         <div className="flex items-center space-x-3">
