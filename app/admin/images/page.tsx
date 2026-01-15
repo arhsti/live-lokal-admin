@@ -188,10 +188,10 @@ export default function ImagesPage() {
                 <div className="mb-2">
                   <div className="grid gap-2 items-end" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))' }}>
                     <div>
-                      <label className="text-xs text-gray-500 flex items-center gap-1">
+                      <label className="text-xs text-gray-500 flex items-center gap-2">
                         Draktnummer
-                        <span className="relative group text-[10px] text-gray-400 cursor-help">ℹ
-                          <span className="pointer-events-none absolute left-1/2 top-full z-10 mt-2 w-56 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                        <span className="relative group inline-flex items-center justify-center text-[12px] text-gray-500 cursor-help leading-none">ℹ
+                          <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-2.5 w-max max-w-[280px] -translate-x-1/2 rounded-md bg-gray-800 px-3 py-2 text-[11px] leading-snug text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 whitespace-normal break-words overflow-visible">
                             Bilde tilknyttet spiller. Dette vil velges når en hendelse om denne spilleren skjer.
                           </span>
                         </span>
@@ -199,10 +199,10 @@ export default function ImagesPage() {
                       <input type="number" min={1} max={99} value={current.number} onChange={(e) => { let v=e.target.value.replace(/\D/g,''); setEditing(prev=>({...prev,[image.id]:{...current,number:v}})); setSaveErrors(prev => ({ ...prev, [image.id]: null })); setSaveSuccess(prev => ({ ...prev, [image.id]: false })); }} className="w-full mt-1 input text-xs h-8" />
                     </div>
                     <div>
-                      <label className="text-xs text-gray-500 flex items-center gap-1">
+                      <label className="text-xs text-gray-500 flex items-center gap-2">
                         Hendelse
-                        <span className="relative group text-[10px] text-gray-400 cursor-help">ℹ
-                          <span className="pointer-events-none absolute left-1/2 top-full z-10 mt-2 w-52 -translate-x-1/2 rounded-md bg-gray-800 px-2 py-1 text-[10px] text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                        <span className="relative group inline-flex items-center justify-center text-[12px] text-gray-500 cursor-help leading-none">ℹ
+                          <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-2.5 w-max max-w-[280px] -translate-x-1/2 rounded-md bg-gray-800 px-3 py-2 text-[11px] leading-snug text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 whitespace-normal break-words overflow-visible">
                             Velg hvilken type hendelse som dette bildet skal brukes til
                           </span>
                         </span>
