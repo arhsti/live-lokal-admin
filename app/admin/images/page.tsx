@@ -18,6 +18,7 @@ export default function ImagesPage() {
   const [editing, setEditing] = useState<Record<string, { player: string; number: string; eventType: string }>>({});
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [saveErrors, setSaveErrors] = useState<Record<string, string | null>>({});
+  const [saveSuccess, setSaveSuccess] = useState<Record<string, boolean>>({});
   
   // Back to home navigation helper will be a link rendered below
 
@@ -124,66 +125,71 @@ export default function ImagesPage() {
           <p className="text-gray-600">Upload your first image to get started.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {images.map((image) => {
             const current = editing[image.id] || { player: image.tags?.player || '', number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
             return (
-              <div key={image.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div className="aspect-square">
-                  <img src={image.image_url} alt={`Image ${image.id}`} className="w-full h-full object-cover" />
+              <div key={image.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-transparent hover:border-gray-200 transition">
+                <div className="w-full h-64 md:h-72 bg-gray-50 overflow-hidden">
+                  <img src={image.image_url} alt={`Image ${image.id}`} className="w-full h-full object-cover transform hover:scale-105 transition duration-200" />
                 </div>
 
-                <div className="p-4 space-y-2">
+                <div className="p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <p className="text-sm text-gray-600">{image.created_at ? new Date(image.created_at).toLocaleDateString() : ''}</p>
-                    <a href="/" className="text-sm text-blue-600 hover:underline">Back to Home</a>
+                    <a href="/" className="text-sm text-gray-600 hover:underline">Back to Home</a>
                   </div>
 
                   <div className="text-sm text-gray-700">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-gray-500">Spiller:</span>
-                      <input
-                        value={current.player}
-                        onChange={(e) => setEditing(prev => ({ ...prev, [image.id]: { ...current, player: e.target.value } }))}
-                        className="input w-full text-sm"
-                      />
-                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs text-gray-500">Spiller</label>
+                        <input
+                          value={current.player}
+                          onChange={(e) => setEditing(prev => ({ ...prev, [image.id]: { ...current, player: e.target.value } }))}
+                          className="input w-full text-sm mt-1"
+                          aria-label="Spiller"
+                        />
+                      </div>
 
-                    <div className="flex items-center space-x-2 mt-2">
-                      <span className="text-gray-500">Draktnummer:</span>
-                      <input
-                        type="number"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        min={1}
-                        max={99}
-                        value={current.number}
-                        onChange={(e) => {
-                          let v = e.target.value.replace(/\D/g, '');
-                          if (v) {
-                            let n = parseInt(v, 10);
-                            if (n < 1) n = 1;
-                            if (n > 99) n = 99;
-                            v = String(n);
-                          }
-                          setEditing(prev => ({ ...prev, [image.id]: { ...current, number: v } }));
-                        }}
-                        className="input w-24 text-sm"
-                      />
-                    </div>
+                      <div>
+                        <label className="text-xs text-gray-500">Draktnummer</label>
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          min={1}
+                          max={99}
+                          value={current.number}
+                          onChange={(e) => {
+                            let v = e.target.value.replace(/\D/g, '');
+                            if (v) {
+                              let n = parseInt(v, 10);
+                              if (n < 1) n = 1;
+                              if (n > 99) n = 99;
+                              v = String(n);
+                            }
+                            setEditing(prev => ({ ...prev, [image.id]: { ...current, number: v } }));
+                          }}
+                          className="input w-full text-sm mt-1"
+                          aria-label="Draktnummer"
+                        />
+                      </div>
 
-                    <div className="flex items-center space-x-2 mt-2">
-                      <span className="text-gray-500">Hendelse:</span>
-                      <select
-                        value={current.eventType}
-                        onChange={(e) => setEditing(prev => ({ ...prev, [image.id]: { ...current, eventType: e.target.value } }))}
-                        className="input text-sm"
-                      >
-                        <option value="Alle">Alle</option>
-                        <option value="Mål">Mål</option>
-                        <option value="Kort">Kort</option>
-                        <option value="Bytte">Bytte</option>
-                      </select>
+                      <div className="sm:col-span-2">
+                        <label className="text-xs text-gray-500">Hendelse</label>
+                        <select
+                          value={current.eventType}
+                          onChange={(e) => setEditing(prev => ({ ...prev, [image.id]: { ...current, eventType: e.target.value } }))}
+                          className="input w-full text-sm mt-1"
+                          aria-label="Hendelse"
+                        >
+                          <option value="Alle">Alle</option>
+                          <option value="Mål">Mål</option>
+                          <option value="Kort">Kort</option>
+                          <option value="Bytte">Bytte</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
 
@@ -211,19 +217,22 @@ export default function ImagesPage() {
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ player: toSave.player, number: String(num), eventType: toSave.eventType }),
                               });
-                            if (res.ok) {
-                              const updated = await res.json();
-                              // Update images state
-                              setImages(prev => prev.map(im => im.id === image.id ? { ...im, tags: updated.tags, created_at: updated.created_at || im.created_at } : im));
-                              // Clear any save error
-                              setSaveErrors(prev => ({ ...prev, [image.id]: null }));
-                              // Dispatch global update
-                              try { window.dispatchEvent(new CustomEvent('images:updated')); } catch (e) {}
-                            } else {
-                              const err = await res.json().catch(() => ({ error: 'Unknown error' }));
-                              console.error('Failed to save tags', err);
-                              setSaveErrors(prev => ({ ...prev, [image.id]: err.error || 'Failed to save tags' }));
-                            }
+                              if (res.ok) {
+                                const updated = await res.json();
+                                // Update images state
+                                setImages(prev => prev.map(im => im.id === image.id ? { ...im, tags: updated.tags, created_at: updated.created_at || im.created_at } : im));
+                                // Clear any save error
+                                setSaveErrors(prev => ({ ...prev, [image.id]: null }));
+                                // Show success briefly
+                                setSaveSuccess(prev => ({ ...prev, [image.id]: true }));
+                                setTimeout(() => setSaveSuccess(prev => ({ ...prev, [image.id]: false })), 2500);
+                                // Dispatch global update
+                                try { window.dispatchEvent(new CustomEvent('images:updated')); } catch (e) {}
+                              } else {
+                                const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+                                console.error('Failed to save tags', err);
+                                setSaveErrors(prev => ({ ...prev, [image.id]: err.error || 'Failed to save tags' }));
+                              }
                           } catch (err) {
                             console.error('Save tags error', err);
                             setSaveErrors(prev => ({ ...prev, [image.id]: 'Failed to save tags' }));
