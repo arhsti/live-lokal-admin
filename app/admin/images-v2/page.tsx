@@ -90,10 +90,10 @@ export default function ImagesV2Page() {
           const current = editing[image.id] || { player: image.tags?.player || '', number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
           return (
             <div key={image.id} className="bg-white rounded-lg shadow-md overflow-hidden border">
-              <div className="relative h-36 md:h-44 bg-gray-100">
-                <img src={image.image_url} alt={`Image ${image.id}`} className="w-full h-full object-cover" />
-                <div className="absolute top-3 left-3 bg-red-600 text-white font-bold rounded-full w-10 h-10 flex items-center justify-center text-sm shadow">#{current.number || image.tags?.number || '—'}</div>
-              </div>
+                  <div className="relative h-24 md:h-28 bg-gray-100">
+                    <img src={image.image_url} alt={`Image ${image.id}`} className="w-full h-full object-cover" />
+                    <div className="absolute top-2 left-2 bg-red-600 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center text-xs shadow">#{current.number || image.tags?.number || '—'}</div>
+                  </div>
 
               <div className="p-3">
                 <div className="mb-2">
