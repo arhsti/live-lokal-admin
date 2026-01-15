@@ -48,6 +48,7 @@ export default function AdminPage() {
         <div>
           <h1 className="text-3xl font-extrabold">Dashboard</h1>
           <p className="text-sm text-gray-600 mt-1">Admin overview — quick actions and summaries</p>
+          <p className="text-xs text-gray-500 mt-1">UI marker: Dashboard v2</p>
         </div>
       </div>
 

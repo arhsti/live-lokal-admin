@@ -254,6 +254,7 @@ export default function TemplatesPage() {
         <div>
           <h1 className="text-2xl font-bold">Templates</h1>
           <p className="text-sm text-gray-600 mt-1">Lag maler med bilde og tekstplassholdere.</p>
+          <p className="text-xs text-gray-500 mt-1">UI marker: Templates v2</p>
         </div>
         <button className="btn-primary" onClick={handleCreateTemplate}>Create template</button>
       </div>
