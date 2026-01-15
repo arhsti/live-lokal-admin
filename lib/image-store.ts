@@ -7,7 +7,6 @@ import path from 'path';
 // binary image data. Cloudflare R2 remains the source of truth for files.
 
 export interface ImageTags {
-  player: string;
   number: string;
   eventType: 'Mål' | 'Kort' | 'Bytte' | 'Alle';
 }

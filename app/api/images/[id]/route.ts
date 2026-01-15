@@ -8,11 +8,11 @@ export async function PUT(request: NextRequest, context: any) {
     const params = context?.params;
     const id = params?.id || (params && (await params).id);
     const body = await request.json();
-    const { player, number, eventType } = body || {};
+    const { number, eventType } = body || {};
 
     const allowed = ['Mål', 'Kort', 'Bytte', 'Alle'];
-    if (typeof player !== 'string' || typeof eventType !== 'string' || !allowed.includes(eventType)) {
-      return NextResponse.json({ error: 'player and valid eventType are required' }, { status: 400 });
+    if (typeof eventType !== 'string' || !allowed.includes(eventType)) {
+      return NextResponse.json({ error: 'valid eventType is required' }, { status: 400 });
     }
 
     // Validate draktnummer: must be numeric between 1 and 99
@@ -24,7 +24,7 @@ export async function PUT(request: NextRequest, context: any) {
     const numberStr = String(parsed);
 
     const { imageStore } = await import('@/lib/image-store');
-    const tags = { player, number: numberStr, eventType } as ImageTags;
+    const tags = { number: numberStr, eventType } as ImageTags;
     const meta = await imageStore.upsertTags(id, tags);
 
     return NextResponse.json({ id: meta.id, tags: meta.tags, created_at: meta.created_at });

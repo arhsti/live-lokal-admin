@@ -52,7 +52,10 @@ export async function GET() {
           id: img.id,
           image_url: img.image_url,
           created_at: meta?.created_at || (img.lastModified ? img.lastModified.toISOString() : undefined),
-          tags: meta?.tags || { player: '', number: '' },
+          tags: {
+            number: meta?.tags?.number || '',
+            eventType: meta?.tags?.eventType || 'Alle',
+          },
         };
       });
 
@@ -61,7 +64,7 @@ export async function GET() {
       console.error('Failed to enrich images with metadata:', err);
       // Fallback: return images without tags
       return NextResponse.json(
-        images.map(img => ({ id: img.id, image_url: img.image_url, tags: { player: '', number: '' } }))
+        images.map(img => ({ id: img.id, image_url: img.image_url, tags: { number: '', eventType: 'Alle' } }))
       );
     }
   } catch (error) {

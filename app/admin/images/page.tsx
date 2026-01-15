@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
 
 interface ImageData {
   id: string;
   image_url: string;
   created_at?: string;
-  tags?: { player: string; number: string; eventType?: string };
+  tags?: { number: string; eventType?: string };
 }
 
 export default function ImagesPage() {
@@ -16,7 +15,7 @@ export default function ImagesPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
-  const [editing, setEditing] = useState<Record<string, { player: string; number: string; eventType: string }>>({});
+  const [editing, setEditing] = useState<Record<string, { number: string; eventType: string }>>({});
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [saveErrors, setSaveErrors] = useState<Record<string, string | null>>({});
   const [saveSuccess, setSaveSuccess] = useState<Record<string, boolean>>({});
@@ -80,11 +79,7 @@ export default function ImagesPage() {
   // Tags are persisted server-side via PUT /api/images/{id} (stored in the backend metadata store),
   // so values survive refreshes and deployments and are not kept only in frontend state.
   const handleSave = async (image: ImageData) => {
-    const toSave = editing[image.id] || { player: image.tags?.player || '', number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
-    if (!toSave.player || String(toSave.player).trim() === '') {
-      setSaveErrors(prev => ({ ...prev, [image.id]: 'Spiller må fylles ut' }));
-      return;
-    }
+    const toSave = editing[image.id] || { number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
     const num = parseInt(String(toSave.number || ''), 10);
     if (isNaN(num) || num < 1 || num > 99) {
       setSaveErrors(prev => ({ ...prev, [image.id]: 'Draktnummer må være et tall mellom 1 og 99' }));
@@ -97,7 +92,7 @@ export default function ImagesPage() {
       const res = await fetch(`/api/images/${image.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ player: toSave.player, number: String(num), eventType: toSave.eventType }),
+        body: JSON.stringify({ number: String(num), eventType: toSave.eventType }),
       });
       if (res.ok) {
         setSaveErrors(prev => ({ ...prev, [image.id]: null }));
@@ -108,10 +103,10 @@ export default function ImagesPage() {
         const hasJson = contentType.includes('application/json');
         if (hasJson) {
           const updated = await res.json().catch(() => null);
-          const nextTags = updated?.tags ?? { player: toSave.player, number: String(num), eventType: toSave.eventType };
+          const nextTags = updated?.tags ?? { number: String(num), eventType: toSave.eventType };
           setImages(prev => prev.map(im => im.id === image.id ? { ...im, tags: nextTags } : im));
         } else {
-          setImages(prev => prev.map(im => im.id === image.id ? { ...im, tags: { player: toSave.player, number: String(num), eventType: toSave.eventType } } : im));
+          setImages(prev => prev.map(im => im.id === image.id ? { ...im, tags: { number: String(num), eventType: toSave.eventType } } : im));
         }
         return;
       }
@@ -165,7 +160,7 @@ export default function ImagesPage() {
 
       <div className="flex flex-wrap" style={{ gap: '2.5%' }}>
         {images.map(image => {
-          const current = editing[image.id] || { player: image.tags?.player || '', number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
+          const current = editing[image.id] || { number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
           return (
             <div key={image.id} style={{ flex: '0 1 30%', maxWidth: '30%', width: '100%' }} className="bg-white rounded-lg shadow-md overflow-hidden border">
               <div className="relative bg-gray-100" style={{ height: 160 }}>
@@ -178,15 +173,6 @@ export default function ImagesPage() {
               </div>
 
               <div className="p-3">
-                <div className="mb-2">
-                  <label className="text-xs text-gray-500">Spiller</label>
-                  <input value={current.player} onChange={(e) => {
-                    setEditing(prev => ({ ...prev, [image.id]: { ...current, player: e.target.value } }));
-                    setSaveErrors(prev => ({ ...prev, [image.id]: null }));
-                    setSaveSuccess(prev => ({ ...prev, [image.id]: false }));
-                  }} className="w-full mt-1 input text-sm py-1" />
-                </div>
-
                 <div className="mb-2 grid grid-cols-2 gap-2">
                   <div>
                     <label className="text-xs text-gray-500">Draktnummer</label>
