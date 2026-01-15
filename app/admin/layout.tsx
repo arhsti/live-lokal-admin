@@ -16,9 +16,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link href="/admin/config" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100">Admin</Link>
           </nav>
 
-          <div className="flex items-center space-x-3">
-            <Link href="/login" className="text-sm px-3 py-2 rounded-md border">Logout</Link>
-          </div>
+          <div className="flex items-center space-x-3" />
         </div>
       </div>
 

@@ -186,14 +186,14 @@ export default function ImagesPage() {
 
               <div className="p-3">
                 <div className="mb-2">
-                  <div className="grid gap-2 items-end" style={{ gridTemplateColumns: '2fr 2fr 1fr' }}>
+                  <div className="grid gap-2 items-end grid-cols-1 sm:grid-cols-[2fr_2fr_1fr]">
                     <div>
                       <label className="text-xs text-gray-500">Draktnummer</label>
-                      <input type="number" min={1} max={99} value={current.number} onChange={(e) => { let v=e.target.value.replace(/\D/g,''); setEditing(prev=>({...prev,[image.id]:{...current,number:v}})); setSaveErrors(prev => ({ ...prev, [image.id]: null })); setSaveSuccess(prev => ({ ...prev, [image.id]: false })); }} className="w-full mt-1 input text-xs py-0.5" />
+                      <input type="number" min={1} max={99} value={current.number} onChange={(e) => { let v=e.target.value.replace(/\D/g,''); setEditing(prev=>({...prev,[image.id]:{...current,number:v}})); setSaveErrors(prev => ({ ...prev, [image.id]: null })); setSaveSuccess(prev => ({ ...prev, [image.id]: false })); }} className="w-full mt-1 input text-xs h-8" />
                     </div>
                     <div>
                       <label className="text-xs text-gray-500">Hendelse</label>
-                      <select value={current.eventType} onChange={(e) => { setEditing(prev => ({ ...prev, [image.id]: { ...current, eventType: e.target.value } })); setSaveErrors(prev => ({ ...prev, [image.id]: null })); setSaveSuccess(prev => ({ ...prev, [image.id]: false })); }} className="w-full mt-1 input text-xs py-0.5">
+                      <select value={current.eventType} onChange={(e) => { setEditing(prev => ({ ...prev, [image.id]: { ...current, eventType: e.target.value } })); setSaveErrors(prev => ({ ...prev, [image.id]: null })); setSaveSuccess(prev => ({ ...prev, [image.id]: false })); }} className="w-full mt-1 input text-xs h-8">
                         <option value="Alle">Alle</option>
                         <option value="Mål">Mål</option>
                         <option value="Kort">Kort</option>
