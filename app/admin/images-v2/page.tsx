@@ -74,8 +74,8 @@ export default function ImagesV2Page() {
   if (loading) return <div className="p-8">Loading images...</div>;
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-6">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-extrabold">Images</h1>
           <p className="text-sm text-gray-600 mt-1">A modern gallery-style view for managing images and metadata.</p>
@@ -85,30 +85,30 @@ export default function ImagesV2Page() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
         {images.map(image => {
           const current = editing[image.id] || { player: image.tags?.player || '', number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
           return (
             <div key={image.id} className="bg-white rounded-lg shadow-md overflow-hidden border">
-              <div className="relative h-80 bg-gray-100">
+              <div className="relative h-36 md:h-44 bg-gray-100">
                 <img src={image.image_url} alt={`Image ${image.id}`} className="w-full h-full object-cover" />
-                <div className="absolute top-4 left-4 bg-red-600 text-white font-bold rounded-full w-14 h-14 flex items-center justify-center text-lg shadow">#{current.number || image.tags?.number || '—'}</div>
+                <div className="absolute top-3 left-3 bg-red-600 text-white font-bold rounded-full w-10 h-10 flex items-center justify-center text-sm shadow">#{current.number || image.tags?.number || '—'}</div>
               </div>
 
-              <div className="p-4">
+              <div className="p-3">
                 <div className="mb-2">
                   <label className="text-xs text-gray-500">Spiller</label>
-                  <input value={current.player} onChange={(e) => setEditing(prev => ({ ...prev, [image.id]: { ...current, player: e.target.value } }))} className="w-full mt-1 input text-sm" />
+                  <input value={current.player} onChange={(e) => setEditing(prev => ({ ...prev, [image.id]: { ...current, player: e.target.value } }))} className="w-full mt-1 input text-sm py-1" />
                 </div>
 
-                <div className="mb-2 grid grid-cols-2 gap-3">
+                <div className="mb-2 grid grid-cols-2 gap-2">
                   <div>
                     <label className="text-xs text-gray-500">Draktnummer</label>
-                    <input type="number" min={1} max={99} value={current.number} onChange={(e) => { let v=e.target.value.replace(/\D/g,''); setEditing(prev=>({...prev,[image.id]:{...current,number:v}})); }} className="w-full mt-1 input text-sm" />
+                    <input type="number" min={1} max={99} value={current.number} onChange={(e) => { let v=e.target.value.replace(/\D/g,''); setEditing(prev=>({...prev,[image.id]:{...current,number:v}})); }} className="w-full mt-1 input text-sm py-1" />
                   </div>
                   <div>
                     <label className="text-xs text-gray-500">Hendelse</label>
-                    <select value={current.eventType} onChange={(e) => setEditing(prev => ({ ...prev, [image.id]: { ...current, eventType: e.target.value } }))} className="w-full mt-1 input text-sm">
+                    <select value={current.eventType} onChange={(e) => setEditing(prev => ({ ...prev, [image.id]: { ...current, eventType: e.target.value } }))} className="w-full mt-1 input text-sm py-1">
                       <option value="Alle">Alle</option>
                       <option value="Mål">Mål</option>
                       <option value="Kort">Kort</option>
