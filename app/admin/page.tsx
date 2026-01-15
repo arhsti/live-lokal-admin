@@ -1,21 +1,14 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'images' | 'templates'>('dashboard');
   const [imageCount, setImageCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (activeTab === 'dashboard') {
-      fetchImageCount();
-    }
-  }, [activeTab]);
-
-  // Listen for image updates from the images page and refresh count
-  useEffect(() => {
+    fetchImageCount();
     const handler = () => fetchImageCount();
     window.addEventListener('images:updated', handler);
     return () => window.removeEventListener('images:updated', handler);
@@ -23,76 +16,37 @@ export default function AdminPage() {
 
   const fetchImageCount = async () => {
     try {
-      const response = await fetch('/api/images');
-      if (response.ok) {
-        const images = await response.json();
-        setImageCount(images.length);
+      const res = await fetch('/api/images');
+      if (res.ok) {
+        const data = await res.json();
+        setImageCount(data.length);
       }
-    } catch (error) {
-      console.error('Failed to fetch image count:', error);
+    } catch (e) {
+      console.error(e);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div>
-                <Link href="/" className="text-xl font-bold text-gray-900">
-                  Live Lokal
-                </Link>
-                <div className="text-sm text-gray-600">Live Lokal – Admin Dashboard</div>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link
-                href="/"
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                ← Back to Home
-              </Link>
-            </div>
-          </div>
+    <div className="space-y-8">
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-extrabold">Dashboard</h1>
+          <p className="text-sm text-gray-600 mt-1">Admin overview — quick actions and summaries</p>
         </div>
-      </header>
-
-      <div className="container mx-auto px-4 py-8">
-        {/* Navigation Tabs */}
-        <div className="mb-8">
-          <nav className="flex space-x-2 bg-white p-1 rounded-lg">
-            {[
-              { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-              { id: 'images', label: 'Images', icon: '🖼️' },
-              { id: 'templates', label: 'Templates', icon: '📝' },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeTab === tab.id
-                    ? ''
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
-                style={activeTab === tab.id ? { background: 'rgb(151, 191, 195)', color: '#ffffff' } : undefined}
-              >
-                <span>{tab.icon}</span>
-                <span>{tab.label}</span>
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* Content */}
-        {activeTab === 'dashboard' && <DashboardContent imageCount={imageCount} loading={loading} />}
-        {activeTab === 'images' && <ImagesContent />}
-        {activeTab === 'templates' && <TemplatesContent />}
       </div>
-    </main>
+
+      <DashboardContent imageCount={imageCount} loading={loading} />
+
+      <div>
+        <h2 className="text-2xl font-semibold mt-6">Quick Links</h2>
+        <div className="mt-4 flex items-center space-x-3">
+          <a href="/admin/images" className="btn-primary">Manage Images</a>
+          <a href="/admin/templates" className="btn-primary">Manage Templates</a>
+        </div>
+      </div>
+    </div>
   );
 }
 
