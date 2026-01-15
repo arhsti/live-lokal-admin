@@ -162,8 +162,8 @@ export default function ImagesPage() {
         {images.map(image => {
           const current = editing[image.id] || { number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
           return (
-            <div key={image.id} style={{ flex: '0 1 30%', maxWidth: '30%', width: '100%' }} className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="relative bg-gray-100 overflow-hidden" style={{ height: 160 }}>
+            <div key={image.id} style={{ flex: '0 1 28%', maxWidth: '28%', width: '100%' }} className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="relative bg-gray-100 overflow-hidden" style={{ height: 180 }}>
                 {image.image_url ? (
                   <img
                     src={image.image_url}
@@ -188,11 +188,11 @@ export default function ImagesPage() {
                 <div className="mb-2 grid grid-cols-2 gap-2">
                   <div>
                     <label className="text-xs text-gray-500">Draktnummer</label>
-                    <input type="number" min={1} max={99} value={current.number} onChange={(e) => { let v=e.target.value.replace(/\D/g,''); setEditing(prev=>({...prev,[image.id]:{...current,number:v}})); setSaveErrors(prev => ({ ...prev, [image.id]: null })); setSaveSuccess(prev => ({ ...prev, [image.id]: false })); }} className="w-full mt-1 input text-sm py-1" />
+                    <input type="number" min={1} max={99} value={current.number} onChange={(e) => { let v=e.target.value.replace(/\D/g,''); setEditing(prev=>({...prev,[image.id]:{...current,number:v}})); setSaveErrors(prev => ({ ...prev, [image.id]: null })); setSaveSuccess(prev => ({ ...prev, [image.id]: false })); }} className="w-full mt-1 input text-xs py-0.5" />
                   </div>
                   <div>
                     <label className="text-xs text-gray-500">Hendelse</label>
-                    <select value={current.eventType} onChange={(e) => { setEditing(prev => ({ ...prev, [image.id]: { ...current, eventType: e.target.value } })); setSaveErrors(prev => ({ ...prev, [image.id]: null })); setSaveSuccess(prev => ({ ...prev, [image.id]: false })); }} className="w-full mt-1 input text-sm py-1">
+                    <select value={current.eventType} onChange={(e) => { setEditing(prev => ({ ...prev, [image.id]: { ...current, eventType: e.target.value } })); setSaveErrors(prev => ({ ...prev, [image.id]: null })); setSaveSuccess(prev => ({ ...prev, [image.id]: false })); }} className="w-full mt-1 input text-xs py-0.5">
                       <option value="Alle">Alle</option>
                       <option value="Mål">Mål</option>
                       <option value="Kort">Kort</option>
