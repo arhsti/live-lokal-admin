@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 
 interface ImageData {
   id: string;
@@ -86,15 +85,19 @@ export default function ImagesV2Page() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+      <div className="flex flex-wrap gap-4">
         {images.map(image => {
           const current = editing[image.id] || { player: image.tags?.player || '', number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
           return (
-            <div key={image.id} className="bg-white rounded-lg shadow-md overflow-hidden border">
-                  <div className="relative h-24 md:h-28 bg-gray-100">
-                    <Image src={image.image_url} alt={`Image ${image.id}`} fill className="object-cover" />
-                    <div className="absolute top-2 left-2 bg-red-600 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center text-xs shadow">#{current.number || image.tags?.number || '—'}</div>
-                  </div>
+            <div key={image.id} style={{ flex: '0 1 30%', maxWidth: '30%', width: '100%' }} className="bg-white rounded-lg shadow-md overflow-hidden border">
+              <div className="relative bg-gray-100" style={{ height: 160 }}>
+                {image.image_url ? (
+                  <img src={image.image_url} alt={`Image ${image.id}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-500">Ingen bilde</div>
+                )}
+                <div className="absolute top-2 left-2 bg-red-600 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center text-xs shadow">#{current.number || image.tags?.number || '—'}</div>
+              </div>
 
               <div className="p-3">
                 <div className="mb-2">
