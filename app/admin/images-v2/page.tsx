@@ -1,0 +1,134 @@
+"use client";
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+
+interface ImageData {
+  id: string;
+  image_url: string;
+  created_at?: string;
+  tags?: { player: string; number: string; eventType?: string };
+}
+
+export default function ImagesV2Page() {
+  const [images, setImages] = useState<ImageData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState<Record<string, { player: string; number: string; eventType: string }>>({});
+  const [saving, setSaving] = useState<Record<string, boolean>>({});
+  const [saveErrors, setSaveErrors] = useState<Record<string, string | null>>({});
+  const [saveSuccess, setSaveSuccess] = useState<Record<string, boolean>>({});
+
+  useEffect(() => { loadImages(); }, []);
+
+  async function loadImages() {
+    try {
+      const res = await fetch('/api/images');
+      if (res.ok) {
+        const data = await res.json();
+        setImages(data);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleSave = async (image: ImageData) => {
+    const toSave = editing[image.id] || { player: image.tags?.player || '', number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
+    if (!toSave.player || String(toSave.player).trim() === '') {
+      setSaveErrors(prev => ({ ...prev, [image.id]: 'Spiller må fylles ut' }));
+      return;
+    }
+    const num = parseInt(String(toSave.number || ''), 10);
+    if (isNaN(num) || num < 1 || num > 99) {
+      setSaveErrors(prev => ({ ...prev, [image.id]: 'Draktnummer må være et tall mellom 1 og 99' }));
+      return;
+    }
+
+    setSaveErrors(prev => ({ ...prev, [image.id]: null }));
+    setSaving(prev => ({ ...prev, [image.id]: true }));
+    try {
+      const res = await fetch(`/api/images/${image.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ player: toSave.player, number: String(num), eventType: toSave.eventType }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setImages(prev => prev.map(im => im.id === image.id ? { ...im, tags: updated.tags } : im));
+        setSaveSuccess(prev => ({ ...prev, [image.id]: true }));
+        setTimeout(() => setSaveSuccess(prev => ({ ...prev, [image.id]: false })), 2500);
+      } else {
+        const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+        setSaveErrors(prev => ({ ...prev, [image.id]: err.error || 'Failed to save' }));
+      }
+    } catch (e) {
+      console.error(e);
+      setSaveErrors(prev => ({ ...prev, [image.id]: 'Failed to save' }));
+    } finally {
+      setSaving(prev => ({ ...prev, [image.id]: false }));
+    }
+  };
+
+  if (loading) return <div className="p-8">Loading images...</div>;
+
+  return (
+    <div className="p-8">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-extrabold">Images</h1>
+          <p className="text-sm text-gray-600 mt-1">A modern gallery-style view for managing images and metadata.</p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Link href="/admin/images" className="text-sm text-gray-600 hover:underline">Back to legacy images</Link>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {images.map(image => {
+          const current = editing[image.id] || { player: image.tags?.player || '', number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
+          return (
+            <div key={image.id} className="bg-white rounded-lg shadow-md overflow-hidden border">
+              <div className="relative h-80 bg-gray-100">
+                <img src={image.image_url} alt={`Image ${image.id}`} className="w-full h-full object-cover" />
+                <div className="absolute top-4 left-4 bg-red-600 text-white font-bold rounded-full w-14 h-14 flex items-center justify-center text-lg shadow">#{current.number || image.tags?.number || '—'}</div>
+              </div>
+
+              <div className="p-4">
+                <div className="mb-2">
+                  <label className="text-xs text-gray-500">Spiller</label>
+                  <input value={current.player} onChange={(e) => setEditing(prev => ({ ...prev, [image.id]: { ...current, player: e.target.value } }))} className="w-full mt-1 input text-sm" />
+                </div>
+
+                <div className="mb-2 grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-gray-500">Draktnummer</label>
+                    <input type="number" min={1} max={99} value={current.number} onChange={(e) => { let v=e.target.value.replace(/\D/g,''); setEditing(prev=>({...prev,[image.id]:{...current,number:v}})); }} className="w-full mt-1 input text-sm" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500">Hendelse</label>
+                    <select value={current.eventType} onChange={(e) => setEditing(prev => ({ ...prev, [image.id]: { ...current, eventType: e.target.value } }))} className="w-full mt-1 input text-sm">
+                      <option value="Alle">Alle</option>
+                      <option value="Mål">Mål</option>
+                      <option value="Kort">Kort</option>
+                      <option value="Bytte">Bytte</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    {saveErrors[image.id] && <div className="text-sm text-red-500">{saveErrors[image.id]}</div>}
+                    {saveSuccess[image.id] && <div className="text-sm text-green-600">Lagret ✓</div>}
+                  </div>
+                  <button onClick={() => handleSave(image)} disabled={saving[image.id]} className="bg-blue-600 text-white px-3 py-1 rounded-md text-sm disabled:opacity-50">{saving[image.id] ? 'Saving...' : 'Save'}</button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

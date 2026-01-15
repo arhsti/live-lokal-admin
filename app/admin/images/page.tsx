@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 
 interface ImageData {
   id: string;
@@ -140,6 +141,7 @@ export default function ImagesPage() {
           >
             Upload Image
           </button>
+          <Link href="/admin/images-v2" className="ml-3 px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100">Try new image view</Link>
         </div>
       </div>
 
