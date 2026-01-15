@@ -169,7 +169,7 @@ export default function ImagesPage() {
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-500">Ingen bilde</div>
                 )}
-                <div className="absolute top-2 left-2 bg-red-600 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center text-xs shadow">#{current.number || image.tags?.number || '—'}</div>
+                <div className="absolute top-2 left-2 bg-red-600 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center text-xs shadow">{current.number || image.tags?.number || '—'}</div>
               </div>
 
               <div className="p-3">
