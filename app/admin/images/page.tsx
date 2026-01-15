@@ -6,7 +6,7 @@ interface ImageData {
   id: string;
   image_url: string;
   created_at?: string;
-  tags?: { player: string; number: string };
+  tags?: { player: string; number: string; eventType?: string };
 }
 
 export default function ImagesPage() {
@@ -15,7 +15,7 @@ export default function ImagesPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
-  const [editing, setEditing] = useState<Record<string, { player: string; number: string }>>({});
+  const [editing, setEditing] = useState<Record<string, { player: string; number: string; eventType: string }>>({});
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   
   // Back to home navigation helper will be a link rendered below
@@ -125,7 +125,7 @@ export default function ImagesPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {images.map((image) => {
-            const current = editing[image.id] || { player: image.tags?.player || '', number: image.tags?.number || '' };
+            const current = editing[image.id] || { player: image.tags?.player || '', number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
             return (
               <div key={image.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
                 <div className="aspect-square">
@@ -140,7 +140,7 @@ export default function ImagesPage() {
 
                   <div className="text-sm text-gray-700">
                     <div className="flex items-center space-x-2">
-                      <span className="text-gray-500">#player:</span>
+                      <span className="text-gray-500">Spiller:</span>
                       <input
                         value={current.player}
                         onChange={(e) => setEditing(prev => ({ ...prev, [image.id]: { ...current, player: e.target.value } }))}
@@ -149,12 +149,26 @@ export default function ImagesPage() {
                     </div>
 
                     <div className="flex items-center space-x-2 mt-2">
-                      <span className="text-gray-500">#number:</span>
+                      <span className="text-gray-500">Draktnummer:</span>
                       <input
                         value={current.number}
                         onChange={(e) => setEditing(prev => ({ ...prev, [image.id]: { ...current, number: e.target.value } }))}
                         className="border rounded px-2 py-1 text-sm"
                       />
+                    </div>
+
+                    <div className="flex items-center space-x-2 mt-2">
+                      <span className="text-gray-500">Hendelse:</span>
+                      <select
+                        value={current.eventType}
+                        onChange={(e) => setEditing(prev => ({ ...prev, [image.id]: { ...current, eventType: e.target.value } }))}
+                        className="border rounded px-2 py-1 text-sm"
+                      >
+                        <option value="Alle">Alle</option>
+                        <option value="Mål">Mål</option>
+                        <option value="Kort">Kort</option>
+                        <option value="Bytte">Bytte</option>
+                      </select>
                     </div>
                   </div>
 
@@ -165,10 +179,10 @@ export default function ImagesPage() {
                         setSaving(prev => ({ ...prev, [image.id]: true }));
                         try {
                           const res = await fetch(`/api/images/${image.id}`, {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ player: toSave.player, number: toSave.number }),
-                          });
+                              method: 'PUT',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ player: toSave.player, number: toSave.number, eventType: toSave.eventType }),
+                            });
                           if (res.ok) {
                             const updated = await res.json();
                             // Update images state

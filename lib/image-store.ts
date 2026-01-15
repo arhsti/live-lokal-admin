@@ -9,6 +9,7 @@ import path from 'path';
 export interface ImageTags {
   player: string;
   number: string;
+  eventType: 'Mål' | 'Kort' | 'Bytte' | 'Alle';
 }
 
 export interface ImageMeta {
@@ -59,6 +60,12 @@ class ImageStore {
 
   async upsertTags(id: string, tags: ImageTags): Promise<ImageMeta> {
     await this.load();
+    // Validate required eventType
+    const allowed = ['Mål', 'Kort', 'Bytte', 'Alle'];
+    if (!tags || typeof tags.eventType !== 'string' || !allowed.includes(tags.eventType)) {
+      throw new Error('Invalid eventType');
+    }
+
     const existing = this.metas.find(m => m.id === id);
     if (existing) {
       existing.tags = tags;
