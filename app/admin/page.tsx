@@ -5,10 +5,12 @@ import Link from 'next/link';
 
 export default function AdminPage() {
   const [imageCount, setImageCount] = useState(0);
+  const [templateCount, setTemplateCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchImageCount();
+    fetchTemplateCount();
     const handler = () => fetchImageCount();
     window.addEventListener('images:updated', handler);
     return () => window.removeEventListener('images:updated', handler);
@@ -28,45 +30,69 @@ export default function AdminPage() {
     }
   };
 
+  const fetchTemplateCount = async () => {
+    try {
+      const res = await fetch('/api/templates');
+      if (res.ok) {
+        const data = await res.json();
+        setTemplateCount(Array.isArray(data) ? data.length : 0);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold">Admin</h1>
-          <p className="text-sm text-gray-600 mt-1">Oversikt over innhold og verktøy</p>
+          <h1 className="text-3xl font-extrabold">Dashboard</h1>
+          <p className="text-sm text-gray-600 mt-1">Admin overview — quick actions and summaries</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Link href="/admin/images" className="card p-6 hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Bilder</h2>
-            <span className="text-2xl">🖼️</span>
+        <div className="card p-6 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Images</h2>
+              <span className="text-2xl">🖼️</span>
+            </div>
+            <p className="text-sm text-gray-600 mt-3">Browse and manage uploaded images.</p>
+            <p className="text-xs text-gray-500 mt-2">{loading ? '...' : imageCount}</p>
           </div>
-          <p className="text-sm text-gray-600 mt-3">Last opp og administrer bilder.</p>
-          <p className="text-xs text-gray-500 mt-2">Totalt: {loading ? '...' : imageCount}</p>
-        </Link>
+          <div className="mt-4">
+            <Link href="/admin/images" className="btn-primary inline-block">Manage Images</Link>
+          </div>
+        </div>
 
-        <Link href="/admin/templates" className="card p-6 hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Templates</h2>
-            <span className="text-2xl">📝</span>
+        <div className="card p-6 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Templates</h2>
+              <span className="text-2xl">📝</span>
+            </div>
+            <p className="text-sm text-gray-600 mt-3">Create and edit story templates.</p>
+            <p className="text-xs text-gray-500 mt-2">{templateCount}</p>
           </div>
-          <p className="text-sm text-gray-600 mt-3">Lag og administrer story-maler.</p>
-          <p className="text-xs text-gray-500 mt-2">Opprett og rediger visuelt.</p>
-        </Link>
+          <div className="mt-4">
+            <Link href="/admin/templates" className="btn-primary inline-block">Manage Templates</Link>
+          </div>
+        </div>
 
-        <Link href="/admin/stories" className="card p-6 hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Stories rendered</h2>
-            <span className="text-2xl">📸</span>
+        <div className="card p-6 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Stories Rendered</h2>
+              <span className="text-2xl">📸</span>
+            </div>
+            <p className="text-sm text-gray-600 mt-3">Rendered story images and exports.</p>
+            <p className="text-xs text-gray-500 mt-2">0</p>
           </div>
-          <p className="text-sm text-gray-600 mt-3">Oversikt over genererte stories.</p>
-          <ul className="text-xs text-gray-500 mt-3 space-y-1">
-            <li>• Placeholder-liste</li>
-            <li>• Kommer snart</li>
-          </ul>
-        </Link>
+          <div className="mt-4">
+            <Link href="/admin/stories" className="btn-primary inline-block">View Rendered Stories</Link>
+          </div>
+        </div>
       </div>
     </div>
   );
