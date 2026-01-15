@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface ImageData {
   id: string;
@@ -91,7 +92,7 @@ export default function ImagesV2Page() {
           return (
             <div key={image.id} className="bg-white rounded-lg shadow-md overflow-hidden border">
                   <div className="relative h-24 md:h-28 bg-gray-100">
-                    <img src={image.image_url} alt={`Image ${image.id}`} className="w-full h-full object-cover" />
+                    <Image src={image.image_url} alt={`Image ${image.id}`} fill className="object-cover" />
                     <div className="absolute top-2 left-2 bg-red-600 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center text-xs shadow">#{current.number || image.tags?.number || '—'}</div>
                   </div>
 
