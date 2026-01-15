@@ -99,7 +99,9 @@ export default function ImagesPage() {
       });
       if (res.ok) {
         const updated = await res.json();
-        setImages(prev => prev.map(im => im.id === image.id ? { ...im, tags: updated.tags } : im));
+        const nextTags = updated?.tags ?? { player: toSave.player, number: String(num), eventType: toSave.eventType };
+        setImages(prev => prev.map(im => im.id === image.id ? { ...im, tags: nextTags } : im));
+        setSaveErrors(prev => ({ ...prev, [image.id]: null }));
         setSaveSuccess(prev => ({ ...prev, [image.id]: true }));
         setTimeout(() => setSaveSuccess(prev => ({ ...prev, [image.id]: false })), 2500);
       } else {
@@ -149,7 +151,7 @@ export default function ImagesPage() {
 
       {uploadError && <div className="text-sm text-red-500 mb-4">{uploadError}</div>}
 
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap" style={{ gap: '2.5%' }}>
         {images.map(image => {
           const current = editing[image.id] || { player: image.tags?.player || '', number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
           return (
@@ -166,17 +168,21 @@ export default function ImagesPage() {
               <div className="p-3">
                 <div className="mb-2">
                   <label className="text-xs text-gray-500">Spiller</label>
-                  <input value={current.player} onChange={(e) => setEditing(prev => ({ ...prev, [image.id]: { ...current, player: e.target.value } }))} className="w-full mt-1 input text-sm py-1" />
+                  <input value={current.player} onChange={(e) => {
+                    setEditing(prev => ({ ...prev, [image.id]: { ...current, player: e.target.value } }));
+                    setSaveErrors(prev => ({ ...prev, [image.id]: null }));
+                    setSaveSuccess(prev => ({ ...prev, [image.id]: false }));
+                  }} className="w-full mt-1 input text-sm py-1" />
                 </div>
 
                 <div className="mb-2 grid grid-cols-2 gap-2">
                   <div>
                     <label className="text-xs text-gray-500">Draktnummer</label>
-                    <input type="number" min={1} max={99} value={current.number} onChange={(e) => { let v=e.target.value.replace(/\D/g,''); setEditing(prev=>({...prev,[image.id]:{...current,number:v}})); }} className="w-full mt-1 input text-sm py-1" />
+                    <input type="number" min={1} max={99} value={current.number} onChange={(e) => { let v=e.target.value.replace(/\D/g,''); setEditing(prev=>({...prev,[image.id]:{...current,number:v}})); setSaveErrors(prev => ({ ...prev, [image.id]: null })); setSaveSuccess(prev => ({ ...prev, [image.id]: false })); }} className="w-full mt-1 input text-sm py-1" />
                   </div>
                   <div>
                     <label className="text-xs text-gray-500">Hendelse</label>
-                    <select value={current.eventType} onChange={(e) => setEditing(prev => ({ ...prev, [image.id]: { ...current, eventType: e.target.value } }))} className="w-full mt-1 input text-sm py-1">
+                    <select value={current.eventType} onChange={(e) => { setEditing(prev => ({ ...prev, [image.id]: { ...current, eventType: e.target.value } })); setSaveErrors(prev => ({ ...prev, [image.id]: null })); setSaveSuccess(prev => ({ ...prev, [image.id]: false })); }} className="w-full mt-1 input text-sm py-1">
                       <option value="Alle">Alle</option>
                       <option value="Mål">Mål</option>
                       <option value="Kort">Kort</option>
