@@ -99,95 +99,95 @@ export default function AdminPage() {
 function DashboardContent({ imageCount, loading }: { imageCount: number; loading: boolean }) {
   return (
     <div className="space-y-8">
-      {/* Stats Cards */}
-      <div className="grid md:grid-cols-3 gap-6">
-        <div className="card p-6">
-          <div className="flex items-center justify-between">
+      {/* Top Overview Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <div className="card p-6 flex flex-col justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="w-16 h-16 rounded-lg flex items-center justify-center" style={{ background: 'var(--accent)' }}>
+              <span className="text-3xl text-white">🖼️</span>
+            </div>
             <div>
-              <p className="text-sm text-gray-600">Total Images</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {loading ? '...' : imageCount}
-              </p>
+              <p className="text-sm text-gray-600">Images</p>
+              <p className="text-3xl font-bold mt-1">{loading ? '...' : imageCount}</p>
+              <p className="text-sm text-gray-500 mt-2">Browse and manage uploaded images.</p>
             </div>
-            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'var(--accent)' }}>
-              <span className="text-2xl text-white">🖼️</span>
-            </div>
+          </div>
+          <div className="mt-4">
+            <Link href="/admin/images" className="btn-primary inline-block">Manage Images</Link>
           </div>
         </div>
 
-        <div className="card p-6">
-          <div className="flex items-center justify-between">
+        <div className="card p-6 flex flex-col justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="w-16 h-16 rounded-lg flex items-center justify-center" style={{ background: 'var(--accent)' }}>
+              <span className="text-3xl text-white">📝</span>
+            </div>
             <div>
               <p className="text-sm text-gray-600">Templates</p>
-              <p className="text-2xl font-bold text-gray-900">0</p>
+              <p className="text-3xl font-bold mt-1">0</p>
+              <p className="text-sm text-gray-500 mt-2">Create and edit story templates.</p>
             </div>
-            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'var(--accent)' }}>
-              <span className="text-2xl text-white">📝</span>
-            </div>
+          </div>
+          <div className="mt-4">
+            <Link href="/admin/templates" className="btn-primary inline-block">Manage Templates</Link>
           </div>
         </div>
 
-        <div className="card p-6">
-          <div className="flex items-center justify-between">
+        <div className="card p-6 flex flex-col justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="w-16 h-16 rounded-lg flex items-center justify-center" style={{ background: 'var(--accent)' }}>
+              <span className="text-3xl text-white">📸</span>
+            </div>
             <div>
               <p className="text-sm text-gray-600">Stories Rendered</p>
-              <p className="text-2xl font-bold text-gray-900">0</p>
+              <p className="text-3xl font-bold mt-1">0</p>
+              <p className="text-sm text-gray-500 mt-2">Rendered story images and exports.</p>
             </div>
-            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'var(--accent)' }}>
-              <span className="text-2xl text-white">📸</span>
-            </div>
+          </div>
+          <div className="mt-4">
+            <Link href="/admin/templates" className="btn-primary inline-block">View Rendered Stories</Link>
           </div>
         </div>
       </div>
-      {/* Quick Actions */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <Link href="/admin/images" className="card p-4 flex items-start space-x-4 hover:shadow-md transition">
-          <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'var(--accent)' }}>
-            <span className="text-xl text-white">📤</span>
-          </div>
-          <div>
-            <p className="font-semibold">Upload New Image</p>
-            <p className="text-sm text-gray-600">Add images to your library</p>
-          </div>
-        </Link>
 
-        <Link href="/admin/templates" className="card p-4 flex items-start space-x-4 hover:shadow-md transition">
-          <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'var(--accent)' }}>
-            <span className="text-xl text-white">🎨</span>
+      {/* Detailed Overview Sections */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="card p-6 lg:col-span-1">
+          <h3 className="text-lg font-semibold">Images overview</h3>
+          <p className="text-sm text-gray-600 mt-2">Total images: <span className="font-medium">{loading ? '...' : imageCount}</span></p>
+          <p className="text-sm text-gray-500 mt-3">Quick access to image management and upload tools.</p>
+          <div className="mt-4">
+            <Link href="/admin/images" className="btn-primary">Go to Images</Link>
           </div>
-          <div>
-            <p className="font-semibold">Create Template</p>
-            <p className="text-sm text-gray-600">Design reusable story templates</p>
+        </div>
+
+        <div className="card p-6 lg:col-span-1">
+          <h3 className="text-lg font-semibold">Templates overview</h3>
+          <p className="text-sm text-gray-600 mt-2">Total templates: <span className="font-medium">0</span></p>
+          <p className="text-sm text-gray-500 mt-3">Create and manage reusable templates for stories.</p>
+          <div className="mt-4">
+            <Link href="/admin/templates" className="btn-primary">Go to Templates</Link>
           </div>
-        </Link>
+        </div>
+
+        <div className="card p-6 lg:col-span-1">
+          <h3 className="text-lg font-semibold">Stories overview</h3>
+          <p className="text-sm text-gray-600 mt-2">Rendered stories: <span className="font-medium">0</span></p>
+          <p className="text-sm text-gray-500 mt-3">Review and export rendered stories.</p>
+          <div className="mt-4">
+            <Link href="/admin/templates" className="btn-primary">View Rendered Stories</Link>
+          </div>
+        </div>
       </div>
 
-      {/* API Information */}
-      <div className="bg-white p-6 rounded-lg shadow-sm">
-        <h3 className="text-lg font-semibold mb-4">API Endpoints</h3>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-            <div>
-              <code className="text-sm font-mono">GET /api/images</code>
-              <p className="text-sm text-gray-600">Retrieve all uploaded images</p>
-            </div>
-            <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">Active</span>
-          </div>
-
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-            <div>
-              <code className="text-sm font-mono">POST /api/upload-image</code>
-              <p className="text-sm text-gray-600">Upload images to storage</p>
-            </div>
-            <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">Active</span>
-          </div>
-
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
-            <div>
-              <code className="text-sm font-mono">POST /api/render-story</code>
-              <p className="text-sm text-gray-600">Generate story images with text overlays</p>
-            </div>
-            <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">Active</span>
+      {/* API Information (de-emphasized, bottom) */}
+      <div className="mt-6">
+        <div className="p-4 rounded-lg bg-gray-50 text-sm text-gray-600">
+          <h4 className="font-semibold">API Endpoints (Technical)</h4>
+          <div className="mt-3 space-y-2">
+            <div><code>GET /api/images</code> — Retrieve all uploaded images</div>
+            <div><code>POST /api/upload-image</code> — Upload images to storage</div>
+            <div><code>POST /api/render-story</code> — Generate story images with text overlays</div>
           </div>
         </div>
       </div>
