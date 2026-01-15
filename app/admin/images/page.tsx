@@ -130,7 +130,7 @@ export default function ImagesPage() {
       <div className="flex items-start justify-between mb-6 gap-4">
         <div>
           <h1 className="text-3xl font-extrabold">Bildegalleri</h1>
-          <p className="text-sm text-gray-600 mt-1">A modern gallery-style view for managing images and metadata.</p>
+          <p className="text-sm text-gray-600 mt-1">Oversikt over bilder</p>
         </div>
         <div className="flex items-center space-x-3">
           <form ref={formRef} onSubmit={handleUpload} encType="multipart/form-data" className="hidden">
@@ -148,7 +148,7 @@ export default function ImagesPage() {
               const el = document.getElementById('file-input') as HTMLInputElement | null;
               el?.click();
             }}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium"
+            className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-5 py-2.5 rounded-xl font-semibold border border-blue-200"
             disabled={uploading}
           >
             {uploading ? 'Uploading...' : 'Upload Image'}
@@ -158,7 +158,7 @@ export default function ImagesPage() {
 
       {uploadError && <div className="text-sm text-red-500 mb-4">{uploadError}</div>}
 
-      <div className="flex flex-wrap" style={{ columnGap: '2.5%', rowGap: '2.5%' }}>
+      <div className="flex flex-wrap" style={{ columnGap: '1.5rem', rowGap: '1.5rem' }}>
         {images.map(image => {
           const current = editing[image.id] || { number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
           return (
@@ -186,7 +186,7 @@ export default function ImagesPage() {
 
               <div className="p-3">
                 <div className="mb-2">
-                  <div className="grid grid-cols-3 gap-2 items-end">
+                  <div className="grid gap-2 items-end" style={{ gridTemplateColumns: '2fr 2fr 1fr' }}>
                     <div>
                       <label className="text-xs text-gray-500">Draktnummer</label>
                       <input type="number" min={1} max={99} value={current.number} onChange={(e) => { let v=e.target.value.replace(/\D/g,''); setEditing(prev=>({...prev,[image.id]:{...current,number:v}})); setSaveErrors(prev => ({ ...prev, [image.id]: null })); setSaveSuccess(prev => ({ ...prev, [image.id]: false })); }} className="w-full mt-1 input text-xs py-0.5" />
