@@ -94,7 +94,7 @@ export default function ImagesPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center space-x-4">
-          <h1 className="text-2xl font-bold">Image Library</h1>
+          <h1 className="text-2xl font-bold" style={{ color: 'rgb(151, 191, 195)' }}>Image Library</h1>
           <a href="/" className="text-sm text-blue-600 hover:underline">Back to Home</a>
         </div>
         <form ref={formRef} onSubmit={handleUpload} encType="multipart/form-data" className="flex items-center space-x-4">
@@ -130,7 +130,7 @@ export default function ImagesPage() {
             const current = editing[image.id] || { player: image.tags?.player || '', number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
             return (
               <div key={image.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-transparent hover:border-gray-200 transition">
-                <div className="w-full h-64 md:h-72 bg-gray-50 overflow-hidden">
+                <div className="w-full h-72 md:h-80 bg-gray-50 overflow-hidden">
                   <img src={image.image_url} alt={`Image ${image.id}`} className="w-full h-full object-cover transform hover:scale-105 transition duration-200" />
                 </div>
 
@@ -146,7 +146,11 @@ export default function ImagesPage() {
                         <label className="text-xs text-gray-500">Spiller</label>
                         <input
                           value={current.player}
-                          onChange={(e) => setEditing(prev => ({ ...prev, [image.id]: { ...current, player: e.target.value } }))}
+                          onChange={(e) => {
+                            setEditing(prev => ({ ...prev, [image.id]: { ...current, player: e.target.value } }));
+                            setSaveErrors(prev => ({ ...prev, [image.id]: null }));
+                            setSaveSuccess(prev => ({ ...prev, [image.id]: false }));
+                          }}
                           className="input w-full text-sm mt-1"
                           aria-label="Spiller"
                         />
@@ -170,6 +174,8 @@ export default function ImagesPage() {
                               v = String(n);
                             }
                             setEditing(prev => ({ ...prev, [image.id]: { ...current, number: v } }));
+                            setSaveErrors(prev => ({ ...prev, [image.id]: null }));
+                            setSaveSuccess(prev => ({ ...prev, [image.id]: false }));
                           }}
                           className="input w-full text-sm mt-1"
                           aria-label="Draktnummer"
@@ -180,7 +186,7 @@ export default function ImagesPage() {
                         <label className="text-xs text-gray-500">Hendelse</label>
                         <select
                           value={current.eventType}
-                          onChange={(e) => setEditing(prev => ({ ...prev, [image.id]: { ...current, eventType: e.target.value } }))}
+                          onChange={(e) => { setEditing(prev => ({ ...prev, [image.id]: { ...current, eventType: e.target.value } })); setSaveSuccess(prev => ({ ...prev, [image.id]: false })); setSaveErrors(prev => ({ ...prev, [image.id]: null })); }}
                           className="input w-full text-sm mt-1"
                           aria-label="Hendelse"
                         >
@@ -246,6 +252,7 @@ export default function ImagesPage() {
                         {saving[image.id] ? 'Saving...' : 'Save Tags'}
                       </button>
                       {saveErrors[image.id] && <p className="field-error ml-2">{saveErrors[image.id]}</p>}
+                      {saveSuccess[image.id] && <p className="ml-2 text-sm text-green-600">Lagret ✓</p>}
                     </div>
                 </div>
               </div>
