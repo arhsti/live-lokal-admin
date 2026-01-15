@@ -98,14 +98,18 @@ export default function ImagesPage() {
         body: JSON.stringify({ player: toSave.player, number: String(num), eventType: toSave.eventType }),
       });
       if (res.ok) {
-        const updated = await res.json();
+        const contentType = res.headers.get('content-type') || '';
+        const hasJson = contentType.includes('application/json');
+        const updated = hasJson ? await res.json().catch(() => null) : null;
         const nextTags = updated?.tags ?? { player: toSave.player, number: String(num), eventType: toSave.eventType };
         setImages(prev => prev.map(im => im.id === image.id ? { ...im, tags: nextTags } : im));
         setSaveErrors(prev => ({ ...prev, [image.id]: null }));
         setSaveSuccess(prev => ({ ...prev, [image.id]: true }));
         setTimeout(() => setSaveSuccess(prev => ({ ...prev, [image.id]: false })), 2500);
       } else {
-        const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+        const contentType = res.headers.get('content-type') || '';
+        const hasJson = contentType.includes('application/json');
+        const err = hasJson ? await res.json().catch(() => ({ error: 'Unknown error' })) : { error: 'Failed to save' };
         setSaveErrors(prev => ({ ...prev, [image.id]: err.error || 'Failed to save' }));
       }
     } catch (e) {
