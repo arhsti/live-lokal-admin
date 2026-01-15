@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Live Lokal – Admin',
+  title: 'Live Lokal – Bildegalleri',
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -11,7 +11,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Link href="/admin" className="text-2xl font-bold text-gray-900">Live Lokal</Link>
-            <div className="text-sm text-gray-600">Live Lokal – Admin</div>
+            <div className="text-sm text-gray-600">Live Lokal – Bildegalleri</div>
           </div>
 
           <nav className="hidden md:flex items-center space-x-3">
