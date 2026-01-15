@@ -126,7 +126,7 @@ export default function ImagesPage() {
   if (loading) return <div className="p-8">Loading images...</div>;
 
   return (
-    <div className="p-6">
+    <div className="p-8">
       <div className="flex items-start justify-between mb-6 gap-4">
         <div>
           <h1 className="text-3xl font-extrabold">Bildegalleri</h1>
@@ -158,7 +158,7 @@ export default function ImagesPage() {
 
       {uploadError && <div className="text-sm text-red-500 mb-4">{uploadError}</div>}
 
-      <div className="flex flex-wrap" style={{ columnGap: '1.5rem', rowGap: '1.5rem' }}>
+      <div className="flex flex-wrap" style={{ columnGap: '2rem', rowGap: '2rem' }}>
         {images.map(image => {
           const current = editing[image.id] || { number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
           return (
