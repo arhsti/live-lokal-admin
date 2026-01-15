@@ -3,9 +3,10 @@ import { templateStore } from '@/lib/template-store';
 
 export const runtime = 'nodejs';
 
-export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const template = await templateStore.getById(params.id);
+    const { id } = await context.params;
+    const template = await templateStore.getById(id);
     if (!template) {
       return NextResponse.json({ error: 'Template not found' }, { status: 404 });
     }
@@ -16,8 +17,9 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await context.params;
     const body = await request.json();
     const { name, image_id, image_url, text_boxes } = body || {};
 
@@ -25,7 +27,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'Invalid template payload' }, { status: 400 });
     }
 
-    const updated = await templateStore.update(params.id, {
+    const updated = await templateStore.update(id, {
       name,
       image_id,
       image_url,
@@ -43,9 +45,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const removed = await templateStore.delete(params.id);
+    const { id } = await context.params;
+    const removed = await templateStore.delete(id);
     if (!removed) {
       return NextResponse.json({ error: 'Template not found' }, { status: 404 });
     }
