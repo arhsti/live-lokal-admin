@@ -307,9 +307,9 @@ function drawOverlayText(
 function canvasToJpeg(canvas: HTMLCanvasElement): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
-      if (!blob) return reject(new Error('Kunne ikke generere JPG'));
+      if (!blob) return reject(new Error('Kunne ikke generere JPG (mulig CORS/canvas-feil)'));
       resolve(blob);
-    }, 'image/jpeg', 0.92);
+    }, 'image/jpeg', 0.95);
   });
 }
 
