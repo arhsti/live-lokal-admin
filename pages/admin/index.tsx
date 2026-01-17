@@ -4,7 +4,6 @@ import Header from '../../components/Header';
 export default function Admin() {
   return (
     <div>
-      <h1>ADMIN DASHBOARD — ACTIVE</h1>
       <Header title="Admin" />
       <main className="container-base space-y-6">
         <div>

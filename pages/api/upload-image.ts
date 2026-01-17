@@ -17,6 +17,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    const { R2_BUCKET_NAME, R2_PUBLIC_BASE_URL, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID, R2_ENDPOINT } = process.env;
+    if (!R2_BUCKET_NAME || !R2_PUBLIC_BASE_URL || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || (!R2_ACCOUNT_ID && !R2_ENDPOINT)) {
+      return res.status(500).json({ error: 'Missing R2 configuration' });
+    }
+
     const form = formidable({ multiples: false });
     const { files } = await new Promise<{ files: any }>((resolve, reject) => {
       form.parse(req, (err: any, _fields: any, files: any) => {
@@ -34,17 +39,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Empty file' });
     }
 
-    if (file.mimetype !== 'image/jpeg' && file.mimetype !== 'image/png') {
+    const mime = file.mimetype || '';
+    if (mime !== 'image/jpeg' && mime !== 'image/png' && mime !== 'image/jpg') {
       return res.status(400).json({ error: 'Unsupported file type' });
     }
 
     const buffer = await fs.readFile(file.filepath);
     const id = uuidv4();
-    const extension = file.mimetype === 'image/png' ? 'png' : 'jpg';
+    const extension = mime === 'image/png' ? 'png' : 'jpg';
     const key = `uploads/raw/${id}.${extension}`;
-    await r2PutObject(key, buffer, file.mimetype || 'image/jpeg');
+    await r2PutObject(key, buffer, mime || 'image/jpeg');
 
-    const image_url = `${process.env.R2_PUBLIC_BASE_URL}/${key}`;
+    const image_url = `${R2_PUBLIC_BASE_URL}/${key}`;
     return res.status(200).json({ id, image_url });
   } catch (error) {
     console.error('Upload failed:', error);
