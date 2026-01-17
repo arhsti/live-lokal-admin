@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import Header from '../../components/Header';
 import ImageCard from '../../components/ImageCard';
 
 interface ImageData {
   id: string;
   image_url: string;
-  tags?: { number: string; eventType?: string };
+  tags?: { number: string; eventType?: string; type?: 'raw' | 'rendered' };
 }
 
 export default function ImagesPage() {
@@ -167,6 +168,11 @@ export default function ImagesPage() {
                   saving={!!saving[image.id]}
                   error={saveErrors[image.id]}
                   success={saveSuccess[image.id]}
+                  extraActions={image.tags?.type === 'rendered' ? null : (
+                    <Link href={`/admin/render?imageId=${encodeURIComponent(image.id)}`} className="btn-secondary">
+                      Bruk i story
+                    </Link>
+                  )}
                 />
               );
             })}

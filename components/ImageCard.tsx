@@ -1,3 +1,4 @@
+import { ReactNode } from 'react';
 import Tooltip from './Tooltip';
 
 interface ImageCardProps {
@@ -10,6 +11,7 @@ interface ImageCardProps {
   saving: boolean;
   error?: string | null;
   success?: boolean;
+  extraActions?: ReactNode;
 }
 
 export default function ImageCard({
@@ -22,6 +24,7 @@ export default function ImageCard({
   saving,
   error,
   success,
+  extraActions,
 }: ImageCardProps) {
   return (
     <div className="card overflow-hidden">
@@ -90,6 +93,7 @@ export default function ImageCard({
             </button>
           </div>
         </div>
+        {extraActions && <div className="flex items-center gap-2 flex-wrap">{extraActions}</div>}
         {error && <div className="text-sm text-red-500">{error}</div>}
         {success && <div className="text-sm text-green-600">Lagret ✓</div>}
       </div>

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/router';
 import Header from '../../components/Header';
 
 interface ImageItem {
@@ -11,35 +12,57 @@ const CANVAS_WIDTH = 1080;
 const CANVAS_HEIGHT = 1920;
 
 export default function RenderPage() {
-  const [images, setImages] = useState<ImageItem[]>([]);
+  const router = useRouter();
+  const imageId = useMemo(() => {
+    if (!router.isReady) return null;
+    const value = router.query.imageId;
+    return Array.isArray(value) ? value[0] : value || null;
+  }, [router.isReady, router.query.imageId]);
+
+  const [image, setImage] = useState<ImageItem | null>(null);
   const [loading, setLoading] = useState(true);
-  const [rendering, setRendering] = useState<Record<string, boolean>>({});
-  const [errors, setErrors] = useState<Record<string, string | null>>({});
-  const [results, setResults] = useState<Record<string, string | null>>({});
+  const [rendering, setRendering] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<string | null>(null);
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
 
   useEffect(() => {
-    loadImages();
-  }, []);
+    if (!router.isReady) return;
+    if (!imageId) {
+      setLoading(false);
+      return;
+    }
 
-  async function loadImages() {
+    loadImageById(imageId);
+  }, [router.isReady, imageId]);
+
+  async function loadImageById(id: string) {
     setLoading(true);
+    setError(null);
     try {
-      const res = await fetch('/api/images');
-      if (res.ok) {
-        const data = await res.json();
-        setImages(Array.isArray(data) ? data : []);
+      const res = await fetch(`/api/images?imageId=${encodeURIComponent(id)}`);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Fant ikke bildet' }));
+        setError(err.error || 'Fant ikke bildet');
+        setImage(null);
+        return;
       }
+      const data = await res.json();
+      setImage(data);
     } catch (_e) {
-      setErrors(prev => ({ ...prev, list: 'Kunne ikke laste bilder' }));
+      setError('Kunne ikke laste bildet');
+      setImage(null);
     } finally {
       setLoading(false);
     }
   }
 
-  async function renderStory(image: ImageItem) {
-    setErrors(prev => ({ ...prev, [image.id]: null }));
-    setResults(prev => ({ ...prev, [image.id]: null }));
-    setRendering(prev => ({ ...prev, [image.id]: true }));
+  async function renderStory() {
+    if (!image) return;
+    setError(null);
+    setResult(null);
+    setRendering(true);
 
     try {
       const img = await loadImage(image.image_url);
@@ -53,73 +76,88 @@ export default function RenderPage() {
       ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       drawImageContain(ctx, img, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-      const number = image.tags?.number || '';
-      const eventType = image.tags?.eventType || 'Alle';
-      const lines = [number ? `#${number}` : '', eventType].filter(Boolean);
-
+      const lines = [title.trim(), body.trim()].filter(Boolean);
       drawOverlayText(ctx, lines, CANVAS_WIDTH, CANVAS_HEIGHT);
 
       const blob = await canvasToJpeg(canvas);
       const uploaded = await uploadRendered(image.id, blob);
-      setResults(prev => ({ ...prev, [image.id]: uploaded }));
+      setResult(uploaded);
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Ukjent feil ved rendering';
-      setErrors(prev => ({ ...prev, [image.id]: message }));
+      setError(message);
     } finally {
-      setRendering(prev => ({ ...prev, [image.id]: false }));
+      setRendering(false);
     }
   }
 
   return (
     <div>
-      <Header title="Render stories" />
+      <Header title="Render story" />
       <main className="container-base space-y-6">
         <div>
-          <h1 className="text-3xl font-extrabold">Render stories</h1>
-          <p className="text-sm text-gray-600 mt-1">Generer ferdige story-bilder fra opplastede bilder.</p>
+          <h1 className="text-3xl font-extrabold">Render story</h1>
+          <p className="text-sm text-gray-600 mt-1">Lag en story med valgt bilde og tekst.</p>
         </div>
+        {!imageId && (
+          <div className="text-sm text-gray-600">Velg et bilde fra galleriet først.</div>
+        )}
 
-        {errors.list && <div className="text-sm text-red-500">{errors.list}</div>}
+        {loading && imageId && (
+          <div className="text-sm text-gray-600">Laster bildet...</div>
+        )}
 
-        {loading ? (
-          <div className="text-sm text-gray-600">Laster bilder...</div>
-        ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {images.map((image) => (
-              <div key={image.id} className="card overflow-hidden">
-                <div className="bg-gray-100" style={{ height: 140 }}>
-                  <img
-                    src={image.image_url}
-                    alt="Preview"
-                    style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
-                  />
-                </div>
-                <div className="p-4 space-y-3">
-                  <div className="text-sm text-gray-700">
-                    Draktnummer: {image.tags?.number || '—'}
-                  </div>
-                  <div className="text-sm text-gray-700">Hendelse: {image.tags?.eventType || 'Alle'}</div>
-                  <button
-                    className="btn-primary w-full"
-                    disabled={!!rendering[image.id]}
-                    onClick={() => renderStory(image)}
-                  >
-                    {rendering[image.id] ? 'Renderer...' : 'Render story'}
-                  </button>
-                  {errors[image.id] && <div className="text-sm text-red-500">{errors[image.id]}</div>}
-                  {results[image.id] && (
-                    <a
-                      href={results[image.id] as string}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="btn-secondary inline-block"
-                    >
-                      Åpne ferdig bilde
-                    </a>
-                  )}
-                </div>
+        {error && <div className="text-sm text-red-500">{error}</div>}
+
+        {image && !loading && (
+          <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+            <div className="card p-4">
+              <div className="bg-gray-100" style={{ height: 520 }}>
+                <img
+                  src={image.image_url}
+                  alt="Preview"
+                  style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+                />
               </div>
-            ))}
+            </div>
+
+            <div className="card p-4 space-y-4">
+              <div>
+                <label className="text-xs text-gray-500">Overskrift</label>
+                <input
+                  className="input w-full mt-1"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Skriv overskrift"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">Ekstra tekst</label>
+                <textarea
+                  className="input w-full mt-1"
+                  rows={4}
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                  placeholder="Skriv ekstra tekst"
+                />
+              </div>
+              <button
+                className="btn-primary w-full"
+                disabled={rendering}
+                onClick={renderStory}
+              >
+                {rendering ? 'Genererer...' : 'Generer story'}
+              </button>
+              {result && (
+                <a
+                  href={result}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn-secondary inline-block"
+                >
+                  Åpne ferdig bilde
+                </a>
+              )}
+            </div>
           </div>
         )}
       </main>
@@ -169,35 +207,39 @@ function drawOverlayText(
 ) {
   if (!lines.length) return;
   const maxWidth = width * 0.9;
-  let fontSize = 96;
-
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
-
   const fontFamily = 'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif';
 
-  const fits = () => lines.every(line => {
-    ctx.font = `700 ${fontSize}px ${fontFamily}`;
+  const sizes = lines.map((_, index) => (index === 0 ? 96 : 56));
+  const minSizes = lines.map((_, index) => (index === 0 ? 56 : 32));
+
+  const fits = () => lines.every((line, index) => {
+    ctx.font = `700 ${sizes[index]}px ${fontFamily}`;
     return ctx.measureText(line).width <= maxWidth;
   });
 
-  while (!fits() && fontSize > 42) {
-    fontSize -= 4;
+  while (!fits() && sizes.some((size, index) => size > minSizes[index])) {
+    for (let i = 0; i < sizes.length; i += 1) {
+      if (sizes[i] > minSizes[i]) sizes[i] -= 4;
+    }
   }
 
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
   ctx.fillStyle = '#ffffff';
   ctx.shadowColor = 'rgba(0,0,0,0.4)';
   ctx.shadowBlur = 10;
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 4;
 
-  const lineHeight = fontSize * 1.2;
-  const totalHeight = lineHeight * lines.length;
-  const startY = height * 0.68 - totalHeight / 2;
+  const lineHeights = sizes.map(size => size * 1.2);
+  const totalHeight = lineHeights.reduce((sum, h) => sum + h, 0);
+  const startY = Math.min(height * 0.7 - totalHeight / 2, height - totalHeight - 40);
 
+  let offsetY = startY;
   lines.forEach((line, index) => {
-    ctx.font = `700 ${fontSize}px ${fontFamily}`;
-    ctx.fillText(line, width / 2, startY + index * lineHeight, maxWidth);
+    ctx.font = `700 ${sizes[index]}px ${fontFamily}`;
+    ctx.fillText(line, width / 2, offsetY, maxWidth);
+    offsetY += lineHeights[index];
   });
 }
 

@@ -1,9 +1,19 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { listImages, updateImageMeta, type EventType } from '@/lib/images';
+import { getImageById, listImages, updateImageMeta, type EventType } from '@/lib/images';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     try {
+      const { imageId } = req.query;
+      if (imageId) {
+        const id = Array.isArray(imageId) ? imageId[0] : imageId;
+        const image = await getImageById(String(id));
+        if (!image) {
+          return res.status(404).json({ error: 'Image not found' });
+        }
+        return res.status(200).json(image);
+      }
+
       const images = await listImages();
       return res.status(200).json(images);
     } catch (error) {

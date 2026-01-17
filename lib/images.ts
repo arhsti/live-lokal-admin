@@ -1,22 +1,26 @@
 import { r2Get, r2List, r2Put, readBodyAsString } from './r2';
 
 export type EventType = 'Mål' | 'Kort' | 'Bytte' | 'Alle';
+export type ImageType = 'raw' | 'rendered';
 
 export interface ImageMeta {
   id: string;
   number: string;
   eventType: EventType;
   created_at?: string;
+  type?: ImageType;
+  sourceImageId?: string;
 }
 
 export interface ImageItem {
   id: string;
   image_url: string;
   created_at?: string;
-  tags: { number: string; eventType: EventType };
+  tags: { number: string; eventType: EventType; type?: ImageType; sourceImageId?: string };
 }
 
-const UPLOAD_PREFIX = 'uploads/raw/';
+const RAW_PREFIX = 'uploads/raw/';
+const RENDERED_PREFIX = 'uploads/rendered/';
 const META_KEY = 'images/metadata.json';
 
 async function loadMeta(): Promise<Record<string, ImageMeta>> {
@@ -35,8 +39,12 @@ async function saveMeta(map: Record<string, ImageMeta>) {
 }
 
 export async function listImages(): Promise<ImageItem[]> {
-  const list = await r2List(UPLOAD_PREFIX);
-  const items = (list.Contents || [])
+  const [rawList, renderedList] = await Promise.all([
+    r2List(RAW_PREFIX),
+    r2List(RENDERED_PREFIX),
+  ]);
+
+  const items = [...(rawList.Contents || []), ...(renderedList.Contents || [])]
     .filter(obj => obj.Key)
     .sort((a, b) => {
       const at = a.LastModified ? a.LastModified.getTime() : 0;
@@ -47,10 +55,11 @@ export async function listImages(): Promise<ImageItem[]> {
   const metaMap = await loadMeta();
   return items.map(item => {
     const key = item.Key as string;
-    const filename = key.replace(UPLOAD_PREFIX, '');
+    const filename = key.replace(RAW_PREFIX, '').replace(RENDERED_PREFIX, '');
     const id = filename.replace(/\.[^/.]+$/, '');
     const image_url = `${process.env.R2_PUBLIC_BASE_URL}/${key}`;
     const meta = metaMap[id];
+    const inferredType: ImageType = key.startsWith(RENDERED_PREFIX) ? 'rendered' : 'raw';
     return {
       id,
       image_url,
@@ -58,9 +67,40 @@ export async function listImages(): Promise<ImageItem[]> {
       tags: {
         number: meta?.number || '',
         eventType: meta?.eventType || 'Alle',
+        type: meta?.type || inferredType,
+        sourceImageId: meta?.sourceImageId,
       },
     };
   });
+}
+
+export async function getImageById(id: string): Promise<ImageItem | null> {
+  const [rawList, renderedList] = await Promise.all([
+    r2List(`${RAW_PREFIX}${id}`),
+    r2List(`${RENDERED_PREFIX}${id}`),
+  ]);
+
+  const item = [...(rawList.Contents || []), ...(renderedList.Contents || [])]
+    .find(obj => obj.Key);
+
+  if (!item || !item.Key) return null;
+
+  const key = item.Key as string;
+  const image_url = `${process.env.R2_PUBLIC_BASE_URL}/${key}`;
+  const metaMap = await loadMeta();
+  const meta = metaMap[id];
+  const inferredType: ImageType = key.startsWith(RENDERED_PREFIX) ? 'rendered' : 'raw';
+  return {
+    id,
+    image_url,
+    created_at: meta?.created_at || (item.LastModified ? item.LastModified.toISOString() : undefined),
+    tags: {
+      number: meta?.number || '',
+      eventType: meta?.eventType || 'Alle',
+      type: meta?.type || inferredType,
+      sourceImageId: meta?.sourceImageId,
+    },
+  };
 }
 
 export async function updateImageMeta(id: string, number: string, eventType: EventType) {
@@ -71,6 +111,22 @@ export async function updateImageMeta(id: string, number: string, eventType: Eve
     number,
     eventType,
     created_at: existing?.created_at || new Date().toISOString(),
+    type: existing?.type,
+    sourceImageId: existing?.sourceImageId,
+  };
+  await saveMeta(map);
+  return map[id];
+}
+
+export async function registerRenderedImage(id: string, sourceImageId: string) {
+  const map = await loadMeta();
+  map[id] = {
+    id,
+    number: '',
+    eventType: 'Alle',
+    created_at: new Date().toISOString(),
+    type: 'rendered',
+    sourceImageId,
   };
   await saveMeta(map);
   return map[id];

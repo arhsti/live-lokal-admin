@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { promises as fs } from 'fs';
 import formidable from 'formidable';
 import { r2PutObject } from '@/lib/r2';
+import { registerRenderedImage } from '@/lib/images';
 
 export const config = {
   api: {
@@ -41,9 +42,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const buffer = await fs.readFile(file.filepath);
     const imageId = typeof fields.imageId === 'string' ? fields.imageId : Array.isArray(fields.imageId) ? fields.imageId[0] : 'image';
     const timestamp = Date.now();
-    const key = `rendered/${imageId}-${timestamp}.jpg`;
+    const renderedId = `${imageId}-${timestamp}`;
+    const key = `uploads/rendered/${renderedId}.jpg`;
 
     await r2PutObject(key, buffer, file.mimetype || 'image/jpeg');
+    await registerRenderedImage(renderedId, imageId);
 
     const image_url = `${R2_PUBLIC_BASE_URL}/${key}`;
     return res.status(200).json({ key, image_url });
