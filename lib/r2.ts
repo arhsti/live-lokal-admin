@@ -2,7 +2,7 @@ import { GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client, Del
 
 const getClient = () => new S3Client({
   region: 'auto',
-  endpoint: process.env.R2_ENDPOINT,
+  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
   credentials: {
     accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
     secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
@@ -26,6 +26,16 @@ export async function r2Get(key: string) {
 }
 
 export async function r2Put(key: string, body: string, contentType = 'application/json') {
+  const s3 = getClient();
+  return s3.send(new PutObjectCommand({
+    Bucket: process.env.R2_BUCKET_NAME || '',
+    Key: key,
+    Body: body,
+    ContentType: contentType,
+  }));
+}
+
+export async function r2PutObject(key: string, body: Buffer | Uint8Array, contentType = 'application/octet-stream') {
   const s3 = getClient();
   return s3.send(new PutObjectCommand({
     Bucket: process.env.R2_BUCKET_NAME || '',

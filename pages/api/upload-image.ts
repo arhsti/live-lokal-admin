@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
 import { promises as fs } from 'fs';
 import formidable from 'formidable';
+import { r2PutObject } from '@/lib/r2';
 
 export const config = {
   api: {
@@ -40,25 +40,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const buffer = await fs.readFile(file.filepath);
     const id = uuidv4();
-    const key = `uploads/raw/${id}.jpg`;
-
-    const s3 = new S3Client({
-      region: 'auto',
-      endpoint: process.env.R2_ENDPOINT,
-      credentials: {
-        accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
-        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
-      },
-    });
-
-    const put = new PutObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME || '',
-      Key: key,
-      Body: buffer,
-      ContentType: file.mimetype || 'image/jpeg',
-    });
-
-    await s3.send(put);
+    const extension = file.mimetype === 'image/png' ? 'png' : 'jpg';
+    const key = `uploads/raw/${id}.${extension}`;
+    await r2PutObject(key, buffer, file.mimetype || 'image/jpeg');
 
     const image_url = `${process.env.R2_PUBLIC_BASE_URL}/${key}`;
     return res.status(200).json({ id, image_url });

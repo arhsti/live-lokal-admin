@@ -84,7 +84,7 @@ export default function ImagesPage() {
 
     try {
       const res = await fetch('/api/images', {
-        method: 'PUT',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: image.id, number: String(num), eventType: current.eventType }),
       });
@@ -108,8 +108,6 @@ export default function ImagesPage() {
 
   return (
     <div>
-      <div>{`CACHE TEST — ${new Date().toISOString()}`}</div>
-      <div>DEPLOY TEST — IMAGES PAGE — January 17, 2026</div>
       <Header title="Images" />
       <main className="container-base space-y-6">
         <div className="flex items-start justify-between gap-4">
@@ -138,7 +136,6 @@ export default function ImagesPage() {
             >
               {uploading ? 'Uploading...' : 'Upload image'}
             </button>
-            <a href="/admin/render" className="btn-secondary">Render page</a>
           </div>
         </div>
 

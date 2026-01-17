@@ -74,10 +74,10 @@ export default function ImageCard({
               onChange={(e) => onEventChange(e.target.value)}
               className="input w-full mt-1 text-sm"
             >
-              <option value="Alle">Alle</option>
               <option value="Mål">Mål</option>
               <option value="Kort">Kort</option>
               <option value="Bytte">Bytte</option>
+              <option value="Alle">Alle</option>
             </select>
           </div>
           <div className="flex items-end">
