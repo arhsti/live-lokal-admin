@@ -108,6 +108,7 @@ export default function ImagesPage() {
 
   return (
     <div>
+      <div>DEPLOY TEST — IMAGES PAGE — January 17, 2026</div>
       <Header title="Images" />
       <main className="container-base space-y-6">
         <div className="flex items-start justify-between gap-4">
