@@ -19,6 +19,10 @@ export default function RenderPage() {
     return Array.isArray(value) ? value[0] : value || null;
   }, [router.isReady, router.query.imageId]);
 
+  const [allImages, setAllImages] = useState<ImageItem[]>([]);
+  const [listLoading, setListLoading] = useState(true);
+  const [listError, setListError] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [image, setImage] = useState<ImageItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [rendering, setRendering] = useState(false);
@@ -28,14 +32,39 @@ export default function RenderPage() {
   const [body, setBody] = useState('');
 
   useEffect(() => {
+    loadImageList();
+  }, []);
+
+  useEffect(() => {
     if (!router.isReady) return;
+    setSelectedId(imageId);
     if (!imageId) {
+      setImage(null);
       setLoading(false);
       return;
     }
 
     loadImageById(imageId);
   }, [router.isReady, imageId]);
+
+  async function loadImageList() {
+    setListLoading(true);
+    setListError(null);
+    try {
+      const res = await fetch('/api/images');
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Kunne ikke laste bilder' }));
+        setListError(err.error || 'Kunne ikke laste bilder');
+        return;
+      }
+      const data = await res.json();
+      setAllImages(Array.isArray(data) ? data : []);
+    } catch (_e) {
+      setListError('Kunne ikke laste bilder');
+    } finally {
+      setListLoading(false);
+    }
+  }
 
   async function loadImageById(id: string) {
     setLoading(true);
@@ -98,11 +127,39 @@ export default function RenderPage() {
           <h1 className="text-3xl font-extrabold">Render story</h1>
           <p className="text-sm text-gray-600 mt-1">Lag en story med valgt bilde og tekst.</p>
         </div>
-        {!imageId && (
-          <div className="text-sm text-gray-600">Velg et bilde fra galleriet først.</div>
+        <div className="card p-4 space-y-3">
+          <label className="text-xs text-gray-500">Velg bilde</label>
+          <select
+            className="input w-full"
+            value={selectedId || ''}
+            onChange={(e) => {
+              const nextId = e.target.value || null;
+              setSelectedId(nextId);
+              setResult(null);
+              if (!nextId) {
+                setImage(null);
+                router.push('/admin/render', undefined, { shallow: true });
+                return;
+              }
+              router.push({ pathname: '/admin/render', query: { imageId: nextId } }, undefined, { shallow: true });
+            }}
+            disabled={listLoading}
+          >
+            <option value="">Velg bilde</option>
+            {allImages.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.tags?.number ? `#${item.tags.number} — ` : ''}{item.tags?.eventType || 'Alle'}
+              </option>
+            ))}
+          </select>
+          {listError && <div className="text-sm text-red-500">{listError}</div>}
+        </div>
+
+        {!selectedId && !loading && (
+          <div className="text-sm text-gray-600">Velg et bilde for å lage story</div>
         )}
 
-        {loading && imageId && (
+        {loading && selectedId && (
           <div className="text-sm text-gray-600">Laster bildet...</div>
         )}
 

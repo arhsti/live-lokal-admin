@@ -145,7 +145,7 @@ export default function ImagesPage() {
         {loading ? (
           <div className="text-sm text-gray-600">Laster bilder...</div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {images.map((image) => {
               const current = editing[image.id] || { number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
               return (
