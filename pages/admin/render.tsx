@@ -315,9 +315,7 @@ function canvasToJpeg(canvas: HTMLCanvasElement): Promise<Blob> {
 
 async function uploadRendered(imageId: string, blob: Blob) {
   const form = new FormData();
-  form.append('file', blob, `${imageId}-${Date.now()}.jpg`);
-  form.append('type', 'rendered');
-  form.append('sourceImageId', imageId);
+  form.append('file', blob, 'rendered.jpg');
 
   const res = await fetch('/api/upload-image', {
     method: 'POST',

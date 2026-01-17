@@ -146,8 +146,11 @@ export default function ImagesPage() {
           <div className="text-sm text-gray-600">Laster bilder...</div>
         ) : (
           <div
-            className="grid gap-6"
-            style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))' }}
+            className="grid"
+            style={{
+              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+              gap: '2.5vw',
+            }}
           >
             {images.map((image) => {
               const current = editing[image.id] || { number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };

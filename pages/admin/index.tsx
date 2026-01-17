@@ -11,7 +11,7 @@ export default function Admin() {
           <p className="text-sm text-gray-600 mt-1">Velg område for å administrere innhold.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           <div className="card p-6 space-y-4">
             <div>
               <h2 className="text-lg font-semibold">Bilder</h2>
@@ -19,6 +19,16 @@ export default function Admin() {
             </div>
             <Link href="/admin/images" className="btn-primary inline-block">
               Gå til bilder
+            </Link>
+          </div>
+
+          <div className="card p-6 space-y-4">
+            <div>
+              <h2 className="text-lg font-semibold">Render stories</h2>
+              <p className="text-sm text-gray-600 mt-1">Lag story-bilder med tekst.</p>
+            </div>
+            <Link href="/admin/render" className="btn-primary inline-block">
+              Gå til render
             </Link>
           </div>
 
