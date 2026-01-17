@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { promises as fs } from 'fs';
 import formidable from 'formidable';
 import { r2PutObject } from '@/lib/r2';
+import { registerRenderedImage } from '@/lib/images';
 
 export const config = {
   api: {
@@ -23,10 +24,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const form = formidable({ multiples: false });
-    const { files } = await new Promise<{ files: any }>((resolve, reject) => {
-      form.parse(req, (err: any, _fields: any, files: any) => {
+    const { files, fields } = await new Promise<{ files: any; fields: any }>((resolve, reject) => {
+      form.parse(req, (err: any, fields: any, files: any) => {
         if (err) return reject(err);
-        resolve({ files });
+        resolve({ files, fields });
       });
     });
 
@@ -45,10 +46,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const buffer = await fs.readFile(file.filepath);
-    const id = uuidv4();
     const extension = mime === 'image/png' ? 'png' : 'jpg';
-    const key = `uploads/raw/${id}.${extension}`;
+
+    const typeField = typeof fields.type === 'string' ? fields.type : Array.isArray(fields.type) ? fields.type[0] : null;
+    const sourceImageId = typeof fields.sourceImageId === 'string'
+      ? fields.sourceImageId
+      : Array.isArray(fields.sourceImageId)
+        ? fields.sourceImageId[0]
+        : null;
+
+    const isRendered = typeField === 'rendered';
+    if (isRendered && !sourceImageId) {
+      return res.status(400).json({ error: 'Missing source image id' });
+    }
+
+    const id = isRendered ? `${sourceImageId}-${Date.now()}` : uuidv4();
+    const key = isRendered
+      ? `uploads/rendered/${id}.${extension}`
+      : `uploads/raw/${id}.${extension}`;
+
     await r2PutObject(key, buffer, mime || 'image/jpeg');
+
+    if (isRendered && sourceImageId) {
+      await registerRenderedImage(id, sourceImageId);
+    }
 
     const image_url = `${R2_PUBLIC_BASE_URL}/${key}`;
     return res.status(200).json({ id, image_url });

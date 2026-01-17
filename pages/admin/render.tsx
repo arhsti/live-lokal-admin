@@ -281,7 +281,7 @@ function drawOverlayText(
   }
 
   ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
+  ctx.textBaseline = 'middle';
   ctx.fillStyle = '#ffffff';
   ctx.shadowColor = 'rgba(0,0,0,0.4)';
   ctx.shadowBlur = 10;
@@ -290,12 +290,16 @@ function drawOverlayText(
 
   const lineHeights = sizes.map(size => size * 1.2);
   const totalHeight = lineHeights.reduce((sum, h) => sum + h, 0);
-  const startY = Math.min(height * 0.7 - totalHeight / 2, height - totalHeight - 40);
+  const minY = 40;
+  const maxY = height - totalHeight - 40;
+  const centeredY = height / 2 - totalHeight / 2;
+  const startY = Math.min(Math.max(centeredY, minY), maxY);
 
   let offsetY = startY;
   lines.forEach((line, index) => {
     ctx.font = `700 ${sizes[index]}px ${fontFamily}`;
-    ctx.fillText(line, width / 2, offsetY, maxWidth);
+    const y = offsetY + lineHeights[index] / 2;
+    ctx.fillText(line, width / 2, y, maxWidth);
     offsetY += lineHeights[index];
   });
 }
@@ -312,9 +316,10 @@ function canvasToJpeg(canvas: HTMLCanvasElement): Promise<Blob> {
 async function uploadRendered(imageId: string, blob: Blob) {
   const form = new FormData();
   form.append('file', blob, `${imageId}-${Date.now()}.jpg`);
-  form.append('imageId', imageId);
+  form.append('type', 'rendered');
+  form.append('sourceImageId', imageId);
 
-  const res = await fetch('/api/upload-rendered', {
+  const res = await fetch('/api/upload-image', {
     method: 'POST',
     body: form,
   });
