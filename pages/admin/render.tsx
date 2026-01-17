@@ -199,6 +199,7 @@ export default function RenderPage() {
           <div>
             <h1 className="text-3xl font-extrabold">Render stories (copy of Images)</h1>
             <p className="text-sm text-gray-600 mt-1">Same gallery and controls as Images, with client-side render</p>
+            <p className="text-xs text-gray-500 mt-1">Route marker: /admin/render</p>
           </div>
           <div className="flex items-center gap-3">
             <form ref={formRef} onSubmit={handleUpload} encType="multipart/form-data" className="hidden">
