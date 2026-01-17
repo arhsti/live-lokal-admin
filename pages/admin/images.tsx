@@ -136,6 +136,7 @@ export default function ImagesPage() {
             >
               {uploading ? 'Uploading...' : 'Upload image'}
             </button>
+            <a href="/admin/render" className="btn-secondary">Render page</a>
           </div>
         </div>
 
