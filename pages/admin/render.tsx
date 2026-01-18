@@ -25,8 +25,8 @@ export default function RenderPage() {
   const [rendering, setRendering] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
-  const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
+  const [hendelse, setHendelse] = useState('');
+  const [tidspunkt, setTidspunkt] = useState('');
 
   useEffect(() => {
     loadImageList();
@@ -91,8 +91,7 @@ export default function RenderPage() {
     setRendering(true);
 
     try {
-      const text = [title.trim(), body.trim()].filter(Boolean).join('\n');
-      const uploaded = await renderOnServer(image.imageUrl, text);
+      const uploaded = await renderOnServer(image.imageUrl, hendelse.trim(), tidspunkt.trim());
       setResult(uploaded);
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Ukjent feil ved rendering';
@@ -162,22 +161,21 @@ export default function RenderPage() {
 
             <div className="card p-4 space-y-4">
               <div>
-                <label className="text-xs text-gray-500">Overskrift</label>
+                <label className="text-xs text-gray-500">Hendelse</label>
                 <input
                   className="input w-full mt-1"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Skriv overskrift"
+                  value={hendelse}
+                  onChange={(e) => setHendelse(e.target.value)}
+                  placeholder="Skriv hendelse"
                 />
               </div>
               <div>
-                <label className="text-xs text-gray-500">Ekstra tekst</label>
-                <textarea
+                <label className="text-xs text-gray-500">Tidspunkt</label>
+                <input
                   className="input w-full mt-1"
-                  rows={4}
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  placeholder="Skriv ekstra tekst"
+                  value={tidspunkt}
+                  onChange={(e) => setTidspunkt(e.target.value)}
+                  placeholder="Skriv tidspunkt"
                 />
               </div>
               <button
@@ -205,11 +203,11 @@ export default function RenderPage() {
   );
 }
 
-async function renderOnServer(imageUrl: string, text: string) {
+async function renderOnServer(imageUrl: string, hendelse: string, tidspunkt: string) {
   const res = await fetch('/api/render-image', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ imageUrl, text }),
+    body: JSON.stringify({ imageUrl, hendelse, tidspunkt }),
   });
 
   const data = await res.json().catch(() => ({ success: false, error: 'Render feilet' }));

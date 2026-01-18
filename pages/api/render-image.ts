@@ -19,9 +19,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error('Missing R2 configuration');
     }
 
-    const { imageUrl, text } = req.body || {};
+    const { imageUrl, hendelse, tidspunkt } = req.body || {};
     if (!imageUrl || typeof imageUrl !== 'string') {
       throw new Error('imageUrl is required');
+    }
+    if (!hendelse || typeof hendelse !== 'string' || !hendelse.trim()) {
+      throw new Error('hendelse is required');
+    }
+    if (!tidspunkt || typeof tidspunkt !== 'string' || !tidspunkt.trim()) {
+      throw new Error('tidspunkt is required');
     }
 
     let parsedUrl: URL;
@@ -77,19 +83,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error('Image buffer contains SVG/HTML content');
     }
 
-    const baseImage = await sharp(inputBuffer)
-      .resize(WIDTH, HEIGHT, { fit: 'cover', position: 'center' })
+    const baseImage = inputBuffer;
+    const svg = buildTextSvg(hendelse.trim(), tidspunkt.trim());
+
+    const rendered = await sharp(baseImage)
+      .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
+      .jpeg({ quality: 92 })
       .toBuffer();
-
-    const overlayText = typeof text === 'string' ? text.trim() : '';
-    const svg = overlayText ? buildTextSvg(overlayText) : null;
-
-    const rendered = svg
-      ? await sharp(baseImage)
-        .composite([{ input: Buffer.from(svg) }])
-        .jpeg({ quality: 92 })
-        .toBuffer()
-      : await sharp(baseImage).jpeg({ quality: 92 }).toBuffer();
 
     const key = `uploads/rendered/${Date.now()}.jpg`;
     await r2PutObject(key, rendered, 'image/jpeg', {
@@ -108,43 +108,44 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 
-function buildTextSvg(text: string) {
-  const lines = text
-    .split('\n')
-    .map(line => line.trim())
-    .filter(Boolean);
-
+function buildTextSvg(hendelse: string, tidspunkt: string) {
   const fontFamily = 'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif';
-  const fontSize = lines.length <= 1 ? 96 : lines.length === 2 ? 72 : 60;
-  const lineHeight = Math.round(fontSize * 1.2);
-  const totalHeight = lineHeight * lines.length;
-  const startY = HEIGHT / 2 - totalHeight / 2 + lineHeight / 2;
-
-  const tspans = lines.map((line, index) => {
-    const dy = index === 0 ? 0 : lineHeight;
-    return `<tspan x="${WIDTH / 2}" dy="${dy}">${escapeXml(line)}</tspan>`;
-  }).join('');
+  const baseY = Math.round(HEIGHT * 0.8);
+  const hendelseSize = 96;
+  const tidspunktSize = 72;
+  const lineGap = 20;
+  const hendelseY = baseY;
+  const tidspunktY = baseY + hendelseSize + lineGap;
 
   return `
     <svg width="${WIDTH}" height="${HEIGHT}" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
-          <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="rgba(0,0,0,0.5)" />
+          <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="rgba(0,0,0,0.6)" />
         </filter>
       </defs>
       <text
         x="${WIDTH / 2}"
-        y="${startY}"
+        y="${hendelseY}"
         text-anchor="middle"
         dominant-baseline="middle"
         font-family="${fontFamily}"
-        font-size="${fontSize}"
+        font-size="${hendelseSize}"
         font-weight="700"
         fill="#ffffff"
         filter="url(#shadow)"
-      >
-        ${tspans}
-      </text>
+      >${escapeXml(hendelse)}</text>
+      <text
+        x="${WIDTH / 2}"
+        y="${tidspunktY}"
+        text-anchor="middle"
+        dominant-baseline="middle"
+        font-family="${fontFamily}"
+        font-size="${tidspunktSize}"
+        font-weight="700"
+        fill="#ffffff"
+        filter="url(#shadow)"
+      >${escapeXml(tidspunkt)}</text>
     </svg>
   `;
 }
