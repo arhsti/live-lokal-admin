@@ -18,6 +18,9 @@ export default function ImagesPage() {
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [saveErrors, setSaveErrors] = useState<Record<string, string | null>>({});
   const [saveSuccess, setSaveSuccess] = useState<Record<string, boolean>>({});
+  const [posting, setPosting] = useState<Record<string, boolean>>({});
+  const [postErrors, setPostErrors] = useState<Record<string, string | null>>({});
+  const [postSuccess, setPostSuccess] = useState<Record<string, boolean>>({});
   const formRef = useRef<HTMLFormElement | null>(null);
 
   useEffect(() => {
@@ -123,6 +126,34 @@ export default function ImagesPage() {
     }
   };
 
+  const handlePostStory = async (image: ImageData) => {
+    setPostErrors(prev => ({ ...prev, [image.id]: null }));
+    setPostSuccess(prev => ({ ...prev, [image.id]: false }));
+    setPosting(prev => ({ ...prev, [image.id]: true }));
+
+    try {
+      const res = await fetch('/api/post-instagram-story', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageUrl: image.image_url }),
+      });
+
+      const data = await res.json().catch(() => ({ success: false, error: 'Posting failed' }));
+      if (!res.ok || data.success === false) {
+        setPostErrors(prev => ({ ...prev, [image.id]: data.error || 'Posting failed' }));
+        return;
+      }
+
+      setPostSuccess(prev => ({ ...prev, [image.id]: true }));
+      setTimeout(() => setPostSuccess(prev => ({ ...prev, [image.id]: false })), 2500);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Posting failed';
+      setPostErrors(prev => ({ ...prev, [image.id]: message }));
+    } finally {
+      setPosting(prev => ({ ...prev, [image.id]: false }));
+    }
+  };
+
   return (
     <div>
       <Header title="Bildebibliotek" />
@@ -198,12 +229,22 @@ export default function ImagesPage() {
                   }}
                   onSave={() => handleSave(image)}
                   saving={!!saving[image.id]}
-                  error={saveErrors[image.id]}
-                  success={saveSuccess[image.id]}
+                  error={saveErrors[image.id] || postErrors[image.id]}
+                  success={saveSuccess[image.id] || postSuccess[image.id]}
                   extraActions={image.tags?.type === 'rendered' ? null : (
-                    <Link href={`/admin/render?imageId=${encodeURIComponent(image.id)}`} className="btn-secondary no-underline whitespace-nowrap">
-                      Bruk i story
-                    </Link>
+                    <>
+                      <Link href={`/admin/render?imageId=${encodeURIComponent(image.id)}`} className="btn-secondary no-underline whitespace-nowrap">
+                        Bruk i story
+                      </Link>
+                      <button
+                        type="button"
+                        className="btn-primary whitespace-nowrap"
+                        onClick={() => handlePostStory(image)}
+                        disabled={!!posting[image.id]}
+                      >
+                        {posting[image.id] ? 'Poster...' : 'Post Story'}
+                      </button>
+                    </>
                   )}
                 />
               );
