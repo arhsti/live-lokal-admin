@@ -4,7 +4,7 @@ import Header from '../../components/Header';
 
 interface ImageItem {
   id: string;
-  image_url: string;
+  imageUrl: string;
   tags?: { number: string; eventType?: string };
 }
 
@@ -92,7 +92,7 @@ export default function RenderPage() {
 
     try {
       const text = [title.trim(), body.trim()].filter(Boolean).join('\n');
-      const uploaded = await renderOnServer(image.image_url, text);
+      const uploaded = await renderOnServer(image.imageUrl, text);
       setResult(uploaded);
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Ukjent feil ved rendering';
@@ -153,7 +153,7 @@ export default function RenderPage() {
             <div className="card p-4">
               <div className="bg-gray-100" style={{ height: 520 }}>
                 <img
-                  src={image.image_url}
+                  src={image.imageUrl}
                   alt="Preview"
                   style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
                 />

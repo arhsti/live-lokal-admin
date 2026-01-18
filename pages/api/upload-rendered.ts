@@ -48,8 +48,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await r2PutObject(key, buffer, file.mimetype || 'image/jpeg');
     await registerRenderedImage(renderedId, imageId);
 
-    const image_url = `${R2_PUBLIC_BASE_URL}/${key}`;
-    return res.status(200).json({ key, image_url });
+    const imageUrl = `${R2_PUBLIC_BASE_URL}/${key}`;
+    return res.status(200).json({ key, imageUrl });
   } catch (error) {
     return res.status(500).json({ error: 'Upload failed' });
   }

@@ -65,8 +65,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       acl: 'public-read',
     });
 
-    const image_url = `${R2_PUBLIC_BASE_URL}/${key}`;
-    return res.status(200).json({ id, image_url });
+    const imageUrl = `${R2_PUBLIC_BASE_URL}/${key}`;
+    return res.status(200).json({ id, imageUrl });
   } catch (error) {
     console.error('Upload failed:', error);
     return res.status(500).json({ error: 'Upload failed' });

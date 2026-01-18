@@ -5,7 +5,7 @@ import ImageCard from '../../components/ImageCard';
 
 interface ImageData {
   id: string;
-  image_url: string;
+  imageUrl: string;
   tags?: { number: string; eventType?: string; type?: 'raw' | 'rendered'; description?: string };
 }
 
@@ -142,7 +142,7 @@ export default function ImagesPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          imageUrl: image.image_url,
+          imageUrl: image.imageUrl,
           description: current.description,
           draktnummer: current.number,
           hendelse: current.eventType,
@@ -219,7 +219,7 @@ export default function ImagesPage() {
               return (
                 <ImageCard
                   key={image.id}
-                  imageUrl={image.image_url}
+                  imageUrl={image.imageUrl}
                   description={current.description}
                   number={current.number}
                   eventType={current.eventType}

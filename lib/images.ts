@@ -15,7 +15,7 @@ export interface ImageMeta {
 
 export interface ImageItem {
   id: string;
-  image_url: string;
+  imageUrl: string;
   created_at?: string;
   tags: { number: string; eventType: EventType; description?: string; type?: ImageType; sourceImageId?: string };
 }
@@ -58,12 +58,12 @@ export async function listImages(): Promise<ImageItem[]> {
     const key = item.Key as string;
     const filename = key.replace(RAW_PREFIX, '').replace(RENDERED_PREFIX, '');
     const id = filename.replace(/\.[^/.]+$/, '');
-    const image_url = `${process.env.R2_PUBLIC_BASE_URL}/${key}`;
+    const imageUrl = `${process.env.R2_PUBLIC_BASE_URL}/${key}`;
     const meta = metaMap[id];
     const inferredType: ImageType = key.startsWith(RENDERED_PREFIX) ? 'rendered' : 'raw';
     return {
       id,
-      image_url,
+      imageUrl,
       created_at: meta?.created_at || (item.LastModified ? item.LastModified.toISOString() : undefined),
       tags: {
         number: meta?.number || '',
@@ -88,13 +88,13 @@ export async function getImageById(id: string): Promise<ImageItem | null> {
   if (!item || !item.Key) return null;
 
   const key = item.Key as string;
-  const image_url = `${process.env.R2_PUBLIC_BASE_URL}/${key}`;
+  const imageUrl = `${process.env.R2_PUBLIC_BASE_URL}/${key}`;
   const metaMap = await loadMeta();
   const meta = metaMap[id];
   const inferredType: ImageType = key.startsWith(RENDERED_PREFIX) ? 'rendered' : 'raw';
   return {
     id,
-    image_url,
+    imageUrl,
     created_at: meta?.created_at || (item.LastModified ? item.LastModified.toISOString() : undefined),
     tags: {
       number: meta?.number || '',
