@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { promises as fs } from 'fs';
 import formidable from 'formidable';
+import sharp from 'sharp';
 import { r2PutObject } from '@/lib/r2';
 import { registerRenderedImage } from '@/lib/images';
 
@@ -39,17 +40,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Empty file' });
     }
 
-    const buffer = await fs.readFile(file.filepath);
+    const mime = (file.mimetype || '').toLowerCase();
+    if (mime === 'image/svg+xml' || mime === 'image/webp' || mime === 'image/heic' || mime === 'image/heif') {
+      return res.status(400).json({ error: 'Unsupported file type' });
+    }
+
+    const inputBuffer = await fs.readFile(file.filepath);
+    const sharpPipeline = sharp(inputBuffer)
+      .resize({
+        width: 1080,
+        height: 1920,
+        fit: 'cover',
+        position: 'centre',
+      })
+      .jpeg({ quality: 90, progressive: false, chromaSubsampling: '4:4:4' });
+
+    const processedBuffer = (sharpPipeline as any).removeMetadata
+      ? (sharpPipeline as any).removeMetadata()
+      : sharpPipeline;
+
+    const outputBuffer = await processedBuffer.toBuffer();
+    const metadata = await sharp(outputBuffer).metadata();
+    if (metadata.width !== 1080 || metadata.height !== 1920) {
+      throw new Error('Processed image dimensions are invalid');
+    }
     const imageId = typeof fields.imageId === 'string' ? fields.imageId : Array.isArray(fields.imageId) ? fields.imageId[0] : 'image';
     const timestamp = Date.now();
     const renderedId = `${imageId}-${timestamp}`;
     const key = `uploads/rendered/${renderedId}.jpg`;
 
-    await r2PutObject(key, buffer, file.mimetype || 'image/jpeg');
+    await r2PutObject(key, outputBuffer, 'image/jpeg');
     await registerRenderedImage(renderedId, imageId);
 
     const imageUrl = `${R2_PUBLIC_BASE_URL}/${key}`;
-    return res.status(200).json({ key, imageUrl });
+    return res.status(200).json({ imageUrl, width: 1080, height: 1920 });
   } catch (error) {
     return res.status(500).json({ error: 'Upload failed' });
   }

@@ -49,24 +49,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Unsupported file type' });
     }
 
-    const buffer = await fs.readFile(file.filepath);
-    const processed = await sharp(buffer)
-      .resize(1080, 1920, { fit: 'cover', position: 'center' })
-      .toColourspace('srgb')
-      .flatten({ background: { r: 255, g: 255, b: 255 } })
-      .jpeg({ quality: 90, progressive: false, chromaSubsampling: '4:4:4' })
-      .toBuffer();
+    const inputBuffer = await fs.readFile(file.filepath);
+    const sharpPipeline = sharp(inputBuffer)
+      .resize({
+        width: 1080,
+        height: 1920,
+        fit: 'cover',
+        position: 'centre',
+      })
+      .jpeg({ quality: 90, progressive: false, chromaSubsampling: '4:4:4' });
+
+    const processedBuffer = (sharpPipeline as any).removeMetadata
+      ? (sharpPipeline as any).removeMetadata()
+      : sharpPipeline;
+
+    const outputBuffer = await processedBuffer.toBuffer();
+    const metadata = await sharp(outputBuffer).metadata();
+    if (metadata.width !== 1080 || metadata.height !== 1920) {
+      throw new Error('Processed image dimensions are invalid');
+    }
 
     const id = uuidv4();
     const key = `uploads/raw/${id}.jpg`;
 
-    await r2PutObject(key, processed, 'image/jpeg', {
+    await r2PutObject(key, outputBuffer, 'image/jpeg', {
       cacheControl: 'public, max-age=31536000',
       acl: 'public-read',
     });
 
     const imageUrl = `${R2_PUBLIC_BASE_URL}/${key}`;
-    return res.status(200).json({ id, imageUrl });
+    return res.status(200).json({ imageUrl, width: 1080, height: 1920 });
   } catch (error) {
     console.error('Upload failed:', error);
     return res.status(500).json({ error: 'Upload failed' });
