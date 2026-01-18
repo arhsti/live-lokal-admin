@@ -84,7 +84,7 @@ export default function ImagesPage() {
     const num = parseInt(String(current.number || ''), 10);
     if (Number.isNaN(num) || num < 1 || num > 99) {
       setSaveErrors(prev => ({ ...prev, [image.id]: 'Draktnummer må være et tall mellom 1 og 99' }));
-      return;
+      return false;
     }
 
     setSaveErrors(prev => ({ ...prev, [image.id]: null }));
@@ -114,13 +114,16 @@ export default function ImagesPage() {
         } : im));
         setSaveSuccess(prev => ({ ...prev, [image.id]: true }));
         setTimeout(() => setSaveSuccess(prev => ({ ...prev, [image.id]: false })), 2500);
+        return true;
       } else {
         const err = await res.json().catch(() => ({ error: 'Failed to save' }));
         setSaveErrors(prev => ({ ...prev, [image.id]: err.error || 'Failed to save' }));
+        return false;
       }
     } catch (e) {
       console.error(e);
       setSaveErrors(prev => ({ ...prev, [image.id]: 'Failed to save' }));
+      return false;
     } finally {
       setSaving(prev => ({ ...prev, [image.id]: false }));
     }
@@ -132,6 +135,12 @@ export default function ImagesPage() {
     setPosting(prev => ({ ...prev, [image.id]: true }));
 
     try {
+      const saved = await handleSave(image);
+      if (!saved) {
+        setPostErrors(prev => ({ ...prev, [image.id]: 'Lagring feilet. Kan ikke publisere.' }));
+        return;
+      }
+
       const current = editing[image.id] || {
         number: image.tags?.number || '',
         eventType: image.tags?.eventType || 'Alle',
@@ -251,7 +260,7 @@ export default function ImagesPage() {
                         type="button"
                         className="btn-primary whitespace-nowrap"
                         onClick={() => handlePostStory(image)}
-                        disabled={!!posting[image.id]}
+                        disabled={!!posting[image.id] || !!saving[image.id]}
                       >
                         {posting[image.id] ? 'Sender...' : 'Send til publisering'}
                       </button>

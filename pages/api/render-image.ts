@@ -109,10 +109,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 
 function buildTextSvg(hendelse: string, tidspunkt: string) {
-  const fontFamily = 'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif';
+  const fontFamily = 'Arial, Helvetica, sans-serif';
   const baseY = Math.round(HEIGHT * 0.8);
   const hendelseSize = 96;
-  const tidspunktSize = 72;
+  const tidspunktSize = 56;
   const lineGap = 20;
   const hendelseY = baseY;
   const tidspunktY = baseY + hendelseSize + lineGap;
@@ -122,8 +122,24 @@ function buildTextSvg(hendelse: string, tidspunkt: string) {
   return `
     <svg width="${WIDTH}" height="${HEIGHT}" xmlns="http://www.w3.org/2000/svg">
       <style>
-        .headline { font-size: ${hendelseSize}px; font-weight: 700; fill: #ffffff; font-family: ${fontFamily}; }
-        .sub { font-size: ${tidspunktSize}px; font-weight: 700; fill: #ffffff; font-family: ${fontFamily}; }
+        .event {
+          font-size: ${hendelseSize}px;
+          font-weight: 700;
+          fill: #ffffff;
+          stroke: #000000;
+          stroke-width: 4px;
+          paint-order: stroke fill;
+          font-family: ${fontFamily};
+        }
+        .time {
+          font-size: ${tidspunktSize}px;
+          font-weight: 700;
+          fill: #ffffff;
+          stroke: #000000;
+          stroke-width: 3px;
+          paint-order: stroke fill;
+          font-family: ${fontFamily};
+        }
       </style>
       <defs>
         <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
@@ -136,7 +152,7 @@ function buildTextSvg(hendelse: string, tidspunkt: string) {
         text-anchor="middle"
         dominant-baseline="middle"
         filter="url(#shadow)"
-        class="headline"
+        class="event"
       >${safeHendelse}</text>
       <text
         x="${WIDTH / 2}"
@@ -144,7 +160,7 @@ function buildTextSvg(hendelse: string, tidspunkt: string) {
         text-anchor="middle"
         dominant-baseline="middle"
         filter="url(#shadow)"
-        class="sub"
+        class="time"
       >${safeTidspunkt}</text>
     </svg>
   `;
