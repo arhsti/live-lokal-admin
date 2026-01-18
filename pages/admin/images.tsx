@@ -109,11 +109,11 @@ export default function ImagesPage() {
 
   return (
     <div>
-      <Header title="Images" />
+      <Header title="Bildebibliotek" />
       <main className="container-base space-y-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-extrabold">Images</h1>
+            <h1 className="text-3xl font-extrabold">Bildebibliotek</h1>
             <p className="text-sm text-gray-600 mt-1">Upload and manage images</p>
           </div>
           <div className="flex items-center gap-3">

@@ -8,9 +8,6 @@ interface ImageItem {
   tags?: { number: string; eventType?: string };
 }
 
-const CANVAS_WIDTH = 1080;
-const CANVAS_HEIGHT = 1920;
-
 export default function RenderPage() {
   const router = useRouter();
   const imageId = useMemo(() => {
@@ -94,22 +91,8 @@ export default function RenderPage() {
     setRendering(true);
 
     try {
-      const img = await loadImage(image.image_url);
-      const canvas = document.createElement('canvas');
-      canvas.width = CANVAS_WIDTH;
-      canvas.height = CANVAS_HEIGHT;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('Kunne ikke starte canvas');
-
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-      drawImageContain(ctx, img, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-
-      const lines = [title.trim(), body.trim()].filter(Boolean);
-      drawOverlayText(ctx, lines, CANVAS_WIDTH, CANVAS_HEIGHT);
-
-      const blob = await canvasToJpeg(canvas);
-      const uploaded = await uploadRendered(image.id, blob);
+      const text = [title.trim(), body.trim()].filter(Boolean).join('\n');
+      const uploaded = await renderOnServer(image.image_url, text);
       setResult(uploaded);
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Ukjent feil ved rendering';
@@ -222,109 +205,16 @@ export default function RenderPage() {
   );
 }
 
-function loadImage(src: string) {
-  return new Promise<HTMLImageElement>((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error('Kunne ikke laste bilde'));
-    img.src = src;
-  });
-}
-
-function drawImageContain(
-  ctx: CanvasRenderingContext2D,
-  img: HTMLImageElement,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-) {
-  const imgRatio = img.width / img.height;
-  const canvasRatio = width / height;
-
-  let drawWidth = width;
-  let drawHeight = height;
-  if (imgRatio > canvasRatio) {
-    drawHeight = width / imgRatio;
-  } else {
-    drawWidth = height * imgRatio;
-  }
-
-  const dx = x + (width - drawWidth) / 2;
-  const dy = y + (height - drawHeight) / 2;
-  ctx.drawImage(img, dx, dy, drawWidth, drawHeight);
-}
-
-function drawOverlayText(
-  ctx: CanvasRenderingContext2D,
-  lines: string[],
-  width: number,
-  height: number,
-) {
-  if (!lines.length) return;
-  const maxWidth = width * 0.9;
-  const fontFamily = 'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif';
-
-  const sizes = lines.map((_, index) => (index === 0 ? 96 : 56));
-  const minSizes = lines.map((_, index) => (index === 0 ? 56 : 32));
-
-  const fits = () => lines.every((line, index) => {
-    ctx.font = `700 ${sizes[index]}px ${fontFamily}`;
-    return ctx.measureText(line).width <= maxWidth;
-  });
-
-  while (!fits() && sizes.some((size, index) => size > minSizes[index])) {
-    for (let i = 0; i < sizes.length; i += 1) {
-      if (sizes[i] > minSizes[i]) sizes[i] -= 4;
-    }
-  }
-
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#ffffff';
-  ctx.shadowColor = 'rgba(0,0,0,0.4)';
-  ctx.shadowBlur = 10;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 4;
-
-  const lineHeights = sizes.map(size => size * 1.2);
-  const totalHeight = lineHeights.reduce((sum, h) => sum + h, 0);
-  const minY = 40;
-  const maxY = height - totalHeight - 40;
-  const centeredY = height / 2 - totalHeight / 2;
-  const startY = Math.min(Math.max(centeredY, minY), maxY);
-
-  let offsetY = startY;
-  lines.forEach((line, index) => {
-    ctx.font = `700 ${sizes[index]}px ${fontFamily}`;
-    const y = offsetY + lineHeights[index] / 2;
-    ctx.fillText(line, width / 2, y, maxWidth);
-    offsetY += lineHeights[index];
-  });
-}
-
-function canvasToJpeg(canvas: HTMLCanvasElement): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (!blob) return reject(new Error('Kunne ikke generere JPG (mulig CORS/canvas-feil)'));
-      resolve(blob);
-    }, 'image/jpeg', 0.95);
-  });
-}
-
-async function uploadRendered(imageId: string, blob: Blob) {
-  const form = new FormData();
-  form.append('file', blob, 'rendered.jpg');
-
-  const res = await fetch('/api/upload-image', {
+async function renderOnServer(imageUrl: string, text: string) {
+  const res = await fetch('/api/render-image', {
     method: 'POST',
-    body: form,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ imageUrl, text }),
   });
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: 'Upload feilet' }));
-    throw new Error(err.error || 'Upload feilet');
+    const err = await res.json().catch(() => ({ error: 'Render feilet' }));
+    throw new Error(err.error || 'Render feilet');
   }
 
   const data = await res.json();

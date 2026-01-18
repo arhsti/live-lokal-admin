@@ -1,0 +1,103 @@
+import type { NextApiRequest, NextApiResponse } from 'next';
+import sharp from 'sharp';
+import { r2PutObject } from '@/lib/r2';
+
+const WIDTH = 1080;
+const HEIGHT = 1920;
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', ['POST']);
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    const { R2_BUCKET_NAME, R2_PUBLIC_BASE_URL, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID, R2_ENDPOINT } = process.env;
+    if (!R2_BUCKET_NAME || !R2_PUBLIC_BASE_URL || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || (!R2_ACCOUNT_ID && !R2_ENDPOINT)) {
+      return res.status(500).json({ error: 'Missing R2 configuration' });
+    }
+
+    const { imageUrl, text } = req.body || {};
+    if (!imageUrl || typeof imageUrl !== 'string') {
+      return res.status(400).json({ error: 'imageUrl is required' });
+    }
+
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      return res.status(400).json({ error: 'Failed to fetch image' });
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const baseImage = await sharp(Buffer.from(arrayBuffer))
+      .resize(WIDTH, HEIGHT, { fit: 'cover', position: 'center' })
+      .toBuffer();
+
+    const overlayText = typeof text === 'string' ? text.trim() : '';
+    const svg = overlayText ? buildTextSvg(overlayText) : null;
+
+    const rendered = svg
+      ? await sharp(baseImage)
+        .composite([{ input: Buffer.from(svg) }])
+        .jpeg({ quality: 92 })
+        .toBuffer()
+      : await sharp(baseImage).jpeg({ quality: 92 }).toBuffer();
+
+    const key = `uploads/rendered/${Date.now()}.jpg`;
+    await r2PutObject(key, rendered, 'image/jpeg');
+
+    const image_url = `${R2_PUBLIC_BASE_URL}/${key}`;
+    return res.status(200).json({ image_url });
+  } catch (error) {
+    return res.status(500).json({ error: 'Render failed' });
+  }
+}
+
+function buildTextSvg(text: string) {
+  const lines = text
+    .split('\n')
+    .map(line => line.trim())
+    .filter(Boolean);
+
+  const fontFamily = 'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif';
+  const fontSize = lines.length <= 1 ? 96 : lines.length === 2 ? 72 : 60;
+  const lineHeight = Math.round(fontSize * 1.2);
+  const totalHeight = lineHeight * lines.length;
+  const startY = HEIGHT / 2 - totalHeight / 2 + lineHeight / 2;
+
+  const tspans = lines.map((line, index) => {
+    const dy = index === 0 ? 0 : lineHeight;
+    return `<tspan x="${WIDTH / 2}" dy="${dy}">${escapeXml(line)}</tspan>`;
+  }).join('');
+
+  return `
+    <svg width="${WIDTH}" height="${HEIGHT}" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="rgba(0,0,0,0.5)" />
+        </filter>
+      </defs>
+      <text
+        x="${WIDTH / 2}"
+        y="${startY}"
+        text-anchor="middle"
+        dominant-baseline="middle"
+        font-family="${fontFamily}"
+        font-size="${fontSize}"
+        font-weight="700"
+        fill="#ffffff"
+        filter="url(#shadow)"
+      >
+        ${tspans}
+      </text>
+    </svg>
+  `;
+}
+
+function escapeXml(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
