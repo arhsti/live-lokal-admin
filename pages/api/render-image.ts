@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { R2_BUCKET_NAME, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID, R2_ENDPOINT } = process.env;
+    const { R2_BUCKET_NAME, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID, R2_ENDPOINT, R2_PUBLIC_BASE_URL } = process.env;
     if (!R2_BUCKET_NAME || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || (!R2_ACCOUNT_ID && !R2_ENDPOINT)) {
       throw new Error('Missing R2 configuration');
     }
@@ -92,9 +92,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       : await sharp(baseImage).jpeg({ quality: 92 }).toBuffer();
 
     const key = `uploads/rendered/${Date.now()}.jpg`;
-    await r2PutObject(key, rendered, 'image/jpeg');
+    await r2PutObject(key, rendered, 'image/jpeg', {
+      cacheControl: 'public, max-age=31536000',
+      acl: 'public-read',
+    });
 
-    const image_url = `${parsedUrl.origin}/${key}`;
+    if (!R2_PUBLIC_BASE_URL) {
+      throw new Error('R2 public base URL missing');
+    }
+    const image_url = `${R2_PUBLIC_BASE_URL}/${key}`;
     return res.status(200).json({ success: true, url: image_url });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Render failed';

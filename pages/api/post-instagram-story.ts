@@ -18,6 +18,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ success: false, error: 'imageUrl is required' });
     }
 
+    try {
+      const headRes = await fetch(imageUrl, { method: 'HEAD' });
+      const contentType = headRes.headers.get('content-type') || '';
+      if (!headRes.ok || !contentType.startsWith('image/')) {
+        return res.status(400).json({ success: false, error: 'Image is not publicly accessible to Instagram' });
+      }
+    } catch {
+      return res.status(400).json({ success: false, error: 'Image is not publicly accessible to Instagram' });
+    }
+
     const version = INSTAGRAM_GRAPH_API_VERSION || 'v19.0';
     const baseUrl = `https://graph.facebook.com/${version}`;
 

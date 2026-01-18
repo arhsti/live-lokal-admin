@@ -41,13 +41,20 @@ export async function r2Put(key: string, body: string, contentType = 'applicatio
   }));
 }
 
-export async function r2PutObject(key: string, body: Buffer | Uint8Array, contentType = 'application/octet-stream') {
+export async function r2PutObject(
+  key: string,
+  body: Buffer | Uint8Array,
+  contentType = 'application/octet-stream',
+  options?: { cacheControl?: string; acl?: string },
+) {
   const s3 = getClient();
   return s3.send(new PutObjectCommand({
     Bucket: process.env.R2_BUCKET_NAME || '',
     Key: key,
     Body: body,
     ContentType: contentType,
+    CacheControl: options?.cacheControl,
+    ACL: options?.acl as any,
   }));
 }
 

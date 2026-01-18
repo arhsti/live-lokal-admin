@@ -65,7 +65,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ? `uploads/rendered/${id}.${extension}`
       : `uploads/raw/${id}.${extension}`;
 
-    await r2PutObject(key, buffer, mime || 'image/jpeg');
+    await r2PutObject(key, buffer, mime || 'image/jpeg', {
+      cacheControl: 'public, max-age=31536000',
+      acl: 'public-read',
+    });
 
     if (isRendered && sourceImageId) {
       await registerRenderedImage(id, sourceImageId);
