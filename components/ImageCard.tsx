@@ -31,7 +31,7 @@ export default function ImageCard({
   extraActions,
 }: ImageCardProps) {
   return (
-    <div className="card overflow-hidden">
+    <div className="card">
       <div className="bg-gray-100" style={{ height: 180 }}>
         {imageUrl ? (
           <img
@@ -51,7 +51,7 @@ export default function ImageCard({
         )}
       </div>
 
-      <div className="p-4 space-y-3">
+      <div className="p-5 space-y-3">
         <div className="space-y-3">
           <div>
             <label className="text-xs text-gray-500">Beskrivelse</label>
@@ -64,10 +64,10 @@ export default function ImageCard({
           </div>
           <div className="grid gap-3 md:grid-cols-2">
           <div>
-            <label className="text-xs text-gray-500 flex items-center gap-2">
+              <label className="text-xs text-gray-500 flex items-center gap-2">
               Draktnummer
               <Tooltip text="Bilde tilknyttet spiller. Dette vil velges når en hendelse om denne spilleren skjer.">
-                <span className="text-[11px] text-gray-500">ℹ</span>
+                  <span className="text-[12px] text-gray-600 font-semibold">ℹ</span>
               </Tooltip>
             </label>
             <input
@@ -80,10 +80,10 @@ export default function ImageCard({
             />
           </div>
           <div>
-            <label className="text-xs text-gray-500 flex items-center gap-2">
+              <label className="text-xs text-gray-500 flex items-center gap-2">
               Hendelse
               <Tooltip text="Velg hvilken type hendelse som dette bildet skal brukes til">
-                <span className="text-[11px] text-gray-500">ℹ</span>
+                  <span className="text-[12px] text-gray-600 font-semibold">ℹ</span>
               </Tooltip>
             </label>
             <select
@@ -99,16 +99,16 @@ export default function ImageCard({
           </div>
           </div>
         </div>
-        <div className="flex justify-end">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={onSave}
             disabled={saving}
-            className="btn-secondary w-full md:w-auto whitespace-nowrap"
+            className="btn-secondary whitespace-nowrap"
           >
             {saving ? 'Saving...' : 'Save'}
           </button>
+          {extraActions}
         </div>
-        {extraActions && <div className="flex items-center gap-2 flex-wrap">{extraActions}</div>}
         {error && <div className="text-sm text-red-500">{error}</div>}
         {success && <div className="text-sm text-green-600">Lagret ✓</div>}
       </div>

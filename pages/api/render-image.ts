@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import type { Readable } from 'stream';
 import sharp from 'sharp';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { r2PutObject } from '@/lib/r2';
@@ -64,13 +65,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error('Empty R2 body');
     }
 
-    const body = result.Body as any;
-    if (typeof body.arrayBuffer !== 'function') {
-      throw new Error('R2 body does not support arrayBuffer');
-    }
-
-    const arrayBuffer = await body.arrayBuffer();
-    const inputBuffer = Buffer.from(arrayBuffer);
+    const bodyStream = result.Body as Readable;
+    const inputBuffer = await streamToBuffer(bodyStream);
 
     if (!inputBuffer.length) {
       throw new Error('Image buffer is empty');
@@ -154,4 +150,13 @@ function escapeXml(value: string) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function streamToBuffer(stream: Readable): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+    stream.on('error', reject);
+    stream.on('end', () => resolve(Buffer.concat(chunks)));
+  });
 }
