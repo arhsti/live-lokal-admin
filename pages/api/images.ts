@@ -24,7 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'POST') {
     try {
-      const { id, number, eventType } = req.body || {};
+      const { id, number, eventType, description } = req.body || {};
       if (!id) {
         return res.status(400).json({ error: 'Missing image id' });
       }
@@ -39,8 +39,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'number must be an integer between 1 and 99' });
       }
 
-      const meta = await updateImageMeta(String(id), String(parsed), eventType as EventType);
-      return res.status(200).json({ id: meta.id, tags: { number: meta.number, eventType: meta.eventType } });
+      const meta = await updateImageMeta(
+        String(id),
+        String(parsed),
+        eventType as EventType,
+        typeof description === 'string' ? description : '',
+      );
+      return res.status(200).json({ id: meta.id, tags: { number: meta.number, eventType: meta.eventType, description: meta.description || '' } });
     } catch (error) {
       console.error('Failed to update image tags:', error);
       return res.status(500).json({ error: 'Failed to update tags' });

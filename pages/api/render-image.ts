@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import sharp from 'sharp';
-import { r2Get, r2PutObject, readBodyAsBuffer } from '@/lib/r2';
+import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { r2PutObject } from '@/lib/r2';
 
 const WIDTH = 1080;
 const HEIGHT = 1920;
@@ -12,8 +13,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { R2_BUCKET_NAME, R2_PUBLIC_BASE_URL, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID, R2_ENDPOINT } = process.env;
-    if (!R2_BUCKET_NAME || !R2_PUBLIC_BASE_URL || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || (!R2_ACCOUNT_ID && !R2_ENDPOINT)) {
+    const { R2_BUCKET_NAME, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID, R2_ENDPOINT } = process.env;
+    if (!R2_BUCKET_NAME || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || (!R2_ACCOUNT_ID && !R2_ENDPOINT)) {
       return res.status(500).json({ success: false, error: 'Missing R2 configuration' });
     }
 
@@ -26,40 +27,58 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       parsedUrl = new URL(imageUrl);
     } catch {
-      return res.status(400).json({ success: false, error: 'imageUrl is invalid' });
+      throw new Error('imageUrl is invalid');
     }
 
-    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
-      return res.status(400).json({ success: false, error: 'imageUrl must be http or https' });
+    const objectKey = parsedUrl.pathname.replace(/^\//, '');
+    if (!objectKey) {
+      throw new Error('Could not derive R2 object key');
     }
 
-    let baseUrl: URL;
-    try {
-      baseUrl = new URL(R2_PUBLIC_BASE_URL);
-    } catch {
-      return res.status(500).json({ success: false, error: 'R2 public base URL is invalid' });
+    if (objectKey.includes('http') || objectKey.includes('https') || objectKey.includes('://') || objectKey.includes(parsedUrl.hostname)) {
+      throw new Error('Object key contains invalid URL data');
     }
 
-    if (parsedUrl.origin !== baseUrl.origin) {
-      return res.status(400).json({ success: false, error: 'imageUrl must match public R2 base URL' });
+    const endpoint = R2_ACCOUNT_ID
+      ? `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`
+      : R2_ENDPOINT;
+    if (!endpoint) {
+      throw new Error('Missing R2 endpoint');
     }
 
-    const basePath = baseUrl.pathname.endsWith('/') ? baseUrl.pathname : `${baseUrl.pathname}/`;
-    const rawPath = parsedUrl.pathname.startsWith(basePath)
-      ? parsedUrl.pathname.slice(basePath.length)
-      : parsedUrl.pathname.replace(/^\//, '');
+    const r2 = new S3Client({
+      region: 'auto',
+      endpoint,
+      credentials: {
+        accessKeyId: R2_ACCESS_KEY_ID,
+        secretAccessKey: R2_SECRET_ACCESS_KEY,
+      },
+    });
 
-    if (!rawPath) {
-      return res.status(400).json({ success: false, error: 'Could not derive R2 object key' });
+    const result = await r2.send(new GetObjectCommand({
+      Bucket: R2_BUCKET_NAME,
+      Key: objectKey,
+    }));
+
+    if (!result.Body) {
+      throw new Error('Empty R2 body');
     }
 
-    const obj = await r2Get(rawPath);
-    if (!obj.Body) {
-      return res.status(500).json({ success: false, error: 'R2 object body missing' });
+    const body = result.Body as any;
+    if (typeof body.arrayBuffer !== 'function') {
+      throw new Error('R2 body does not support arrayBuffer');
     }
-    const inputBuffer = await readBodyAsBuffer(obj.Body);
+
+    const arrayBuffer = await body.arrayBuffer();
+    const inputBuffer = Buffer.from(arrayBuffer);
+
     if (!inputBuffer.length) {
-      return res.status(500).json({ success: false, error: 'Image buffer is empty' });
+      throw new Error('Image buffer is empty');
+    }
+
+    const headerSnippet = inputBuffer.slice(0, 200).toString('utf8').toLowerCase();
+    if (headerSnippet.includes('<svg') || headerSnippet.includes('<html')) {
+      throw new Error('Image buffer contains SVG/HTML content');
     }
 
     const baseImage = await sharp(inputBuffer)
@@ -79,10 +98,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const key = `uploads/rendered/${Date.now()}.jpg`;
     await r2PutObject(key, rendered, 'image/jpeg');
 
-    const image_url = `${R2_PUBLIC_BASE_URL}/${key}`;
+    const image_url = `${parsedUrl.origin}/${key}`;
     return res.status(200).json({ success: true, url: image_url });
   } catch (error) {
-    console.error('Render failed:', error);
     const message = error instanceof Error ? error.message : 'Render failed';
     return res.status(500).json({ success: false, error: message });
   }

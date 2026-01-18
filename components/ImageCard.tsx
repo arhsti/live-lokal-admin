@@ -3,8 +3,10 @@ import Tooltip from './Tooltip';
 
 interface ImageCardProps {
   imageUrl: string;
+  description: string;
   number: string;
   eventType: string;
+  onDescriptionChange: (value: string) => void;
   onNumberChange: (value: string) => void;
   onEventChange: (value: string) => void;
   onSave: () => void;
@@ -16,8 +18,10 @@ interface ImageCardProps {
 
 export default function ImageCard({
   imageUrl,
+  description,
   number,
   eventType,
+  onDescriptionChange,
   onNumberChange,
   onEventChange,
   onSave,
@@ -48,7 +52,17 @@ export default function ImageCard({
       </div>
 
       <div className="p-4 space-y-3">
-        <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs text-gray-500">Beskrivelse</label>
+            <textarea
+              value={description}
+              onChange={(e) => onDescriptionChange(e.target.value)}
+              className="input w-full mt-1 text-sm"
+              rows={3}
+            />
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
           <div>
             <label className="text-xs text-gray-500 flex items-center gap-2">
               Draktnummer
@@ -83,15 +97,16 @@ export default function ImageCard({
               <option value="Alle">Alle</option>
             </select>
           </div>
-          <div className="flex items-end">
-            <button
-              onClick={onSave}
-              disabled={saving}
-              className="btn-secondary w-full md:w-auto"
-            >
-              {saving ? 'Saving...' : 'Save'}
-            </button>
           </div>
+        </div>
+        <div className="flex justify-end">
+          <button
+            onClick={onSave}
+            disabled={saving}
+            className="btn-secondary w-full md:w-auto whitespace-nowrap"
+          >
+            {saving ? 'Saving...' : 'Save'}
+          </button>
         </div>
         {extraActions && <div className="flex items-center gap-2 flex-wrap">{extraActions}</div>}
         {error && <div className="text-sm text-red-500">{error}</div>}

@@ -6,7 +6,7 @@ import ImageCard from '../../components/ImageCard';
 interface ImageData {
   id: string;
   image_url: string;
-  tags?: { number: string; eventType?: string; type?: 'raw' | 'rendered' };
+  tags?: { number: string; eventType?: string; type?: 'raw' | 'rendered'; description?: string };
 }
 
 export default function ImagesPage() {
@@ -14,7 +14,7 @@ export default function ImagesPage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [editing, setEditing] = useState<Record<string, { number: string; eventType: string }>>({});
+  const [editing, setEditing] = useState<Record<string, { number: string; eventType: string; description: string }>>({});
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [saveErrors, setSaveErrors] = useState<Record<string, string | null>>({});
   const [saveSuccess, setSaveSuccess] = useState<Record<string, boolean>>({});
@@ -73,7 +73,11 @@ export default function ImagesPage() {
   };
 
   const handleSave = async (image: ImageData) => {
-    const current = editing[image.id] || { number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
+    const current = editing[image.id] || {
+      number: image.tags?.number || '',
+      eventType: image.tags?.eventType || 'Alle',
+      description: image.tags?.description || '',
+    };
     const num = parseInt(String(current.number || ''), 10);
     if (Number.isNaN(num) || num < 1 || num > 99) {
       setSaveErrors(prev => ({ ...prev, [image.id]: 'Draktnummer må være et tall mellom 1 og 99' }));
@@ -87,12 +91,24 @@ export default function ImagesPage() {
       const res = await fetch('/api/images', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: image.id, number: String(num), eventType: current.eventType }),
+        body: JSON.stringify({
+          id: image.id,
+          number: String(num),
+          eventType: current.eventType,
+          description: current.description,
+        }),
       });
 
       if (res.ok) {
         const updated = await res.json().catch(() => null);
-        setImages(prev => prev.map(im => im.id === image.id ? { ...im, tags: updated?.tags || { number: String(num), eventType: current.eventType } } : im));
+        setImages(prev => prev.map(im => im.id === image.id ? {
+          ...im,
+          tags: updated?.tags || {
+            number: String(num),
+            eventType: current.eventType,
+            description: current.description,
+          },
+        } : im));
         setSaveSuccess(prev => ({ ...prev, [image.id]: true }));
         setTimeout(() => setSaveSuccess(prev => ({ ...prev, [image.id]: false })), 2500);
       } else {
@@ -153,13 +169,23 @@ export default function ImagesPage() {
             }}
           >
             {images.map((image) => {
-              const current = editing[image.id] || { number: image.tags?.number || '', eventType: image.tags?.eventType || 'Alle' };
+              const current = editing[image.id] || {
+                number: image.tags?.number || '',
+                eventType: image.tags?.eventType || 'Alle',
+                description: image.tags?.description || '',
+              };
               return (
                 <ImageCard
                   key={image.id}
                   imageUrl={image.image_url}
+                  description={current.description}
                   number={current.number}
                   eventType={current.eventType}
+                  onDescriptionChange={(value) => {
+                    setEditing(prev => ({ ...prev, [image.id]: { ...current, description: value } }));
+                    setSaveErrors(prev => ({ ...prev, [image.id]: null }));
+                    setSaveSuccess(prev => ({ ...prev, [image.id]: false }));
+                  }}
                   onNumberChange={(value) => {
                     setEditing(prev => ({ ...prev, [image.id]: { ...current, number: value } }));
                     setSaveErrors(prev => ({ ...prev, [image.id]: null }));

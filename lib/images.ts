@@ -7,6 +7,7 @@ export interface ImageMeta {
   id: string;
   number: string;
   eventType: EventType;
+  description?: string;
   created_at?: string;
   type?: ImageType;
   sourceImageId?: string;
@@ -16,7 +17,7 @@ export interface ImageItem {
   id: string;
   image_url: string;
   created_at?: string;
-  tags: { number: string; eventType: EventType; type?: ImageType; sourceImageId?: string };
+  tags: { number: string; eventType: EventType; description?: string; type?: ImageType; sourceImageId?: string };
 }
 
 const RAW_PREFIX = 'uploads/raw/';
@@ -67,6 +68,7 @@ export async function listImages(): Promise<ImageItem[]> {
       tags: {
         number: meta?.number || '',
         eventType: meta?.eventType || 'Alle',
+        description: meta?.description || '',
         type: meta?.type || inferredType,
         sourceImageId: meta?.sourceImageId,
       },
@@ -97,19 +99,21 @@ export async function getImageById(id: string): Promise<ImageItem | null> {
     tags: {
       number: meta?.number || '',
       eventType: meta?.eventType || 'Alle',
+      description: meta?.description || '',
       type: meta?.type || inferredType,
       sourceImageId: meta?.sourceImageId,
     },
   };
 }
 
-export async function updateImageMeta(id: string, number: string, eventType: EventType) {
+export async function updateImageMeta(id: string, number: string, eventType: EventType, description = '') {
   const map = await loadMeta();
   const existing = map[id];
   map[id] = {
     id,
     number,
     eventType,
+    description,
     created_at: existing?.created_at || new Date().toISOString(),
     type: existing?.type,
     sourceImageId: existing?.sourceImageId,

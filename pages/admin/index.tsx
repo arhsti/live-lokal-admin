@@ -33,47 +33,47 @@ export default function Admin() {
           className="grid"
           style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '28px' }}
         >
-          <div className="card p-6 space-y-4">
+          <div className="card p-7 space-y-5">
             <div>
               <div className="flex items-center justify-between gap-4">
                 <h2 className="text-lg font-semibold">Bilder</h2>
                 <div className="text-sm text-gray-500">
-                  Totalt: {imageCount === null ? '—' : `${imageCount} bilder`}
+                  {imageCount === null ? '—' : `Bildebibliotek: ${imageCount} bilder`}
                 </div>
               </div>
               <p className="text-sm text-gray-600 mt-2">Last opp og administrer bilder som brukes i stories.</p>
             </div>
-            <Link href="/admin/images" className="btn-primary inline-block no-underline">
+            <Link href="/admin/images" className="btn-primary inline-block no-underline whitespace-nowrap">
               Gå til bilder
             </Link>
           </div>
 
-          <div className="card p-6 space-y-4">
+          <div className="card p-7 space-y-5">
             <div>
               <h2 className="text-lg font-semibold">Render stories</h2>
               <p className="text-sm text-gray-600 mt-1">Lag story-bilder med tekst.</p>
             </div>
-            <Link href="/admin/render" className="btn-primary inline-block no-underline">
+            <Link href="/admin/render" className="btn-primary inline-block no-underline whitespace-nowrap">
               Gå til render
             </Link>
           </div>
 
-          <div className="card p-6 space-y-4">
+          <div className="card p-7 space-y-5">
             <div>
               <h2 className="text-lg font-semibold">Templates</h2>
               <p className="text-sm text-gray-600 mt-1">Lag maler med tekst og layout for stories.</p>
             </div>
-            <button className="btn-secondary opacity-60 cursor-not-allowed" disabled>
+            <button className="btn-secondary opacity-60 cursor-not-allowed whitespace-nowrap" disabled>
               Gå til templates
             </button>
           </div>
 
-          <div className="card p-6 space-y-4">
+          <div className="card p-7 space-y-5">
             <div>
               <h2 className="text-lg font-semibold">Stories</h2>
               <p className="text-sm text-gray-600 mt-1">Oversikt over genererte stories.</p>
             </div>
-            <button className="btn-secondary opacity-60 cursor-not-allowed" disabled>
+            <button className="btn-secondary opacity-60 cursor-not-allowed whitespace-nowrap" disabled>
               Se stories
             </button>
           </div>
