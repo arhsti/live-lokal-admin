@@ -116,9 +116,15 @@ function buildTextSvg(hendelse: string, tidspunkt: string) {
   const lineGap = 20;
   const hendelseY = baseY;
   const tidspunktY = baseY + hendelseSize + lineGap;
+  const safeHendelse = escapeXml(hendelse);
+  const safeTidspunkt = escapeXml(tidspunkt);
 
   return `
     <svg width="${WIDTH}" height="${HEIGHT}" xmlns="http://www.w3.org/2000/svg">
+      <style>
+        .headline { font-size: ${hendelseSize}px; font-weight: 700; fill: #ffffff; font-family: ${fontFamily}; }
+        .sub { font-size: ${tidspunktSize}px; font-weight: 700; fill: #ffffff; font-family: ${fontFamily}; }
+      </style>
       <defs>
         <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
           <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="rgba(0,0,0,0.6)" />
@@ -129,23 +135,17 @@ function buildTextSvg(hendelse: string, tidspunkt: string) {
         y="${hendelseY}"
         text-anchor="middle"
         dominant-baseline="middle"
-        font-family="${fontFamily}"
-        font-size="${hendelseSize}"
-        font-weight="700"
-        fill="#ffffff"
         filter="url(#shadow)"
-      >${escapeXml(hendelse)}</text>
+        class="headline"
+      >${safeHendelse}</text>
       <text
         x="${WIDTH / 2}"
         y="${tidspunktY}"
         text-anchor="middle"
         dominant-baseline="middle"
-        font-family="${fontFamily}"
-        font-size="${tidspunktSize}"
-        font-weight="700"
-        fill="#ffffff"
         filter="url(#shadow)"
-      >${escapeXml(tidspunkt)}</text>
+        class="sub"
+      >${safeTidspunkt}</text>
     </svg>
   `;
 }
@@ -156,7 +156,7 @@ function escapeXml(value: string) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+    .replace(/'/g, '&apos;');
 }
 
 function streamToBuffer(stream: Readable): Promise<Buffer> {
