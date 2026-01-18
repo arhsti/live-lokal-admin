@@ -16,12 +16,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { R2_BUCKET_NAME, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID, R2_ENDPOINT } = process.env;
     if (!R2_BUCKET_NAME || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || (!R2_ACCOUNT_ID && !R2_ENDPOINT)) {
-      return res.status(500).json({ success: false, error: 'Missing R2 configuration' });
+      throw new Error('Missing R2 configuration');
     }
 
     const { imageUrl, text } = req.body || {};
     if (!imageUrl || typeof imageUrl !== 'string') {
-      return res.status(400).json({ success: false, error: 'imageUrl is required' });
+      throw new Error('imageUrl is required');
     }
 
     let parsedUrl: URL;
@@ -72,8 +72,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error('Image buffer is empty');
     }
 
-    const headerSnippet = inputBuffer.slice(0, 200).toString('utf8').toLowerCase();
-    if (headerSnippet.includes('<svg') || headerSnippet.includes('<html')) {
+    const headerSnippet = inputBuffer.slice(0, 200).toString('utf8').trimStart().toLowerCase();
+    if (headerSnippet.startsWith('<svg') || headerSnippet.startsWith('<html')) {
       throw new Error('Image buffer contains SVG/HTML content');
     }
 

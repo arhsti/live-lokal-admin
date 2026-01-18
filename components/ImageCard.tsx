@@ -64,10 +64,10 @@ export default function ImageCard({
           </div>
           <div className="grid gap-3 md:grid-cols-2">
           <div>
-              <label className="text-xs text-gray-500 flex items-center gap-2">
+              <label className="text-xs text-gray-500 flex items-center gap-3">
               Draktnummer
               <Tooltip text="Bilde tilknyttet spiller. Dette vil velges når en hendelse om denne spilleren skjer.">
-                  <span className="text-[12px] text-gray-600 font-semibold">ℹ</span>
+                  <span className="text-[13px] text-gray-700 font-semibold">ℹ</span>
               </Tooltip>
             </label>
             <input
@@ -80,10 +80,10 @@ export default function ImageCard({
             />
           </div>
           <div>
-              <label className="text-xs text-gray-500 flex items-center gap-2">
+              <label className="text-xs text-gray-500 flex items-center gap-3">
               Hendelse
               <Tooltip text="Velg hvilken type hendelse som dette bildet skal brukes til">
-                  <span className="text-[12px] text-gray-600 font-semibold">ℹ</span>
+                  <span className="text-[13px] text-gray-700 font-semibold">ℹ</span>
               </Tooltip>
             </label>
             <select
@@ -99,7 +99,7 @@ export default function ImageCard({
           </div>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2 flex-nowrap">
           <button
             onClick={onSave}
             disabled={saving}
