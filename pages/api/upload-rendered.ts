@@ -50,8 +50,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .resize({
         width: 1080,
         height: 1920,
-        fit: 'cover',
-        position: 'centre',
+        fit: 'contain',
+        position: 'center',
+        background: { r: 0, g: 0, b: 0, alpha: 1 },
       })
       .jpeg({ quality: 90, progressive: false, chromaSubsampling: '4:4:4' });
 
