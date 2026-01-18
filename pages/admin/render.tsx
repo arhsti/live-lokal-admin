@@ -212,11 +212,10 @@ async function renderOnServer(imageUrl: string, text: string) {
     body: JSON.stringify({ imageUrl, text }),
   });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: 'Render feilet' }));
-    throw new Error(err.error || 'Render feilet');
+  const data = await res.json().catch(() => ({ success: false, error: 'Render feilet' }));
+  if (!res.ok || data.success === false) {
+    throw new Error(data.error || 'Render feilet');
   }
 
-  const data = await res.json();
-  return data.image_url as string;
+  return data.url as string;
 }

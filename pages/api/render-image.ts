@@ -8,27 +8,42 @@ const HEIGHT = 1920;
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 
   try {
     const { R2_BUCKET_NAME, R2_PUBLIC_BASE_URL, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID, R2_ENDPOINT } = process.env;
     if (!R2_BUCKET_NAME || !R2_PUBLIC_BASE_URL || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || (!R2_ACCOUNT_ID && !R2_ENDPOINT)) {
-      return res.status(500).json({ error: 'Missing R2 configuration' });
+      return res.status(500).json({ success: false, error: 'Missing R2 configuration' });
     }
 
     const { imageUrl, text } = req.body || {};
     if (!imageUrl || typeof imageUrl !== 'string') {
-      return res.status(400).json({ error: 'imageUrl is required' });
+      return res.status(400).json({ success: false, error: 'imageUrl is required' });
     }
 
-    const response = await fetch(imageUrl);
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(imageUrl);
+    } catch {
+      return res.status(400).json({ success: false, error: 'imageUrl is invalid' });
+    }
+
+    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+      return res.status(400).json({ success: false, error: 'imageUrl must be http or https' });
+    }
+
+    const response = await fetch(parsedUrl.toString());
     if (!response.ok) {
-      return res.status(400).json({ error: 'Failed to fetch image' });
+      return res.status(400).json({ success: false, error: `Failed to fetch image (${response.status})` });
     }
 
     const arrayBuffer = await response.arrayBuffer();
-    const baseImage = await sharp(Buffer.from(arrayBuffer))
+    const inputBuffer = Buffer.from(arrayBuffer);
+    if (!inputBuffer.length) {
+      return res.status(400).json({ success: false, error: 'Image buffer is empty' });
+    }
+    const baseImage = await sharp(inputBuffer)
       .resize(WIDTH, HEIGHT, { fit: 'cover', position: 'center' })
       .toBuffer();
 
@@ -46,9 +61,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await r2PutObject(key, rendered, 'image/jpeg');
 
     const image_url = `${R2_PUBLIC_BASE_URL}/${key}`;
-    return res.status(200).json({ image_url });
+    return res.status(200).json({ success: true, url: image_url });
   } catch (error) {
-    return res.status(500).json({ error: 'Render failed' });
+    console.error('Render failed:', error);
+    const message = error instanceof Error ? error.message : 'Render failed';
+    return res.status(500).json({ success: false, error: message });
   }
 }
 

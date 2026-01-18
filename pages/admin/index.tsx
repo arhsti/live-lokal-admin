@@ -1,7 +1,25 @@
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Header from '../../components/Header';
 
 export default function Admin() {
+  const [imageCount, setImageCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    loadImageCount();
+  }, []);
+
+  async function loadImageCount() {
+    try {
+      const res = await fetch('/api/images');
+      if (!res.ok) return;
+      const data = await res.json();
+      setImageCount(Array.isArray(data) ? data.length : null);
+    } catch (_e) {
+      setImageCount(null);
+    }
+  }
+
   return (
     <div>
       <Header title="Admin" />
@@ -16,6 +34,9 @@ export default function Admin() {
             <div>
               <h2 className="text-lg font-semibold">Bilder</h2>
               <p className="text-sm text-gray-600 mt-1">Last opp og administrer bilder som brukes i stories.</p>
+              <div className="text-sm text-gray-500 mt-2">
+                Totalt: {imageCount === null ? '—' : `${imageCount} bilder`}
+              </div>
             </div>
             <Link href="/admin/images" className="btn-primary inline-block">
               Gå til bilder
