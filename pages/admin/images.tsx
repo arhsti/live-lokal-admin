@@ -175,7 +175,7 @@ export default function ImagesPage() {
                   error={saveErrors[image.id]}
                   success={saveSuccess[image.id]}
                   extraActions={image.tags?.type === 'rendered' ? null : (
-                    <Link href={`/admin/render?imageId=${encodeURIComponent(image.id)}`} className="btn-secondary">
+                    <Link href={`/admin/render?imageId=${encodeURIComponent(image.id)}`} className="btn-secondary no-underline">
                       Bruk i story
                     </Link>
                   )}

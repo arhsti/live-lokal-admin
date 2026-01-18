@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import sharp from 'sharp';
-import { r2PutObject } from '@/lib/r2';
+import { r2Get, r2PutObject, readBodyAsBuffer } from '@/lib/r2';
 
 const WIDTH = 1080;
 const HEIGHT = 1920;
@@ -33,16 +33,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ success: false, error: 'imageUrl must be http or https' });
     }
 
-    const response = await fetch(parsedUrl.toString());
-    if (!response.ok) {
-      return res.status(400).json({ success: false, error: `Failed to fetch image (${response.status})` });
+    let baseUrl: URL;
+    try {
+      baseUrl = new URL(R2_PUBLIC_BASE_URL);
+    } catch {
+      return res.status(500).json({ success: false, error: 'R2 public base URL is invalid' });
     }
 
-    const arrayBuffer = await response.arrayBuffer();
-    const inputBuffer = Buffer.from(arrayBuffer);
+    if (parsedUrl.origin !== baseUrl.origin) {
+      return res.status(400).json({ success: false, error: 'imageUrl must match public R2 base URL' });
+    }
+
+    const basePath = baseUrl.pathname.endsWith('/') ? baseUrl.pathname : `${baseUrl.pathname}/`;
+    const rawPath = parsedUrl.pathname.startsWith(basePath)
+      ? parsedUrl.pathname.slice(basePath.length)
+      : parsedUrl.pathname.replace(/^\//, '');
+
+    if (!rawPath) {
+      return res.status(400).json({ success: false, error: 'Could not derive R2 object key' });
+    }
+
+    const obj = await r2Get(rawPath);
+    const inputBuffer = await readBodyAsBuffer(obj.Body);
     if (!inputBuffer.length) {
       return res.status(400).json({ success: false, error: 'Image buffer is empty' });
     }
+
     const baseImage = await sharp(inputBuffer)
       .resize(WIDTH, HEIGHT, { fit: 'cover', position: 'center' })
       .toBuffer();

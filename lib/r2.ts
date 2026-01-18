@@ -72,3 +72,15 @@ export async function readBodyAsString(body: any): Promise<string> {
   }
   return Buffer.concat(chunks).toString('utf-8');
 }
+
+export async function readBodyAsBuffer(body: any): Promise<Buffer> {
+  if (!body) return Buffer.from('');
+  if (Buffer.isBuffer(body)) return body;
+  if (body instanceof Uint8Array) return Buffer.from(body);
+
+  const chunks: Buffer[] = [];
+  for await (const chunk of body as AsyncIterable<Uint8Array>) {
+    chunks.push(Buffer.from(chunk));
+  }
+  return Buffer.concat(chunks);
+}

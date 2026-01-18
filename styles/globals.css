@@ -48,6 +48,10 @@ html, body {
   font-weight: 600;
 }
 
+.no-underline {
+  text-decoration: none;
+}
+
 .input {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
