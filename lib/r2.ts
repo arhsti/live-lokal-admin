@@ -77,6 +77,14 @@ export async function readBodyAsBuffer(body: any): Promise<Buffer> {
   if (!body) return Buffer.from('');
   if (Buffer.isBuffer(body)) return body;
   if (body instanceof Uint8Array) return Buffer.from(body);
+  if (typeof body.arrayBuffer === 'function') {
+    const arrayBuffer = await body.arrayBuffer();
+    return Buffer.from(arrayBuffer);
+  }
+  if (typeof body.transformToByteArray === 'function') {
+    const bytes = await body.transformToByteArray();
+    return Buffer.from(bytes);
+  }
 
   const chunks: Buffer[] = [];
   for await (const chunk of body as AsyncIterable<Uint8Array>) {

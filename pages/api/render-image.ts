@@ -54,9 +54,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const obj = await r2Get(rawPath);
+    if (!obj.Body) {
+      return res.status(500).json({ success: false, error: 'R2 object body missing' });
+    }
     const inputBuffer = await readBodyAsBuffer(obj.Body);
     if (!inputBuffer.length) {
-      return res.status(400).json({ success: false, error: 'Image buffer is empty' });
+      return res.status(500).json({ success: false, error: 'Image buffer is empty' });
     }
 
     const baseImage = await sharp(inputBuffer)
