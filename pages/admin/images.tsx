@@ -132,22 +132,33 @@ export default function ImagesPage() {
     setPosting(prev => ({ ...prev, [image.id]: true }));
 
     try {
-      const res = await fetch('/api/post-instagram-story', {
+      const current = editing[image.id] || {
+        number: image.tags?.number || '',
+        eventType: image.tags?.eventType || 'Alle',
+        description: image.tags?.description || '',
+      };
+
+      const res = await fetch('/api/trigger-story-webhook', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageUrl: image.image_url }),
+        body: JSON.stringify({
+          imageUrl: image.image_url,
+          description: current.description,
+          draktnummer: current.number,
+          hendelse: current.eventType,
+        }),
       });
 
-      const data = await res.json().catch(() => ({ success: false, error: 'Posting failed' }));
+      const data = await res.json().catch(() => ({ success: false, error: 'Webhook failed' }));
       if (!res.ok || data.success === false) {
-        setPostErrors(prev => ({ ...prev, [image.id]: data.error || 'Posting failed' }));
+        setPostErrors(prev => ({ ...prev, [image.id]: data.error || 'Webhook failed' }));
         return;
       }
 
       setPostSuccess(prev => ({ ...prev, [image.id]: true }));
       setTimeout(() => setPostSuccess(prev => ({ ...prev, [image.id]: false })), 2500);
     } catch (e) {
-      const message = e instanceof Error ? e.message : 'Posting failed';
+      const message = e instanceof Error ? e.message : 'Webhook failed';
       setPostErrors(prev => ({ ...prev, [image.id]: message }));
     } finally {
       setPosting(prev => ({ ...prev, [image.id]: false }));
@@ -242,7 +253,7 @@ export default function ImagesPage() {
                         onClick={() => handlePostStory(image)}
                         disabled={!!posting[image.id]}
                       >
-                        {posting[image.id] ? 'Poster...' : 'Post Story'}
+                        {posting[image.id] ? 'Sender...' : 'Send til publisering'}
                       </button>
                     </>
                   )}
