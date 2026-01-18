@@ -2,8 +2,8 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { v4 as uuidv4 } from 'uuid';
 import { promises as fs } from 'fs';
 import formidable from 'formidable';
+import sharp from 'sharp';
 import { r2PutObject } from '@/lib/r2';
-import { registerRenderedImage } from '@/lib/images';
 
 export const config = {
   api: {
@@ -24,10 +24,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const form = formidable({ multiples: false });
-    const { files, fields } = await new Promise<{ files: any; fields: any }>((resolve, reject) => {
-      form.parse(req, (err: any, fields: any, files: any) => {
+    const { files } = await new Promise<{ files: any }>((resolve, reject) => {
+      form.parse(req, (err: any, _fields: any, files: any) => {
         if (err) return reject(err);
-        resolve({ files, fields });
+        resolve({ files });
       });
     });
 
@@ -40,39 +40,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Empty file' });
     }
 
-    const mime = file.mimetype || '';
+    const mime = (file.mimetype || '').toLowerCase();
+    if (mime === 'image/svg+xml' || mime === 'image/webp' || mime === 'image/heic' || mime === 'image/heif') {
+      return res.status(400).json({ error: 'Unsupported file type' });
+    }
+
     if (mime !== 'image/jpeg' && mime !== 'image/png' && mime !== 'image/jpg') {
       return res.status(400).json({ error: 'Unsupported file type' });
     }
 
     const buffer = await fs.readFile(file.filepath);
-    const extension = mime === 'image/png' ? 'png' : 'jpg';
+    const processed = await sharp(buffer)
+      .resize(1080, 1920, { fit: 'cover', position: 'center' })
+      .toColourspace('srgb')
+      .flatten({ background: { r: 255, g: 255, b: 255 } })
+      .jpeg({ quality: 90, progressive: false, chromaSubsampling: '4:4:4' })
+      .toBuffer();
 
-    const typeField = typeof fields.type === 'string' ? fields.type : Array.isArray(fields.type) ? fields.type[0] : null;
-    const sourceImageId = typeof fields.sourceImageId === 'string'
-      ? fields.sourceImageId
-      : Array.isArray(fields.sourceImageId)
-        ? fields.sourceImageId[0]
-        : null;
+    const id = uuidv4();
+    const key = `uploads/raw/${id}.jpg`;
 
-    const isRendered = typeField === 'rendered';
-    if (isRendered && !sourceImageId) {
-      return res.status(400).json({ error: 'Missing source image id' });
-    }
-
-    const id = isRendered ? `${sourceImageId}-${Date.now()}` : uuidv4();
-    const key = isRendered
-      ? `uploads/rendered/${id}.${extension}`
-      : `uploads/raw/${id}.${extension}`;
-
-    await r2PutObject(key, buffer, mime || 'image/jpeg', {
+    await r2PutObject(key, processed, 'image/jpeg', {
       cacheControl: 'public, max-age=31536000',
       acl: 'public-read',
     });
-
-    if (isRendered && sourceImageId) {
-      await registerRenderedImage(id, sourceImageId);
-    }
 
     const image_url = `${R2_PUBLIC_BASE_URL}/${key}`;
     return res.status(200).json({ id, image_url });
