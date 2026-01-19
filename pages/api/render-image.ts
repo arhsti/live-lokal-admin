@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import type { Readable } from 'stream';
+import { Readable } from 'stream';
 import sharp from 'sharp';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { r2PutObject } from '@/lib/r2';
@@ -115,74 +115,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 
 function buildTextSvg(hendelse: string, tidspunkt: string) {
-  const fontFamily = 'NotoSans';
-  const baseY = Math.round(HEIGHT * 0.8);
-  const hendelseSize = 104;
-  const tidspunktSize = 60;
-  const lineGap = 16;
-  const safeHendelse = escapeXml(hendelse);
-  const safeTidspunkt = escapeXml(tidspunkt);
-  const hendelseY = baseY;
-  const tidspunktY = baseY + hendelseSize + lineGap;
-
-  return `
-    <svg width="${WIDTH}" height="${HEIGHT}" xmlns="http://www.w3.org/2000/svg">
-      <style>
-        @font-face {
-          font-family: 'NotoSans';
-          src: url('data:font/ttf;base64,${FONT_REGULAR_BASE64}') format('truetype');
-          font-weight: 400;
-        }
-        @font-face {
-          font-family: 'NotoSans';
-          src: url('data:font/ttf;base64,${FONT_BOLD_BASE64}') format('truetype');
-          font-weight: 700;
-        }
-        .event {
-          font-size: ${hendelseSize}px;
-          font-weight: 700;
-          fill: #ffffff;
-          stroke: #000000;
-          stroke-width: 4px;
-          paint-order: stroke fill;
-          font-family: ${fontFamily};
-        }
-        .time {
-          font-size: ${tidspunktSize}px;
-          font-weight: 400;
-          fill: #ffffff;
-          stroke: #000000;
-          stroke-width: 3px;
-          paint-order: stroke fill;
-          font-family: ${fontFamily};
-        }
-      </style>
-      <defs>
-        <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
-          <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="rgba(0,0,0,0.6)" />
-        </filter>
-      </defs>
-      <text
-        x="${WIDTH / 2}"
-        y="${hendelseY}"
-        text-anchor="middle"
-        dominant-baseline="middle"
-        filter="url(#shadow)"
-        class="event"
-      >${safeHendelse}</text>
-      <text
-        x="${WIDTH / 2}"
-        y="${tidspunktY}"
-        text-anchor="middle"
-        dominant-baseline="middle"
-        filter="url(#shadow)"
-        class="time"
-      >${safeTidspunkt}</text>
-    </svg>
-  `;
-}
-
-function buildTextSvg(hendelse: string, tidspunkt: string) {
   const baseY = Math.round(HEIGHT * 0.8);
   const hendelseSize = 96;
   const tidspunktSize = 56;
@@ -227,4 +159,13 @@ function escapeXml(value: string) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
+}
+
+function streamToBuffer(stream: Readable): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+    stream.on('end', () => resolve(Buffer.concat(chunks)));
+    stream.on('error', reject);
+  });
 }
