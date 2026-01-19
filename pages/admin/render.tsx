@@ -25,7 +25,10 @@ export default function RenderPage() {
   const [rendering, setRendering] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
+  const [scoreHome, setScoreHome] = useState('');
+  const [scoreAway, setScoreAway] = useState('');
   const [hendelse, setHendelse] = useState('');
+  const [beskrivelse, setBeskrivelse] = useState('');
   const [tidspunkt, setTidspunkt] = useState('');
   const [overlayUrl, setOverlayUrl] = useState<string | null>(null);
 
@@ -92,7 +95,13 @@ export default function RenderPage() {
     setRendering(true);
 
     try {
-      const overlay = await createOverlayPng(hendelse.trim(), tidspunkt.trim());
+      const overlay = await createOverlayPng({
+        scoreHome: scoreHome.trim(),
+        scoreAway: scoreAway.trim(),
+        hendelse: hendelse.trim(),
+        beskrivelse: beskrivelse.trim(),
+        tidspunkt: tidspunkt.trim(),
+      });
       if (!overlay) {
         throw new Error('Overlay PNG is missing');
       }
@@ -180,6 +189,26 @@ export default function RenderPage() {
             </div>
 
             <div className="card p-4 space-y-4">
+              <div className="grid gap-3 md:grid-cols-2">
+                <div>
+                  <label className="text-xs text-gray-500">Hjemmelag</label>
+                  <input
+                    className="input w-full mt-1"
+                    value={scoreHome}
+                    onChange={(e) => setScoreHome(e.target.value)}
+                    placeholder="Score hjem"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">Bortelag</label>
+                  <input
+                    className="input w-full mt-1"
+                    value={scoreAway}
+                    onChange={(e) => setScoreAway(e.target.value)}
+                    placeholder="Score bort"
+                  />
+                </div>
+              </div>
               <div>
                 <label className="text-xs text-gray-500">Hendelse</label>
                 <input
@@ -187,6 +216,15 @@ export default function RenderPage() {
                   value={hendelse}
                   onChange={(e) => setHendelse(e.target.value)}
                   placeholder="Skriv hendelse"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">Beskrivelse</label>
+                <input
+                  className="input w-full mt-1"
+                  value={beskrivelse}
+                  onChange={(e) => setBeskrivelse(e.target.value)}
+                  placeholder="Skriv beskrivelse"
                 />
               </div>
               <div>
@@ -241,7 +279,19 @@ async function renderOnServer(imageUrl: string, overlayPng: Blob) {
   return data.url as string;
 }
 
-async function createOverlayPng(hendelse: string, tidspunkt: string) {
+async function createOverlayPng({
+  scoreHome,
+  scoreAway,
+  hendelse,
+  beskrivelse,
+  tidspunkt,
+}: {
+  scoreHome: string;
+  scoreAway: string;
+  hendelse: string;
+  beskrivelse: string;
+  tidspunkt: string;
+}) {
   if (!hendelse || !tidspunkt) return null;
   const canvas = document.createElement('canvas');
   canvas.width = 1080;
@@ -255,16 +305,38 @@ async function createOverlayPng(hendelse: string, tidspunkt: string) {
   ctx.fillStyle = '#ffffff';
   ctx.strokeStyle = '#000000';
 
-  const baseY = canvas.height * 0.8;
+  const scoreY = canvas.height * 0.65;
+  const hendelseY = canvas.height * 0.72;
+  const beskrivelseY = canvas.height * 0.78;
+  const tidspunktY = canvas.height * 0.84;
+
+  if (scoreHome && scoreAway) {
+    ctx.lineWidth = 5;
+    ctx.font = 'bold 110px sans-serif';
+    ctx.strokeText(scoreHome, 500, scoreY);
+    ctx.fillText(scoreHome, 500, scoreY);
+    ctx.strokeText('-', 540, scoreY);
+    ctx.fillText('-', 540, scoreY);
+    ctx.strokeText(scoreAway, 580, scoreY);
+    ctx.fillText(scoreAway, 580, scoreY);
+  }
+
   ctx.lineWidth = 4;
-  ctx.font = 'bold 96px sans-serif';
-  ctx.strokeText(hendelse, canvas.width / 2, baseY);
-  ctx.fillText(hendelse, canvas.width / 2, baseY);
+  ctx.font = 'bold 104px sans-serif';
+  ctx.strokeText(hendelse, canvas.width / 2, hendelseY);
+  ctx.fillText(hendelse, canvas.width / 2, hendelseY);
+
+  if (beskrivelse) {
+    ctx.lineWidth = 4;
+    ctx.font = '68px sans-serif';
+    ctx.strokeText(beskrivelse, canvas.width / 2, beskrivelseY);
+    ctx.fillText(beskrivelse, canvas.width / 2, beskrivelseY);
+  }
 
   ctx.lineWidth = 3;
   ctx.font = '56px sans-serif';
-  ctx.strokeText(tidspunkt, canvas.width / 2, baseY + 70);
-  ctx.fillText(tidspunkt, canvas.width / 2, baseY + 70);
+  ctx.strokeText(tidspunkt, canvas.width / 2, tidspunktY);
+  ctx.fillText(tidspunkt, canvas.width / 2, tidspunktY);
 
   const blob = await new Promise<Blob | null>((resolve) => {
     canvas.toBlob((result) => resolve(result), 'image/png');
