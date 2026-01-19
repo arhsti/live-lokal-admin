@@ -7,7 +7,8 @@ import { r2PutObject } from '@/lib/r2';
 
 const WIDTH = 1080;
 const HEIGHT = 1920;
-const FONT_BASE64 = readFileSync('assets/fonts/Noto_Sans/static/NotoSans-Bold.ttf').toString('base64');
+const FONT_REGULAR_BASE64 = loadFontBase64('assets/fonts/Noto_Sans/static/NotoSans-Regular.ttf', 'regular');
+const FONT_BOLD_BASE64 = loadFontBase64('assets/fonts/Noto_Sans/static/NotoSans-Bold.ttf', 'bold');
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -113,20 +114,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 function buildTextSvg(hendelse: string, tidspunkt: string) {
   const fontFamily = 'NotoSans';
   const baseY = Math.round(HEIGHT * 0.8);
-  const hendelseSize = 96;
-  const tidspunktSize = 56;
-  const lineGap = 20;
-  const hendelseY = baseY;
-  const tidspunktY = baseY + hendelseSize + lineGap;
+  const hendelseSize = 104;
+  const tidspunktSize = 60;
+  const lineGap = 16;
+  const maxWidth = Math.round(WIDTH * 0.5);
   const safeHendelse = escapeXml(hendelse);
   const safeTidspunkt = escapeXml(tidspunkt);
+  const hendelseLines = wrapText(safeHendelse, hendelseSize, maxWidth);
+  const tidspunktLines = wrapText(safeTidspunkt, tidspunktSize, maxWidth);
+  const hendelseLineHeight = Math.round(hendelseSize * 1.15);
+  const tidspunktLineHeight = Math.round(tidspunktSize * 1.15);
+  const hendelseHeight = hendelseLines.length * hendelseLineHeight;
+  const tidspunktHeight = tidspunktLines.length * tidspunktLineHeight;
+  const hendelseY = baseY - Math.round(hendelseHeight / 2) + Math.round(hendelseLineHeight / 2);
+  const tidspunktY = baseY + Math.round(hendelseHeight / 2) + lineGap + Math.round(tidspunktLineHeight / 2);
+  const hendelseTspans = buildTspans(hendelseLines, hendelseLineHeight);
+  const tidspunktTspans = buildTspans(tidspunktLines, tidspunktLineHeight);
 
   return `
     <svg width="${WIDTH}" height="${HEIGHT}" xmlns="http://www.w3.org/2000/svg">
       <style>
         @font-face {
           font-family: 'NotoSans';
-          src: url('data:font/ttf;base64,${FONT_BASE64}') format('truetype');
+          src: url('data:font/ttf;base64,${FONT_REGULAR_BASE64}') format('truetype');
+          font-weight: 400;
+        }
+        @font-face {
+          font-family: 'NotoSans';
+          src: url('data:font/ttf;base64,${FONT_BOLD_BASE64}') format('truetype');
           font-weight: 700;
         }
         .event {
@@ -140,7 +155,7 @@ function buildTextSvg(hendelse: string, tidspunkt: string) {
         }
         .time {
           font-size: ${tidspunktSize}px;
-          font-weight: 700;
+          font-weight: 400;
           fill: #ffffff;
           stroke: #000000;
           stroke-width: 3px;
@@ -160,7 +175,7 @@ function buildTextSvg(hendelse: string, tidspunkt: string) {
         dominant-baseline="middle"
         filter="url(#shadow)"
         class="event"
-      >${safeHendelse}</text>
+      >${hendelseTspans}</text>
       <text
         x="${WIDTH / 2}"
         y="${tidspunktY}"
@@ -168,9 +183,59 @@ function buildTextSvg(hendelse: string, tidspunkt: string) {
         dominant-baseline="middle"
         filter="url(#shadow)"
         class="time"
-      >${safeTidspunkt}</text>
+      >${tidspunktTspans}</text>
     </svg>
   `;
+}
+
+function loadFontBase64(path: string, label: string) {
+  try {
+    return readFileSync(path).toString('base64');
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    throw new Error(`Failed to load ${label} font at ${path}: ${message}`);
+  }
+}
+
+function wrapText(text: string, fontSize: number, maxWidth: number) {
+  const approxCharWidth = fontSize * 0.55;
+  const maxChars = Math.max(1, Math.floor(maxWidth / approxCharWidth));
+  const words = text.split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let current = '';
+
+  for (const word of words) {
+    if (!current) {
+      current = word;
+      continue;
+    }
+
+    if ((current.length + 1 + word.length) <= maxChars) {
+      current = `${current} ${word}`;
+    } else {
+      lines.push(current);
+      current = word;
+    }
+  }
+
+  if (current) {
+    lines.push(current);
+  }
+
+  if (!lines.length && text) {
+    lines.push(text);
+  }
+
+  return lines.length ? lines : [''];
+}
+
+function buildTspans(lines: string[], lineHeight: number) {
+  return lines
+    .map((line, index) => {
+      const dy = index === 0 ? 0 : lineHeight;
+      return `<tspan x="${WIDTH / 2}" dy="${dy}">${line}</tspan>`;
+    })
+    .join('');
 }
 
 function escapeXml(value: string) {
