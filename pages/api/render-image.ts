@@ -1,14 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import type { Readable } from 'stream';
 import { readFileSync } from 'fs';
+import { createCanvas, registerFont } from 'canvas';
 import sharp from 'sharp';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { r2PutObject } from '@/lib/r2';
 
 const WIDTH = 1080;
 const HEIGHT = 1920;
-const FONT_REGULAR_BASE64 = loadFontBase64('assets/fonts/Noto_Sans/static/NotoSans-Regular.ttf', 'regular');
-const FONT_BOLD_BASE64 = loadFontBase64('assets/fonts/Noto_Sans/static/NotoSans-Bold.ttf', 'bold');
+const FONT_PATH = 'assets/fonts/Noto_Sans/static/NotoSans-Bold.ttf';
+ensureFontLoaded(FONT_PATH);
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -87,16 +88,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const baseImage = inputBuffer;
-    let svg: string;
-    try {
-      svg = buildTextSvg(hendelse.trim(), tidspunkt.trim());
-    } catch (svgError) {
-      const message = svgError instanceof Error ? svgError.message : 'SVG generation failed';
-      throw new Error(`SVG generation failed: ${message}`);
-    }
+    const textOverlay = createTextOverlay(hendelse.trim(), tidspunkt.trim());
 
     const rendered = await sharp(baseImage)
-      .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
+      .composite([{ input: textOverlay, top: 0, left: 0 }])
       .jpeg({ quality: 92 })
       .toBuffer();
 
@@ -185,30 +180,39 @@ function buildTextSvg(hendelse: string, tidspunkt: string) {
   `;
 }
 
-function loadFontBase64(path: string, label: string) {
+function createTextOverlay(hendelse: string, tidspunkt: string) {
+  const canvas = createCanvas(WIDTH, HEIGHT);
+  const ctx = canvas.getContext('2d');
+
+  ctx.clearRect(0, 0, WIDTH, HEIGHT);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#ffffff';
+  ctx.strokeStyle = '#000000';
+
+  const baseY = Math.round(HEIGHT * 0.8);
+  const hendelseY = baseY;
+  const tidspunktY = baseY + 70;
+
+  ctx.lineWidth = 4;
+  ctx.font = 'bold 96px NotoSans';
+  ctx.strokeText(hendelse, WIDTH / 2, hendelseY);
+  ctx.fillText(hendelse, WIDTH / 2, hendelseY);
+
+  ctx.lineWidth = 3;
+  ctx.font = 'bold 56px NotoSans';
+  ctx.strokeText(tidspunkt, WIDTH / 2, tidspunktY);
+  ctx.fillText(tidspunkt, WIDTH / 2, tidspunktY);
+
+  return canvas.toBuffer('image/png');
+}
+
+function ensureFontLoaded(path: string) {
   try {
-    return readFileSync(path).toString('base64');
+    readFileSync(path);
+    registerFont(path, { family: 'NotoSans', weight: 'bold' });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    throw new Error(`Failed to load ${label} font at ${path}: ${message}`);
+    throw new Error(`Failed to load font at ${path}: ${message}`);
   }
-}
-
-
-function escapeXml(value: string) {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}
-
-function streamToBuffer(stream: Readable): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    const chunks: Buffer[] = [];
-    stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
-    stream.on('error', reject);
-    stream.on('end', () => resolve(Buffer.concat(chunks)));
-  });
 }
