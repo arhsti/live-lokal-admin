@@ -87,7 +87,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const baseImage = inputBuffer;
-    const svg = buildTextSvg(hendelse.trim(), tidspunkt.trim());
+    let svg: string;
+    try {
+      svg = buildTextSvg(hendelse.trim(), tidspunkt.trim());
+    } catch (svgError) {
+      const message = svgError instanceof Error ? svgError.message : 'SVG generation failed';
+      throw new Error(`SVG generation failed: ${message}`);
+    }
 
     const rendered = await sharp(baseImage)
       .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
@@ -117,19 +123,10 @@ function buildTextSvg(hendelse: string, tidspunkt: string) {
   const hendelseSize = 104;
   const tidspunktSize = 60;
   const lineGap = 16;
-  const maxWidth = Math.round(WIDTH * 0.5);
   const safeHendelse = escapeXml(hendelse);
   const safeTidspunkt = escapeXml(tidspunkt);
-  const hendelseLines = wrapText(safeHendelse, hendelseSize, maxWidth);
-  const tidspunktLines = wrapText(safeTidspunkt, tidspunktSize, maxWidth);
-  const hendelseLineHeight = Math.round(hendelseSize * 1.15);
-  const tidspunktLineHeight = Math.round(tidspunktSize * 1.15);
-  const hendelseHeight = hendelseLines.length * hendelseLineHeight;
-  const tidspunktHeight = tidspunktLines.length * tidspunktLineHeight;
-  const hendelseY = baseY - Math.round(hendelseHeight / 2) + Math.round(hendelseLineHeight / 2);
-  const tidspunktY = baseY + Math.round(hendelseHeight / 2) + lineGap + Math.round(tidspunktLineHeight / 2);
-  const hendelseTspans = buildTspans(hendelseLines, hendelseLineHeight);
-  const tidspunktTspans = buildTspans(tidspunktLines, tidspunktLineHeight);
+  const hendelseY = baseY;
+  const tidspunktY = baseY + hendelseSize + lineGap;
 
   return `
     <svg width="${WIDTH}" height="${HEIGHT}" xmlns="http://www.w3.org/2000/svg">
@@ -175,7 +172,7 @@ function buildTextSvg(hendelse: string, tidspunkt: string) {
         dominant-baseline="middle"
         filter="url(#shadow)"
         class="event"
-      >${hendelseTspans}</text>
+      >${safeHendelse}</text>
       <text
         x="${WIDTH / 2}"
         y="${tidspunktY}"
@@ -183,7 +180,7 @@ function buildTextSvg(hendelse: string, tidspunkt: string) {
         dominant-baseline="middle"
         filter="url(#shadow)"
         class="time"
-      >${tidspunktTspans}</text>
+      >${safeTidspunkt}</text>
     </svg>
   `;
 }
@@ -197,46 +194,6 @@ function loadFontBase64(path: string, label: string) {
   }
 }
 
-function wrapText(text: string, fontSize: number, maxWidth: number) {
-  const approxCharWidth = fontSize * 0.55;
-  const maxChars = Math.max(1, Math.floor(maxWidth / approxCharWidth));
-  const words = text.split(/\s+/).filter(Boolean);
-  const lines: string[] = [];
-  let current = '';
-
-  for (const word of words) {
-    if (!current) {
-      current = word;
-      continue;
-    }
-
-    if ((current.length + 1 + word.length) <= maxChars) {
-      current = `${current} ${word}`;
-    } else {
-      lines.push(current);
-      current = word;
-    }
-  }
-
-  if (current) {
-    lines.push(current);
-  }
-
-  if (!lines.length && text) {
-    lines.push(text);
-  }
-
-  return lines.length ? lines : [''];
-}
-
-function buildTspans(lines: string[], lineHeight: number) {
-  return lines
-    .map((line, index) => {
-      const dy = index === 0 ? 0 : lineHeight;
-      return `<tspan x="${WIDTH / 2}" dy="${dy}">${line}</tspan>`;
-    })
-    .join('');
-}
 
 function escapeXml(value: string) {
   return value
