@@ -25,8 +25,7 @@ export default function RenderPage() {
   const [rendering, setRendering] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
-  const [scoreHome, setScoreHome] = useState('');
-  const [scoreAway, setScoreAway] = useState('');
+  const [stilling, setStilling] = useState('');
   const [hendelse, setHendelse] = useState('');
   const [beskrivelse, setBeskrivelse] = useState('');
   const [tidspunkt, setTidspunkt] = useState('');
@@ -96,8 +95,7 @@ export default function RenderPage() {
 
     try {
       const overlay = await createOverlayPng({
-        scoreHome: scoreHome.trim(),
-        scoreAway: scoreAway.trim(),
+        stilling: stilling.trim(),
         hendelse: hendelse.trim(),
         beskrivelse: beskrivelse.trim(),
         tidspunkt: tidspunkt.trim(),
@@ -189,25 +187,14 @@ export default function RenderPage() {
             </div>
 
             <div className="card p-4 space-y-4">
-              <div className="grid gap-3 md:grid-cols-2">
-                <div>
-                  <label className="text-xs text-gray-500">Hjemmelag</label>
-                  <input
-                    className="input w-full mt-1"
-                    value={scoreHome}
-                    onChange={(e) => setScoreHome(e.target.value)}
-                    placeholder="Score hjem"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500">Bortelag</label>
-                  <input
-                    className="input w-full mt-1"
-                    value={scoreAway}
-                    onChange={(e) => setScoreAway(e.target.value)}
-                    placeholder="Score bort"
-                  />
-                </div>
+              <div>
+                <label className="text-xs text-gray-500">Stilling</label>
+                <input
+                  className="input w-full mt-1"
+                  value={stilling}
+                  onChange={(e) => setStilling(e.target.value)}
+                  placeholder="1-2"
+                />
               </div>
               <div>
                 <label className="text-xs text-gray-500">Hendelse</label>
@@ -280,14 +267,12 @@ async function renderOnServer(imageUrl: string, overlayPng: Blob) {
 }
 
 async function createOverlayPng({
-  scoreHome,
-  scoreAway,
+  stilling,
   hendelse,
   beskrivelse,
   tidspunkt,
 }: {
-  scoreHome: string;
-  scoreAway: string;
+  stilling: string;
   hendelse: string;
   beskrivelse: string;
   tidspunkt: string;
@@ -310,15 +295,20 @@ async function createOverlayPng({
   const beskrivelseY = canvas.height * 0.78;
   const tidspunktY = canvas.height * 0.84;
 
-  if (scoreHome && scoreAway) {
-    ctx.lineWidth = 5;
-    ctx.font = 'bold 110px sans-serif';
-    ctx.strokeText(scoreHome, 500, scoreY);
-    ctx.fillText(scoreHome, 500, scoreY);
-    ctx.strokeText('-', 540, scoreY);
-    ctx.fillText('-', 540, scoreY);
-    ctx.strokeText(scoreAway, 580, scoreY);
-    ctx.fillText(scoreAway, 580, scoreY);
+  if (stilling) {
+    const [homeRaw, awayRaw] = stilling.split('-').map((part) => part.trim());
+    const homeScore = homeRaw || '';
+    const awayScore = awayRaw || '';
+    if (homeScore && awayScore) {
+      ctx.lineWidth = 5;
+      ctx.font = 'bold 110px sans-serif';
+      ctx.strokeText(homeScore, 540 - 80, scoreY);
+      ctx.fillText(homeScore, 540 - 80, scoreY);
+      ctx.strokeText('-', 540, scoreY);
+      ctx.fillText('-', 540, scoreY);
+      ctx.strokeText(awayScore, 540 + 80, scoreY);
+      ctx.fillText(awayScore, 540 + 80, scoreY);
+    }
   }
 
   ctx.lineWidth = 4;
