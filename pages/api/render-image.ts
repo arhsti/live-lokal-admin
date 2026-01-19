@@ -1,11 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { Readable } from 'stream';
+import { promises as fs } from 'fs';
+import formidable from 'formidable';
 import sharp from 'sharp';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { r2PutObject } from '@/lib/r2';
 
-const WIDTH = 1080;
-const HEIGHT = 1920;
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -19,15 +25,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error('Missing R2 configuration');
     }
 
-    const { imageUrl, hendelse, tidspunkt } = req.body || {};
-    if (!imageUrl || typeof imageUrl !== 'string') {
+    const form = formidable({ multiples: false });
+    const { fields, files } = await new Promise<{ fields: any; files: any }>((resolve, reject) => {
+      form.parse(req, (err: any, fields: any, files: any) => {
+        if (err) return reject(err);
+        resolve({ fields, files });
+      });
+    });
+
+    const imageUrl = typeof fields.imageUrl === 'string'
+      ? fields.imageUrl
+      : Array.isArray(fields.imageUrl)
+        ? fields.imageUrl[0]
+        : null;
+
+    if (!imageUrl) {
       throw new Error('imageUrl is required');
     }
-    if (!hendelse || typeof hendelse !== 'string' || !hendelse.trim()) {
-      throw new Error('hendelse is required');
-    }
-    if (!tidspunkt || typeof tidspunkt !== 'string' || !tidspunkt.trim()) {
-      throw new Error('tidspunkt is required');
+
+    const overlayFile = Array.isArray(files.overlayPng) ? files.overlayPng[0] : files.overlayPng;
+    if (!overlayFile || typeof overlayFile.filepath !== 'string') {
+      throw new Error('overlayPng is required');
     }
 
     let parsedUrl: URL;
@@ -83,17 +101,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error('Image buffer contains SVG/HTML content');
     }
 
+    const overlayBuffer = await fs.readFile(overlayFile.filepath);
     const baseImage = inputBuffer;
-    let svg: string;
-    try {
-      svg = buildTextSvg(hendelse.trim(), tidspunkt.trim());
-    } catch (svgError) {
-      const message = svgError instanceof Error ? svgError.message : 'SVG generation failed';
-      throw new Error(`SVG generation failed: ${message}`);
-    }
 
     const rendered = await sharp(baseImage)
-      .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
+      .composite([{ input: overlayBuffer, top: 0, left: 0 }])
       .jpeg({ quality: 90 })
       .toBuffer();
 
@@ -112,53 +124,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const message = error instanceof Error ? error.message : 'Render failed';
     return res.status(500).json({ success: false, error: message });
   }
-}
-
-function buildTextSvg(hendelse: string, tidspunkt: string) {
-  const baseY = Math.round(HEIGHT * 0.8);
-  const hendelseSize = 96;
-  const tidspunktSize = 56;
-  const lineGap = 20;
-  const hendelseY = baseY;
-  const tidspunktY = baseY + hendelseSize + lineGap;
-  const safeHendelse = escapeXml(hendelse);
-  const safeTidspunkt = escapeXml(tidspunkt);
-
-  return `
-    <svg width="${WIDTH}" height="${HEIGHT}" xmlns="http://www.w3.org/2000/svg">
-      <style>
-        .event {
-          font-size: ${hendelseSize}px;
-          font-weight: bold;
-          fill: #ffffff;
-          stroke: #000000;
-          stroke-width: 4px;
-          paint-order: stroke fill;
-          font-family: sans-serif;
-        }
-        .time {
-          font-size: ${tidspunktSize}px;
-          font-weight: 400;
-          fill: #ffffff;
-          stroke: #000000;
-          stroke-width: 3px;
-          paint-order: stroke fill;
-          font-family: sans-serif;
-        }
-      </style>
-      <text x="${WIDTH / 2}" y="${hendelseY}" text-anchor="middle" class="event">${safeHendelse}</text>
-      <text x="${WIDTH / 2}" y="${tidspunktY}" text-anchor="middle" class="time">${safeTidspunkt}</text>
-    </svg>
-  `;
-}
-
-function escapeXml(value: string) {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
 }
 
 function streamToBuffer(stream: Readable): Promise<Buffer> {

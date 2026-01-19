@@ -27,6 +27,7 @@ export default function RenderPage() {
   const [result, setResult] = useState<string | null>(null);
   const [hendelse, setHendelse] = useState('');
   const [tidspunkt, setTidspunkt] = useState('');
+  const [overlayUrl, setOverlayUrl] = useState<string | null>(null);
 
   useEffect(() => {
     loadImageList();
@@ -91,7 +92,12 @@ export default function RenderPage() {
     setRendering(true);
 
     try {
-      const uploaded = await renderOnServer(image.imageUrl, hendelse.trim(), tidspunkt.trim());
+      const overlay = await createOverlayPng(hendelse.trim(), tidspunkt.trim());
+      if (!overlay) {
+        throw new Error('Overlay PNG is missing');
+      }
+      setOverlayUrl(overlay.previewUrl);
+      const uploaded = await renderOnServer(image.imageUrl, overlay.blob);
       setResult(uploaded);
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Ukjent feil ved rendering';
@@ -150,12 +156,26 @@ export default function RenderPage() {
         {image && !loading && (
           <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
             <div className="card p-4">
-              <div className="bg-gray-100" style={{ height: 520 }}>
+              <div className="bg-gray-100 relative" style={{ height: 520 }}>
                 <img
                   src={image.imageUrl}
                   alt="Preview"
                   style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
                 />
+                {overlayUrl && (
+                  <img
+                    src={overlayUrl}
+                    alt="Text overlay"
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                      pointerEvents: 'none',
+                    }}
+                  />
+                )}
               </div>
             </div>
 
@@ -203,11 +223,14 @@ export default function RenderPage() {
   );
 }
 
-async function renderOnServer(imageUrl: string, hendelse: string, tidspunkt: string) {
+async function renderOnServer(imageUrl: string, overlayPng: Blob) {
+  const formData = new FormData();
+  formData.append('imageUrl', imageUrl);
+  formData.append('overlayPng', overlayPng, 'overlay.png');
+
   const res = await fetch('/api/render-image', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ imageUrl, hendelse, tidspunkt }),
+    body: formData,
   });
 
   const data = await res.json().catch(() => ({ success: false, error: 'Render feilet' }));
@@ -216,4 +239,40 @@ async function renderOnServer(imageUrl: string, hendelse: string, tidspunkt: str
   }
 
   return data.url as string;
+}
+
+async function createOverlayPng(hendelse: string, tidspunkt: string) {
+  if (!hendelse || !tidspunkt) return null;
+  const canvas = document.createElement('canvas');
+  canvas.width = 1080;
+  canvas.height = 1920;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#ffffff';
+  ctx.strokeStyle = '#000000';
+
+  const baseY = canvas.height * 0.8;
+  ctx.lineWidth = 4;
+  ctx.font = 'bold 96px sans-serif';
+  ctx.strokeText(hendelse, canvas.width / 2, baseY);
+  ctx.fillText(hendelse, canvas.width / 2, baseY);
+
+  ctx.lineWidth = 3;
+  ctx.font = '56px sans-serif';
+  ctx.strokeText(tidspunkt, canvas.width / 2, baseY + 70);
+  ctx.fillText(tidspunkt, canvas.width / 2, baseY + 70);
+
+  const blob = await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob((result) => resolve(result), 'image/png');
+  });
+  if (!blob) return null;
+
+  return {
+    blob,
+    previewUrl: URL.createObjectURL(blob),
+  };
 }
