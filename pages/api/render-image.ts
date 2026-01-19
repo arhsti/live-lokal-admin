@@ -1,11 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import type { Readable } from 'stream';
+import { readFileSync } from 'fs';
 import sharp from 'sharp';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { r2PutObject } from '@/lib/r2';
 
 const WIDTH = 1080;
 const HEIGHT = 1920;
+const FONT_BASE64 = readFileSync('assets/fonts/Noto_Sans/static/NotoSans-Bold.ttf').toString('base64');
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -109,7 +111,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 
 function buildTextSvg(hendelse: string, tidspunkt: string) {
-  const fontFamily = 'Arial, Helvetica, sans-serif';
+  const fontFamily = 'NotoSans';
   const baseY = Math.round(HEIGHT * 0.8);
   const hendelseSize = 96;
   const tidspunktSize = 56;
@@ -122,6 +124,11 @@ function buildTextSvg(hendelse: string, tidspunkt: string) {
   return `
     <svg width="${WIDTH}" height="${HEIGHT}" xmlns="http://www.w3.org/2000/svg">
       <style>
+        @font-face {
+          font-family: 'NotoSans';
+          src: url('data:font/ttf;base64,${FONT_BASE64}') format('truetype');
+          font-weight: 700;
+        }
         .event {
           font-size: ${hendelseSize}px;
           font-weight: 700;
