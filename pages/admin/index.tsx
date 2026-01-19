@@ -64,6 +64,18 @@ export default function Admin() {
 
           <div className="card p-7 flex flex-col gap-5">
             <div>
+              <h2 className="text-lg font-semibold">Hendelser</h2>
+              <p className="text-sm text-gray-600 mt-1">Motta og publiser kamp-hendelser.</p>
+            </div>
+            <div className="mt-auto flex justify-end">
+              <Link href="/admin/hendelser" className="btn-primary inline-block no-underline whitespace-nowrap">
+                Gå til hendelser
+              </Link>
+            </div>
+          </div>
+
+          <div className="card p-7 flex flex-col gap-5">
+            <div>
               <h2 className="text-lg font-semibold">Templates</h2>
               <p className="text-sm text-gray-600 mt-1">Lag maler med tekst og layout for stories.</p>
             </div>
