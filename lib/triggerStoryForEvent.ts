@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import sharp from 'sharp';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { r2PutObject } from '@/lib/r2';
-import { getEventById, updateEventStatus } from '@/lib/events';
+import { getEventById, updateEvent, updateEventStatus } from '@/lib/events';
 import { listImages } from '@/lib/images';
 
 const WEBHOOK_URL = 'https://livelokal.app.n8n.cloud/webhook/livelokalKlubb';
@@ -20,6 +20,9 @@ export async function triggerStoryForEvent(club: string, eventId: string, overla
   const event = await getEventById(club, eventId);
   if (!event) {
     throw new Error('Event not found');
+  }
+  if (event.status === 'posted') {
+    throw new Error('Event already posted');
   }
 
   const images = await listImages(club);
@@ -91,7 +94,7 @@ export async function triggerStoryForEvent(club: string, eventId: string, overla
     .toBuffer();
 
   const renderedId = uuidv4();
-  const key = `${club}/rendered/${renderedId}.jpg`;
+  const key = `${club}/rendered/events/${renderedId}.jpg`;
   await r2PutObject(key, rendered, 'image/jpeg', {
     cacheControl: 'public, max-age=31536000',
     acl: 'public-read',
@@ -107,7 +110,7 @@ export async function triggerStoryForEvent(club: string, eventId: string, overla
     hendelse: event.hendelse,
     draktnummer: event.draktnummer,
     tidspunkt: event.tidspunkt,
-    objectid_match: event.objectid_match,
+    objectId_match: event.objectId_match,
     source: 'admin-hendelser',
     fiksid_livelokal: club,
   };
@@ -124,7 +127,7 @@ export async function triggerStoryForEvent(club: string, eventId: string, overla
     throw new Error(text || 'Webhook request failed');
   }
 
-  await updateEventStatus(club, eventId, 'posted');
+  await updateEvent(club, eventId, { status: 'posted', renderedImageUrl: imageUrl });
   return { imageUrl };
 }
 

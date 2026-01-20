@@ -43,9 +43,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const overlayBuffer = await fs.readFile(overlayFile.filepath);
-    await triggerStoryForEvent(club, eventId, overlayBuffer);
+    const { imageUrl } = await triggerStoryForEvent(club, eventId, overlayBuffer);
 
-    return res.status(200).json({ success: true });
+    return res.status(200).json({ success: true, imageUrl });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Trigger failed';
     return res.status(500).json({ success: false, error: message });

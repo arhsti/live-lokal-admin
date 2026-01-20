@@ -5,10 +5,11 @@ export interface MatchEvent {
   hendelse: string;
   tidspunkt: string;
   draktnummer: string;
-  objectid_match: string;
+  objectId_match: string;
   createdAt: string;
   status: 'pending' | 'posted' | 'failed';
   fiksid_livelokal: string;
+  renderedImageUrl?: string | null;
 }
 
 const eventsKey = (club: string) => `${club}/events/metadata.json`;
@@ -22,7 +23,9 @@ async function loadEvents(club: string): Promise<MatchEvent[]> {
     if (!Array.isArray(parsed)) return [];
     return parsed.map((event) => ({
       ...event,
+      objectId_match: event.objectId_match || event.objectid_match || '',
       status: event.status || 'pending',
+      renderedImageUrl: event.renderedImageUrl ?? null,
     }));
   } catch {
     return [];
@@ -51,8 +54,12 @@ export async function addEvent(club: string, event: MatchEvent) {
 }
 
 export async function updateEventStatus(club: string, id: string, status: MatchEvent['status']) {
+  return updateEvent(club, id, { status });
+}
+
+export async function updateEvent(club: string, id: string, patch: Partial<MatchEvent>) {
   const events = await loadEvents(club);
-  const next = events.map(event => event.id === id ? { ...event, status } : event);
+  const next = events.map(event => event.id === id ? { ...event, ...patch } : event);
   await saveEvents(club, next);
   return next.find(event => event.id === id) || null;
 }
