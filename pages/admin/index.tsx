@@ -52,18 +52,6 @@ export default function Admin() {
 
           <div className="card p-7 flex flex-col gap-5">
             <div>
-              <h2 className="text-lg font-semibold">Render stories</h2>
-              <p className="text-sm text-gray-600 mt-1">Lag story-bilder med tekst.</p>
-            </div>
-            <div className="mt-auto flex justify-end">
-              <Link href="/admin/render" className="btn-primary inline-block no-underline whitespace-nowrap">
-                Gå til render
-              </Link>
-            </div>
-          </div>
-
-          <div className="card p-7 flex flex-col gap-5">
-            <div>
               <h2 className="text-lg font-semibold">Hendelser</h2>
               <p className="text-sm text-gray-600 mt-1">Motta og publiser kamp-hendelser.</p>
             </div>
@@ -71,30 +59,6 @@ export default function Admin() {
               <Link href="/admin/hendelser" className="btn-primary inline-block no-underline whitespace-nowrap">
                 Gå til hendelser
               </Link>
-            </div>
-          </div>
-
-          <div className="card p-7 flex flex-col gap-5">
-            <div>
-              <h2 className="text-lg font-semibold">Templates</h2>
-              <p className="text-sm text-gray-600 mt-1">Lag maler med tekst og layout for stories.</p>
-            </div>
-            <div className="mt-auto flex justify-end">
-              <button className="btn-secondary opacity-60 cursor-not-allowed whitespace-nowrap" disabled>
-                Gå til templates
-              </button>
-            </div>
-          </div>
-
-          <div className="card p-7 flex flex-col gap-5">
-            <div>
-              <h2 className="text-lg font-semibold">Stories</h2>
-              <p className="text-sm text-gray-600 mt-1">Oversikt over genererte stories.</p>
-            </div>
-            <div className="mt-auto flex justify-end">
-              <button className="btn-secondary opacity-60 cursor-not-allowed whitespace-nowrap" disabled>
-                Se stories
-              </button>
             </div>
           </div>
         </div>

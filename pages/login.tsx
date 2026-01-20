@@ -34,10 +34,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="card w-full max-w-md p-8 space-y-6">
+      <div className="card w-full max-w-sm p-8 space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Live Lokal</h1>
-          <p className="text-sm text-gray-600 mt-1">Logg inn med klubb-ID.</p>
+          <p className="text-sm text-gray-600 mt-1">Logg inn for å administrere klubben.</p>
         </div>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
@@ -46,7 +46,7 @@ export default function LoginPage() {
               className="input w-full mt-1"
               value={fiksid}
               onChange={(e) => setFiksid(e.target.value)}
-              placeholder="20942"
+              placeholder="98900"
               inputMode="numeric"
               pattern="\d{5}"
               required
