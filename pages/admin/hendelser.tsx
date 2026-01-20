@@ -95,7 +95,7 @@ export default function HendelserPage() {
         {loading ? (
           <div className="text-sm text-gray-600">Laster hendelser...</div>
         ) : (
-          <div className="card p-4">
+          <div className="card p-6">
             {events.length === 0 ? (
               <div className="text-sm text-gray-600">Ingen hendelser funnet.</div>
             ) : (

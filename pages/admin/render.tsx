@@ -122,7 +122,7 @@ export default function RenderPage() {
           <h1 className="text-3xl font-extrabold">Render story</h1>
           <p className="text-sm text-gray-600 mt-1">Lag en story med valgt bilde og tekst.</p>
         </div>
-        <div className="card p-4 space-y-3">
+        <div className="card p-6 space-y-4">
           <label className="text-xs text-gray-500">Velg bilde</label>
           <select
             className="input w-full"
@@ -162,7 +162,7 @@ export default function RenderPage() {
 
         {image && !loading && (
           <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-            <div className="card p-4">
+            <div className="card p-6">
               <div className="bg-gray-100 relative" style={{ height: 520 }}>
                 <img
                   src={image.imageUrl}
@@ -186,7 +186,7 @@ export default function RenderPage() {
               </div>
             </div>
 
-            <div className="card p-4 space-y-4">
+            <div className="card p-6 space-y-5">
               <div>
                 <label className="text-xs text-gray-500">Stilling</label>
                 <input
