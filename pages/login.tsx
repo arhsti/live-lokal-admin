@@ -34,8 +34,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="card w-full max-w-[360px] p-6 space-y-5">
-        <div className="text-center space-y-1">
+      <div className="card w-full max-w-[360px] p-6 space-y-6 box-border">
+        <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold">Live Lokal</h1>
           <p className="text-sm text-gray-500">Automatisk generering og publisering av kamp-hendelser</p>
           <p className="text-xs text-gray-600">Logg inn for å administrere klubben.</p>
@@ -44,10 +44,10 @@ export default function LoginPage() {
           <div>
             <label className="text-xs text-gray-500">FIKS ID (5 siffer)</label>
             <input
-              className="input w-full mt-1"
+              className="input w-full mt-1 box-border"
               value={fiksid}
               onChange={(e) => setFiksid(e.target.value)}
-              placeholder="98900"
+              placeholder="FIKS-ID (5 siffer)"
               inputMode="numeric"
               pattern="\d{5}"
               required
@@ -57,7 +57,7 @@ export default function LoginPage() {
             <label className="text-xs text-gray-500">Passord</label>
             <input
               type="password"
-              className="input w-full mt-1"
+              className="input w-full mt-1 box-border"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Passord"
