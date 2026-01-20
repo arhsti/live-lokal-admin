@@ -48,9 +48,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         tidspunkt,
         draktnummer,
         createdAt: new Date().toISOString(),
+        status: 'pending',
       });
 
-      return res.status(200).json({ success: true, event });
+      // Optional auto-trigger: uncomment to auto-post on receive
+      // await triggerStoryForEvent(event.id);
+
+      return res.status(200).json({ success: true, eventId: event.id });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to store event';
       return res.status(500).json({ error: message });

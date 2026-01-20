@@ -40,10 +40,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const overlayBuffer = await fs.readFile(overlayFile.filepath);
-    const { imageUrl } = await triggerStoryForEvent(eventId, overlayBuffer);
-    return res.status(200).json({ success: true, imageUrl });
+    await triggerStoryForEvent(eventId, overlayBuffer);
+
+    return res.status(200).json({ success: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Render failed';
+    const message = error instanceof Error ? error.message : 'Trigger failed';
     return res.status(500).json({ success: false, error: message });
   }
 }

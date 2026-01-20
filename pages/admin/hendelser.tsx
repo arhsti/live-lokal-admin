@@ -7,6 +7,7 @@ interface MatchEvent {
   tidspunkt: string;
   draktnummer: string;
   createdAt: string;
+  status: 'pending' | 'posted' | 'failed';
 }
 
 export default function HendelserPage() {
@@ -55,7 +56,7 @@ export default function HendelserPage() {
       formData.append('eventId', event.id);
       formData.append('overlayPng', overlay, 'overlay.png');
 
-      const res = await fetch('/api/events/post-story', {
+      const res = await fetch('/api/trigger-story', {
         method: 'POST',
         body: formData,
       });
@@ -63,14 +64,17 @@ export default function HendelserPage() {
       const data = await res.json().catch(() => ({ success: false, error: 'Publisering feilet' }));
       if (!res.ok || data.success === false) {
         setPostErrors(prev => ({ ...prev, [event.id]: data.error || 'Publisering feilet' }));
+        setEvents(prev => prev.map(item => item.id === event.id ? { ...item, status: 'failed' } : item));
         return;
       }
 
       setPostSuccess(prev => ({ ...prev, [event.id]: true }));
+      setEvents(prev => prev.map(item => item.id === event.id ? { ...item, status: 'posted' } : item));
       setTimeout(() => setPostSuccess(prev => ({ ...prev, [event.id]: false })), 2500);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Publisering feilet';
       setPostErrors(prev => ({ ...prev, [event.id]: message }));
+      setEvents(prev => prev.map(item => item.id === event.id ? { ...item, status: 'failed' } : item));
     } finally {
       setPosting(prev => ({ ...prev, [event.id]: false }));
     }
@@ -101,6 +105,7 @@ export default function HendelserPage() {
                       <th className="py-2 pr-4">Hendelse</th>
                       <th className="py-2 pr-4">Tidspunkt</th>
                       <th className="py-2 pr-4">Draktnummer</th>
+                      <th className="py-2 pr-4">Status</th>
                       <th className="py-2 text-right">Action</th>
                     </tr>
                   </thead>
@@ -110,6 +115,7 @@ export default function HendelserPage() {
                         <td className="py-3 pr-4 font-medium text-gray-900">{event.hendelse}</td>
                         <td className="py-3 pr-4 text-gray-700">{event.tidspunkt}</td>
                         <td className="py-3 pr-4 text-gray-700">{event.draktnummer}</td>
+                        <td className="py-3 pr-4 text-gray-700">{event.status}</td>
                         <td className="py-3 text-right">
                           <button
                             className="btn-primary whitespace-nowrap"
