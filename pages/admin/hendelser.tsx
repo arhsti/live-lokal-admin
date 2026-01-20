@@ -20,6 +20,7 @@ export default function HendelserPage() {
   const [postErrors, setPostErrors] = useState<Record<string, string | null>>({});
   const [postSuccess, setPostSuccess] = useState<Record<string, boolean>>({});
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [activeMatchId, setActiveMatchId] = useState<string | null>(null);
 
   useEffect(() => {
     loadEvents();
@@ -36,7 +37,15 @@ export default function HendelserPage() {
         return;
       }
       const data = await res.json();
-      setEvents(Array.isArray(data) ? data : []);
+      const list = Array.isArray(data) ? data : [];
+      setEvents(list);
+      const grouped = groupEventsByMatch(list);
+      const matchIds = Object.keys(grouped);
+      if (matchIds.length === 0) {
+        setActiveMatchId(null);
+      } else if (!activeMatchId || !grouped[activeMatchId]) {
+        setActiveMatchId(matchIds[0]);
+      }
     } catch (_e) {
       setError('Kunne ikke laste hendelser');
     } finally {
@@ -111,76 +120,101 @@ export default function HendelserPage() {
         {loading ? (
           <div className="text-sm text-gray-600">Laster hendelser...</div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-10">
             {events.length === 0 ? (
               <div className="card p-6 text-sm text-gray-600">Ingen hendelser funnet.</div>
             ) : (
-              Object.entries(groupEventsByMatch(events)).map(([matchId, matchEvents]) => (
-                <div key={matchId} className="card p-7 space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-lg font-semibold text-gray-900">Match: {matchId}</h2>
-                      <p className="text-xs text-gray-500">{matchEvents.length} hendelser</p>
+              <>
+                <div className="flex flex-wrap gap-4">
+                  {Object.entries(groupEventsByMatch(events)).map(([matchId, matchEvents]) => {
+                    const isActive = activeMatchId === matchId;
+                    return (
+                      <div key={matchId} className="card p-5 flex items-center gap-4">
+                        <div>
+                          <div className="text-sm font-semibold text-gray-900">Match {matchId}</div>
+                          <div className="text-xs text-gray-500">{matchEvents.length} hendelser</div>
+                        </div>
+                        <button
+                          type="button"
+                          className="btn-secondary whitespace-nowrap"
+                          onClick={() => setActiveMatchId(isActive ? null : matchId)}
+                        >
+                          {isActive ? 'Skjul hendelser' : 'Vis hendelser'}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {activeMatchId ? (
+                  <div className="card p-7 space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-lg font-semibold text-gray-900">Match: {activeMatchId}</h2>
+                        <p className="text-xs text-gray-500">{groupEventsByMatch(events)[activeMatchId]?.length || 0} hendelser</p>
+                      </div>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full text-sm">
+                        <thead>
+                          <tr className="text-left text-gray-500 bg-gray-50">
+                            <th className="py-3 pr-6">Hendelse</th>
+                            <th className="py-3 pr-6">Tidspunkt</th>
+                            <th className="py-3 pr-6">Draktnummer</th>
+                            <th className="py-3 pr-6">Status</th>
+                            <th className="py-3 pr-6">Preview</th>
+                            <th className="py-3 text-center">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(groupEventsByMatch(events)[activeMatchId] || []).map((event) => {
+                            const isPosted = event.status === 'posted';
+                            const isPosting = !!posting[event.id];
+                            return (
+                              <tr key={event.id} className="border-t border-gray-100">
+                                <td className="py-4 pr-6 font-medium text-gray-900">{event.hendelse}</td>
+                                <td className="py-4 pr-6 text-gray-700">{event.tidspunkt}</td>
+                                <td className="py-4 pr-6 text-gray-700">{event.draktnummer}</td>
+                                <td className="py-4 pr-6 text-gray-700">{event.status}</td>
+                                <td className="py-4 pr-6">
+                                  {isPosted && event.renderedImageUrl ? (
+                                    <button
+                                      type="button"
+                                      className="btn-secondary whitespace-nowrap"
+                                      onClick={() => openPreview(event.renderedImageUrl)}
+                                    >
+                                      View story
+                                    </button>
+                                  ) : (
+                                    <span className="text-gray-400">—</span>
+                                  )}
+                                </td>
+                                <td className="py-3 text-center">
+                                  <button
+                                    className="btn-primary whitespace-nowrap"
+                                    onClick={() => handlePost(event)}
+                                    disabled={isPosting || isPosted}
+                                  >
+                                    {isPosted ? 'Publisert' : (isPosting ? 'Sender...' : 'Post story')}
+                                  </button>
+                                  {postErrors[event.id] && (
+                                    <div className="text-xs text-red-500 mt-2">{postErrors[event.id]}</div>
+                                  )}
+                                  {postSuccess[event.id] && (
+                                    <div className="text-xs text-green-600 mt-2">Publisert ✓</div>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full text-sm">
-                      <thead>
-                        <tr className="text-left text-gray-500 bg-gray-50">
-                          <th className="py-3 pr-6">Hendelse</th>
-                          <th className="py-3 pr-6">Tidspunkt</th>
-                          <th className="py-3 pr-6">Draktnummer</th>
-                          <th className="py-3 pr-6">Status</th>
-                          <th className="py-3 pr-6">Preview</th>
-                          <th className="py-3 text-center">Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {matchEvents.map((event) => {
-                          const isPosted = event.status === 'posted';
-                          const isPosting = !!posting[event.id];
-                          return (
-                            <tr key={event.id} className="border-t border-gray-100">
-                              <td className="py-4 pr-6 font-medium text-gray-900">{event.hendelse}</td>
-                              <td className="py-4 pr-6 text-gray-700">{event.tidspunkt}</td>
-                              <td className="py-4 pr-6 text-gray-700">{event.draktnummer}</td>
-                              <td className="py-4 pr-6 text-gray-700">{event.status}</td>
-                              <td className="py-4 pr-6">
-                                {isPosted && event.renderedImageUrl ? (
-                                  <button
-                                    type="button"
-                                    className="btn-secondary whitespace-nowrap"
-                                    onClick={() => openPreview(event.renderedImageUrl)}
-                                  >
-                                    View story
-                                  </button>
-                                ) : (
-                                  <span className="text-gray-400">—</span>
-                                )}
-                              </td>
-                              <td className="py-3 text-center">
-                                <button
-                                  className="btn-primary whitespace-nowrap"
-                                  onClick={() => handlePost(event)}
-                                  disabled={isPosting || isPosted}
-                                >
-                                  {isPosted ? 'Publisert' : (isPosting ? 'Sender...' : 'Post story')}
-                                </button>
-                                {postErrors[event.id] && (
-                                  <div className="text-xs text-red-500 mt-2">{postErrors[event.id]}</div>
-                                )}
-                                {postSuccess[event.id] && (
-                                  <div className="text-xs text-green-600 mt-2">Publisert ✓</div>
-                                )}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ))
+                ) : (
+                  <div className="card p-6 text-sm text-gray-600">Velg en kamp for å vise hendelser.</div>
+                )}
+              </>
             )}
           </div>
         )}

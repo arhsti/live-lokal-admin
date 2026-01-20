@@ -3,7 +3,6 @@ import { promises as fs } from 'fs';
 import formidable from 'formidable';
 import sharp from 'sharp';
 import { r2PutObject } from '@/lib/r2';
-import { registerRenderedImage } from '@/lib/images';
 import { requireClub } from '@/lib/auth';
 
 export const config = {
@@ -71,10 +70,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const imageId = typeof fields.imageId === 'string' ? fields.imageId : Array.isArray(fields.imageId) ? fields.imageId[0] : 'image';
     const timestamp = Date.now();
     const renderedId = `${imageId}-${timestamp}`;
-    const key = `${club}/rendered/${renderedId}.jpg`;
+    const key = `${club}/rendered/events/${renderedId}.jpg`;
 
     await r2PutObject(key, outputBuffer, 'image/jpeg');
-    await registerRenderedImage(club, renderedId, imageId);
 
     const imageUrl = `${R2_PUBLIC_BASE_URL}/${key}`;
     return res.status(200).json({ imageUrl, width: 1080, height: 1920 });

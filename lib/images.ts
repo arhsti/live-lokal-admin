@@ -42,12 +42,9 @@ async function saveMeta(club: string, map: Record<string, ImageMeta>) {
 }
 
 export async function listImages(club: string): Promise<ImageItem[]> {
-  const [processedList, renderedList] = await Promise.all([
-    r2List(processedPrefix(club)),
-    r2List(renderedPrefix(club)),
-  ]);
+  const processedList = await r2List(processedPrefix(club));
 
-  const items = [...(processedList.Contents || []), ...(renderedList.Contents || [])]
+  const items = [...(processedList.Contents || [])]
     .filter(obj => obj.Key)
     .sort((a, b) => {
       const at = a.LastModified ? a.LastModified.getTime() : 0;
@@ -58,11 +55,10 @@ export async function listImages(club: string): Promise<ImageItem[]> {
   const metaMap = await loadMeta(club);
   return items.map(item => {
     const key = item.Key as string;
-    const filename = key.replace(processedPrefix(club), '').replace(renderedPrefix(club), '');
+    const filename = key.replace(processedPrefix(club), '');
     const id = filename.replace(/\.[^/.]+$/, '');
     const imageUrl = `${process.env.R2_PUBLIC_BASE_URL}/${key}`;
     const meta = metaMap[id];
-    const inferredType: ImageType = key.startsWith(renderedPrefix(club)) ? 'rendered' : 'processed';
     return {
       id,
       imageUrl,
@@ -72,7 +68,7 @@ export async function listImages(club: string): Promise<ImageItem[]> {
         number: meta?.number || '',
         eventType: meta?.eventType || 'Alle',
         description: meta?.description || '',
-        type: meta?.type || inferredType,
+        type: meta?.type || 'processed',
         sourceImageId: meta?.sourceImageId,
         fiksid_livelokal: club,
       },
@@ -81,13 +77,8 @@ export async function listImages(club: string): Promise<ImageItem[]> {
 }
 
 export async function getImageById(club: string, id: string): Promise<ImageItem | null> {
-  const [processedList, renderedList] = await Promise.all([
-    r2List(`${processedPrefix(club)}${id}`),
-    r2List(`${renderedPrefix(club)}${id}`),
-  ]);
-
-  const item = [...(processedList.Contents || []), ...(renderedList.Contents || [])]
-    .find(obj => obj.Key);
+  const processedList = await r2List(`${processedPrefix(club)}${id}`);
+  const item = [...(processedList.Contents || [])].find(obj => obj.Key);
 
   if (!item || !item.Key) return null;
 
@@ -95,7 +86,6 @@ export async function getImageById(club: string, id: string): Promise<ImageItem 
   const imageUrl = `${process.env.R2_PUBLIC_BASE_URL}/${key}`;
   const metaMap = await loadMeta(club);
   const meta = metaMap[id];
-  const inferredType: ImageType = key.startsWith(renderedPrefix(club)) ? 'rendered' : 'processed';
   return {
     id,
     imageUrl,
@@ -105,7 +95,7 @@ export async function getImageById(club: string, id: string): Promise<ImageItem 
       number: meta?.number || '',
       eventType: meta?.eventType || 'Alle',
       description: meta?.description || '',
-      type: meta?.type || inferredType,
+      type: meta?.type || 'processed',
       sourceImageId: meta?.sourceImageId,
       fiksid_livelokal: club,
     },
