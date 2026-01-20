@@ -51,55 +51,55 @@ export default function ImageCard({
         )}
       </div>
 
-      <div className="p-5 space-y-3">
-        <div className="space-y-3">
+      <div className="p-6 space-y-4">
+        <div className="space-y-4">
           <div>
             <label className="text-xs text-gray-500">Beskrivelse</label>
             <textarea
               value={description}
               onChange={(e) => onDescriptionChange(e.target.value)}
-              className="input w-full mt-1 text-sm"
+              className="input w-full mt-2 text-sm"
               rows={3}
             />
           </div>
-          <div className="grid gap-3 md:grid-cols-2">
-          <div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
               <label className="text-xs text-gray-500 flex items-center gap-3">
-              Draktnummer
-              <Tooltip text="Bilde tilknyttet spiller. Dette vil velges når en hendelse om denne spilleren skjer.">
+                Draktnummer
+                <Tooltip text="Bilde tilknyttet spiller. Dette vil velges når en hendelse om denne spilleren skjer.">
                   <span className="text-[13px] text-gray-700 font-semibold">ℹ</span>
-              </Tooltip>
-            </label>
-            <input
-              type="number"
-              min={1}
-              max={99}
-              value={number}
-              onChange={(e) => onNumberChange(e.target.value.replace(/\D/g, ''))}
-              className="input w-full mt-1 text-sm"
-            />
-          </div>
-          <div>
+                </Tooltip>
+              </label>
+              <input
+                type="number"
+                min={1}
+                max={99}
+                value={number}
+                onChange={(e) => onNumberChange(e.target.value.replace(/\D/g, ''))}
+                className="input w-full mt-2 text-sm"
+              />
+            </div>
+            <div>
               <label className="text-xs text-gray-500 flex items-center gap-3">
-              Hendelse
-              <Tooltip text="Velg hvilken type hendelse som dette bildet skal brukes til">
+                Hendelse
+                <Tooltip text="Velg hvilken type hendelse som dette bildet skal brukes til">
                   <span className="text-[13px] text-gray-700 font-semibold">ℹ</span>
-              </Tooltip>
-            </label>
-            <select
-              value={eventType}
-              onChange={(e) => onEventChange(e.target.value)}
-              className="input w-full mt-1 text-sm"
-            >
-              <option value="Mål">Mål</option>
-              <option value="Kort">Kort</option>
-              <option value="Bytte">Bytte</option>
-              <option value="Alle">Alle</option>
-            </select>
-          </div>
+                </Tooltip>
+              </label>
+              <select
+                value={eventType}
+                onChange={(e) => onEventChange(e.target.value)}
+                className="input w-full mt-2 text-sm"
+              >
+                <option value="Mål">Mål</option>
+                <option value="Kort">Kort</option>
+                <option value="Bytte">Bytte</option>
+                <option value="Alle">Alle</option>
+              </select>
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-nowrap">
+        <div className="flex items-center gap-3 flex-nowrap">
           <button
             onClick={onSave}
             disabled={saving}

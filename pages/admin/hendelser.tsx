@@ -100,7 +100,7 @@ export default function HendelserPage() {
   return (
     <div>
       <Header title="Hendelser" />
-      <main className="container-base space-y-6">
+      <main className="container-base space-y-8">
         <div>
           <h1 className="text-3xl font-extrabold">Hendelser</h1>
           <p className="text-sm text-gray-600 mt-1">Oversikt over kamp-hendelser.</p>
@@ -116,7 +116,7 @@ export default function HendelserPage() {
               <div className="card p-6 text-sm text-gray-600">Ingen hendelser funnet.</div>
             ) : (
               Object.entries(groupEventsByMatch(events)).map(([matchId, matchEvents]) => (
-                <div key={matchId} className="card p-7 space-y-5">
+                <div key={matchId} className="card p-7 space-y-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="text-lg font-semibold text-gray-900">Match: {matchId}</h2>
@@ -127,12 +127,12 @@ export default function HendelserPage() {
                     <table className="min-w-full text-sm">
                       <thead>
                         <tr className="text-left text-gray-500 bg-gray-50">
-                          <th className="py-2 pr-4">Hendelse</th>
-                          <th className="py-2 pr-4">Tidspunkt</th>
-                          <th className="py-2 pr-4">Draktnummer</th>
-                          <th className="py-2 pr-4">Status</th>
-                          <th className="py-2 pr-4">Preview</th>
-                          <th className="py-2 text-center">Action</th>
+                          <th className="py-3 pr-6">Hendelse</th>
+                          <th className="py-3 pr-6">Tidspunkt</th>
+                          <th className="py-3 pr-6">Draktnummer</th>
+                          <th className="py-3 pr-6">Status</th>
+                          <th className="py-3 pr-6">Preview</th>
+                          <th className="py-3 text-center">Action</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -141,11 +141,11 @@ export default function HendelserPage() {
                           const isPosting = !!posting[event.id];
                           return (
                             <tr key={event.id} className="border-t border-gray-100">
-                              <td className="py-4 pr-4 font-medium text-gray-900">{event.hendelse}</td>
-                              <td className="py-4 pr-4 text-gray-700">{event.tidspunkt}</td>
-                              <td className="py-4 pr-4 text-gray-700">{event.draktnummer}</td>
-                              <td className="py-4 pr-4 text-gray-700">{event.status}</td>
-                              <td className="py-4 pr-4">
+                              <td className="py-4 pr-6 font-medium text-gray-900">{event.hendelse}</td>
+                              <td className="py-4 pr-6 text-gray-700">{event.tidspunkt}</td>
+                              <td className="py-4 pr-6 text-gray-700">{event.draktnummer}</td>
+                              <td className="py-4 pr-6 text-gray-700">{event.status}</td>
+                              <td className="py-4 pr-6">
                                 {isPosted && event.renderedImageUrl ? (
                                   <button
                                     type="button"
