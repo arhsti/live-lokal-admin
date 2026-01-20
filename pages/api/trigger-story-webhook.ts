@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { requireClub } from '@/lib/auth';
 
-const WEBHOOK_URL = 'https://livelokal.app.n8n.cloud/webhook-test/livelokalKlubb';
+const WEBHOOK_URL = 'https://livelokal.app.n8n.cloud/webhook/livelokalKlubb';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {

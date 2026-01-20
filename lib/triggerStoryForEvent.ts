@@ -6,7 +6,7 @@ import { r2PutObject } from '@/lib/r2';
 import { getEventById, updateEventStatus } from '@/lib/events';
 import { listImages } from '@/lib/images';
 
-const WEBHOOK_URL = 'https://livelokal.app.n8n.cloud/webhook-test/livelokalKlubb';
+const WEBHOOK_URL = 'https://livelokal.app.n8n.cloud/webhook/livelokalKlubb';
 
 export async function triggerStoryForEvent(club: string, eventId: string, overlayPng?: Buffer) {
   const { R2_BUCKET_NAME, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID, R2_ENDPOINT, R2_PUBLIC_BASE_URL } = process.env;
