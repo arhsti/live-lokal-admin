@@ -107,6 +107,7 @@ export async function triggerStoryForEvent(club: string, eventId: string, overla
     hendelse: event.hendelse,
     draktnummer: event.draktnummer,
     tidspunkt: event.tidspunkt,
+    objectid_match: event.objectid_match,
     source: 'admin-hendelser',
     fiksid_livelokal: club,
   };

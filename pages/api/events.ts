@@ -44,9 +44,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const hendelse = typeof properties.Hendelse === 'string' ? properties.Hendelse.trim() : '';
       const tidspunkt = typeof properties.Tidspunkt === 'string' ? properties.Tidspunkt.trim() : '';
       const draktnummer = typeof properties.Draktnummer === 'string' ? properties.Draktnummer.trim() : '';
+      const objectidMatch = typeof properties.ObjectId_Match === 'string'
+        ? properties.ObjectId_Match.trim()
+        : typeof properties.ObjectIdMatch === 'string'
+          ? properties.ObjectIdMatch.trim()
+          : typeof properties.objectid_match === 'string'
+            ? properties.objectid_match.trim()
+            : '';
 
-      if (!hendelse || !tidspunkt || !draktnummer) {
+      if (!hendelse || !tidspunkt || !draktnummer || !objectidMatch) {
         return res.status(400).json({ error: 'Missing required event properties' });
+      }
+      if (!/^[0-9]{7}$/.test(objectidMatch)) {
+        return res.status(400).json({ error: 'objectid_match must be 7 digits' });
       }
 
       const event = await addEvent(club, {
@@ -54,6 +64,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         hendelse,
         tidspunkt,
         draktnummer,
+        objectid_match: objectidMatch,
         createdAt: new Date().toISOString(),
         status: 'pending',
         fiksid_livelokal: club,

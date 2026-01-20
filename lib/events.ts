@@ -5,6 +5,7 @@ export interface MatchEvent {
   hendelse: string;
   tidspunkt: string;
   draktnummer: string;
+  objectid_match: string;
   createdAt: string;
   status: 'pending' | 'posted' | 'failed';
   fiksid_livelokal: string;
