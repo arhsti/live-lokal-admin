@@ -6,7 +6,7 @@ import ImageCard from '../../components/ImageCard';
 interface ImageData {
   id: string;
   imageUrl: string;
-  tags?: { number: string; eventType?: string; type?: 'raw' | 'rendered'; description?: string };
+  tags?: { number: string; eventType?: string; type?: 'processed' | 'rendered'; description?: string };
 }
 
 export default function ImagesPage() {

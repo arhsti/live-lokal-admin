@@ -4,6 +4,7 @@ import { promises as fs } from 'fs';
 import formidable from 'formidable';
 import sharp from 'sharp';
 import { r2PutObject } from '@/lib/r2';
+import { requireClub } from '@/lib/auth';
 
 export const config = {
   api: {
@@ -18,6 +19,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    const club = requireClub(req, res);
+    if (!club) return;
     const { R2_BUCKET_NAME, R2_PUBLIC_BASE_URL, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID, R2_ENDPOINT } = process.env;
     if (!R2_BUCKET_NAME || !R2_PUBLIC_BASE_URL || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || (!R2_ACCOUNT_ID && !R2_ENDPOINT)) {
       return res.status(500).json({ error: 'Missing R2 configuration' });
@@ -71,7 +74,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const id = uuidv4();
-    const key = `uploads/raw/${id}.jpg`;
+    const key = `${club}/images/processed/${id}.jpg`;
 
     await r2PutObject(key, outputBuffer, 'image/jpeg', {
       cacheControl: 'public, max-age=31536000',

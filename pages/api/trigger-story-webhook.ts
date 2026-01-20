@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { requireClub } from '@/lib/auth';
 
 const WEBHOOK_URL = 'https://livelokal.app.n8n.cloud/webhook-test/livelokalKlubb';
 
@@ -9,6 +10,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    const club = requireClub(req, res);
+    if (!club) return;
     const { imageUrl, description, draktnummer, hendelse } = req.body || {};
     if (!imageUrl || typeof imageUrl !== 'string') {
       return res.status(400).json({ success: false, error: 'imageUrl is required' });
@@ -21,6 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       hendelse: typeof hendelse === 'string' ? hendelse : '',
       source: 'live-lokal-app',
       timestamp: new Date().toISOString(),
+      fiksid_livelokal: club,
     };
 
     const response = await fetch(WEBHOOK_URL, {

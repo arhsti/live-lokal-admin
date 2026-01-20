@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { v4 as uuidv4 } from 'uuid';
 import { addEvent, listEvents } from '@/lib/events';
+import { requireClub } from '@/lib/auth';
 
 const BASIC_USERNAME = 'admin';
 const BASIC_PASSWORD = 'admin';
@@ -16,7 +17,9 @@ function hasValidAuth(req: NextApiRequest) {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     try {
-      const events = await listEvents();
+      const club = requireClub(req, res);
+      if (!club) return;
+      const events = await listEvents(club);
       return res.status(200).json(events);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to load events';
@@ -33,6 +36,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       const payload = req.body || {};
       const properties = payload.Properties || {};
+      const club = typeof payload.fiksid_livelokal === 'string' ? payload.fiksid_livelokal.trim() : '';
+      if (!/^[0-9]{5}$/.test(club)) {
+        return res.status(400).json({ error: 'fiksid_livelokal is required' });
+      }
 
       const hendelse = typeof properties.Hendelse === 'string' ? properties.Hendelse.trim() : '';
       const tidspunkt = typeof properties.Tidspunkt === 'string' ? properties.Tidspunkt.trim() : '';
@@ -42,13 +49,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'Missing required event properties' });
       }
 
-      const event = await addEvent({
+      const event = await addEvent(club, {
         id: uuidv4(),
         hendelse,
         tidspunkt,
         draktnummer,
         createdAt: new Date().toISOString(),
         status: 'pending',
+        fiksid_livelokal: club,
       });
 
       // Optional auto-trigger: uncomment to auto-post on receive

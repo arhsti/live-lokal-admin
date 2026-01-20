@@ -8,7 +8,7 @@ import { listImages } from '@/lib/images';
 
 const WEBHOOK_URL = 'https://livelokal.app.n8n.cloud/webhook-test/livelokalKlubb';
 
-export async function triggerStoryForEvent(eventId: string, overlayPng?: Buffer) {
+export async function triggerStoryForEvent(club: string, eventId: string, overlayPng?: Buffer) {
   const { R2_BUCKET_NAME, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID, R2_ENDPOINT, R2_PUBLIC_BASE_URL } = process.env;
   if (!R2_BUCKET_NAME || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || (!R2_ACCOUNT_ID && !R2_ENDPOINT)) {
     throw new Error('Missing R2 configuration');
@@ -17,12 +17,12 @@ export async function triggerStoryForEvent(eventId: string, overlayPng?: Buffer)
     throw new Error('overlayPng is required');
   }
 
-  const event = await getEventById(eventId);
+  const event = await getEventById(club, eventId);
   if (!event) {
     throw new Error('Event not found');
   }
 
-  const images = await listImages();
+  const images = await listImages(club);
   if (!images.length) {
     throw new Error('No images available');
   }
@@ -48,6 +48,10 @@ export async function triggerStoryForEvent(eventId: string, overlayPng?: Buffer)
   const objectKey = parsedUrl.pathname.replace(/^\//, '');
   if (!objectKey) {
     throw new Error('Could not derive R2 object key');
+  }
+
+  if (!objectKey.startsWith(`${club}/`)) {
+    throw new Error('Object key not in club scope');
   }
 
   if (objectKey.includes('http') || objectKey.includes('https') || objectKey.includes('://') || objectKey.includes(parsedUrl.hostname)) {
@@ -87,7 +91,7 @@ export async function triggerStoryForEvent(eventId: string, overlayPng?: Buffer)
     .toBuffer();
 
   const renderedId = uuidv4();
-  const key = `uploads/rendered-events/${renderedId}.jpg`;
+  const key = `${club}/rendered/${renderedId}.jpg`;
   await r2PutObject(key, rendered, 'image/jpeg', {
     cacheControl: 'public, max-age=31536000',
     acl: 'public-read',
@@ -104,6 +108,7 @@ export async function triggerStoryForEvent(eventId: string, overlayPng?: Buffer)
     draktnummer: event.draktnummer,
     tidspunkt: event.tidspunkt,
     source: 'admin-hendelser',
+    fiksid_livelokal: club,
   };
 
   const webhookResponse = await fetch(WEBHOOK_URL, {
@@ -114,11 +119,11 @@ export async function triggerStoryForEvent(eventId: string, overlayPng?: Buffer)
 
   if (!webhookResponse.ok) {
     const text = await webhookResponse.text().catch(() => 'Webhook request failed');
-    await updateEventStatus(eventId, 'failed');
+    await updateEventStatus(club, eventId, 'failed');
     throw new Error(text || 'Webhook request failed');
   }
 
-  await updateEventStatus(eventId, 'posted');
+  await updateEventStatus(club, eventId, 'posted');
   return { imageUrl };
 }
 

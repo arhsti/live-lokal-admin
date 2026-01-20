@@ -5,6 +5,7 @@ import formidable from 'formidable';
 import sharp from 'sharp';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { r2PutObject } from '@/lib/r2';
+import { requireClub } from '@/lib/auth';
 
 
 export const config = {
@@ -20,6 +21,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    const club = requireClub(req, res);
+    if (!club) return;
     const { R2_BUCKET_NAME, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID, R2_ENDPOINT, R2_PUBLIC_BASE_URL } = process.env;
     if (!R2_BUCKET_NAME || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || (!R2_ACCOUNT_ID && !R2_ENDPOINT)) {
       throw new Error('Missing R2 configuration');
@@ -58,6 +61,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const objectKey = parsedUrl.pathname.replace(/^\//, '');
     if (!objectKey) {
       throw new Error('Could not derive R2 object key');
+    }
+
+    if (!objectKey.startsWith(`${club}/`)) {
+      throw new Error('Object key not in club scope');
     }
 
     if (objectKey.includes('http') || objectKey.includes('https') || objectKey.includes('://') || objectKey.includes(parsedUrl.hostname)) {
@@ -109,7 +116,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .jpeg({ quality: 90 })
       .toBuffer();
 
-    const key = `uploads/rendered/${Date.now()}.jpg`;
+    const key = `${club}/rendered/${Date.now()}.jpg`;
     await r2PutObject(key, rendered, 'image/jpeg', {
       cacheControl: 'public, max-age=31536000',
       acl: 'public-read',

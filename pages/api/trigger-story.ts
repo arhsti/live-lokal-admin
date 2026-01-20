@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { promises as fs } from 'fs';
 import formidable from 'formidable';
 import { triggerStoryForEvent } from '@/lib/triggerStoryForEvent';
+import { requireClub } from '@/lib/auth';
 
 export const config = {
   api: {
@@ -16,6 +17,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    const club = requireClub(req, res);
+    if (!club) return;
     const form = formidable({ multiples: false });
     const { fields, files } = await new Promise<{ fields: any; files: any }>((resolve, reject) => {
       form.parse(req, (err: any, fields: any, files: any) => {
@@ -40,7 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const overlayBuffer = await fs.readFile(overlayFile.filepath);
-    await triggerStoryForEvent(eventId, overlayBuffer);
+    await triggerStoryForEvent(club, eventId, overlayBuffer);
 
     return res.status(200).json({ success: true });
   } catch (error) {

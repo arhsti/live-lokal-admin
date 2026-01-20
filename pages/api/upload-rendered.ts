@@ -4,6 +4,7 @@ import formidable from 'formidable';
 import sharp from 'sharp';
 import { r2PutObject } from '@/lib/r2';
 import { registerRenderedImage } from '@/lib/images';
+import { requireClub } from '@/lib/auth';
 
 export const config = {
   api: {
@@ -18,6 +19,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    const club = requireClub(req, res);
+    if (!club) return;
     const { R2_BUCKET_NAME, R2_PUBLIC_BASE_URL, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID, R2_ENDPOINT } = process.env;
     if (!R2_BUCKET_NAME || !R2_PUBLIC_BASE_URL || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || (!R2_ACCOUNT_ID && !R2_ENDPOINT)) {
       return res.status(500).json({ error: 'Missing R2 configuration' });
@@ -68,10 +71,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const imageId = typeof fields.imageId === 'string' ? fields.imageId : Array.isArray(fields.imageId) ? fields.imageId[0] : 'image';
     const timestamp = Date.now();
     const renderedId = `${imageId}-${timestamp}`;
-    const key = `uploads/rendered/${renderedId}.jpg`;
+    const key = `${club}/rendered/${renderedId}.jpg`;
 
     await r2PutObject(key, outputBuffer, 'image/jpeg');
-    await registerRenderedImage(renderedId, imageId);
+    await registerRenderedImage(club, renderedId, imageId);
 
     const imageUrl = `${R2_PUBLIC_BASE_URL}/${key}`;
     return res.status(200).json({ imageUrl, width: 1080, height: 1920 });
