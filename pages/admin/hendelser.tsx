@@ -162,7 +162,7 @@ export default function HendelserPage() {
                             <th className="py-3 pr-6">Tidspunkt</th>
                             <th className="py-3 pr-6">Draktnummer</th>
                             <th className="py-3 pr-6">Status</th>
-                            <th className="py-3 pr-6">Preview</th>
+                            <th className="py-3 pr-6 text-center">Preview</th>
                             <th className="py-3 text-center">Action</th>
                           </tr>
                         </thead>
@@ -176,11 +176,11 @@ export default function HendelserPage() {
                                 <td className="py-4 pr-6 text-gray-700">{event.tidspunkt}</td>
                                 <td className="py-4 pr-6 text-gray-700">{event.draktnummer}</td>
                                 <td className="py-4 pr-6 text-gray-700">{event.status}</td>
-                                <td className="py-4 pr-6">
+                                <td className="py-4 pr-6 text-center">
                                   {isPosted && event.renderedImageUrl ? (
                                     <button
                                       type="button"
-                                      className="btn-secondary whitespace-nowrap"
+                                      className="btn-secondary whitespace-nowrap mx-auto"
                                       onClick={() => openPreview(event.renderedImageUrl)}
                                     >
                                       View story
