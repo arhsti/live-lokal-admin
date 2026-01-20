@@ -177,7 +177,7 @@ export default function ImagesPage() {
   return (
     <div>
       <Header title="Bildebibliotek" />
-      <main className="container-base space-y-8">
+      <main className="container-base space-y-10">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl font-extrabold">Bildebibliotek</h1>

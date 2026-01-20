@@ -109,7 +109,7 @@ export default function HendelserPage() {
   return (
     <div>
       <Header title="Hendelser" />
-      <main className="container-base space-y-8">
+      <main className="container-base space-y-10">
         <div>
           <h1 className="text-3xl font-extrabold">Hendelser</h1>
           <p className="text-sm text-gray-600 mt-1">Oversikt over kamp-hendelser.</p>
@@ -120,19 +120,19 @@ export default function HendelserPage() {
         {loading ? (
           <div className="text-sm text-gray-600">Laster hendelser...</div>
         ) : (
-          <div className="space-y-10">
+          <div className="space-y-12">
             {events.length === 0 ? (
-              <div className="card p-6 text-sm text-gray-600">Ingen hendelser funnet.</div>
+              <div className="card admin-card text-sm text-gray-600">Ingen hendelser funnet.</div>
             ) : (
               <>
-                <div className="flex flex-wrap gap-4">
+                <div className="flex flex-wrap gap-6">
                   {Object.entries(groupEventsByMatch(events)).map(([matchId, matchEvents]) => {
                     const isActive = activeMatchId === matchId;
                     return (
-                      <div key={matchId} className="card p-5 flex items-center gap-4">
+                      <div key={matchId} className="card admin-card-large flex min-w-[240px] flex-1 items-center justify-between gap-6">
                         <div>
-                          <div className="text-sm font-semibold text-gray-900">Match {matchId}</div>
-                          <div className="text-xs text-gray-500">{matchEvents.length} hendelser</div>
+                          <div className="text-base font-semibold text-gray-900">Match {matchId}</div>
+                          <div className="text-sm text-gray-500">{matchEvents.length} hendelser</div>
                         </div>
                         <button
                           type="button"
@@ -147,7 +147,7 @@ export default function HendelserPage() {
                 </div>
 
                 {activeMatchId ? (
-                  <div className="card p-7 space-y-6">
+                  <div className="card admin-card space-y-6">
                     <div className="flex items-center justify-between">
                       <div>
                         <h2 className="text-lg font-semibold text-gray-900">Match: {activeMatchId}</h2>
@@ -212,7 +212,7 @@ export default function HendelserPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="card p-6 text-sm text-gray-600">Velg en kamp for å vise hendelser.</div>
+                  <div className="card admin-card text-sm text-gray-600">Velg en kamp for å vise hendelser.</div>
                 )}
               </>
             )}

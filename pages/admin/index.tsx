@@ -23,7 +23,7 @@ export default function Admin() {
   return (
     <div>
       <Header title="Admin" />
-      <main className="container-base space-y-8">
+      <main className="container-base space-y-10">
         <div>
           <h1 className="text-3xl font-extrabold">Dashboard</h1>
           <p className="text-sm text-gray-600 mt-1">Velg område for å administrere innhold.</p>
@@ -33,7 +33,7 @@ export default function Admin() {
           className="grid"
           style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '28px' }}
         >
-          <div className="card p-6 flex flex-col gap-5">
+          <div className="card admin-card flex flex-col gap-5">
             <div>
               <div className="flex items-center justify-between gap-4">
                 <h2 className="text-lg font-semibold">Bilder</h2>
@@ -50,7 +50,7 @@ export default function Admin() {
             </div>
           </div>
 
-          <div className="card p-6 flex flex-col gap-5">
+          <div className="card admin-card flex flex-col gap-5">
             <div>
               <h2 className="text-lg font-semibold">Hendelser</h2>
               <p className="text-sm text-gray-600 mt-1">Motta og publiser kamp-hendelser.</p>
