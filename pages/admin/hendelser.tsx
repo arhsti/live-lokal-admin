@@ -19,6 +19,7 @@ export default function HendelserPage() {
   const [posting, setPosting] = useState<Record<string, boolean>>({});
   const [postErrors, setPostErrors] = useState<Record<string, string | null>>({});
   const [postSuccess, setPostSuccess] = useState<Record<string, boolean>>({});
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     loadEvents();
@@ -89,6 +90,13 @@ export default function HendelserPage() {
     }
   }
 
+  const openPreview = (url: string | null | undefined) => {
+    if (!url) return;
+    setPreviewUrl(url);
+  };
+
+  const closePreview = () => setPreviewUrl(null);
+
   return (
     <div>
       <Header title="Hendelser" />
@@ -103,12 +111,12 @@ export default function HendelserPage() {
         {loading ? (
           <div className="text-sm text-gray-600">Laster hendelser...</div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-8">
             {events.length === 0 ? (
               <div className="card p-6 text-sm text-gray-600">Ingen hendelser funnet.</div>
             ) : (
               Object.entries(groupEventsByMatch(events)).map(([matchId, matchEvents]) => (
-                <div key={matchId} className="card p-6 space-y-4">
+                <div key={matchId} className="card p-7 space-y-5">
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="text-lg font-semibold text-gray-900">Match: {matchId}</h2>
@@ -118,7 +126,7 @@ export default function HendelserPage() {
                   <div className="overflow-x-auto">
                     <table className="min-w-full text-sm">
                       <thead>
-                        <tr className="text-left text-gray-500">
+                        <tr className="text-left text-gray-500 bg-gray-50">
                           <th className="py-2 pr-4">Hendelse</th>
                           <th className="py-2 pr-4">Tidspunkt</th>
                           <th className="py-2 pr-4">Draktnummer</th>
@@ -133,17 +141,19 @@ export default function HendelserPage() {
                           const isPosting = !!posting[event.id];
                           return (
                             <tr key={event.id} className="border-t border-gray-100">
-                              <td className="py-3 pr-4 font-medium text-gray-900">{event.hendelse}</td>
-                              <td className="py-3 pr-4 text-gray-700">{event.tidspunkt}</td>
-                              <td className="py-3 pr-4 text-gray-700">{event.draktnummer}</td>
-                              <td className="py-3 pr-4 text-gray-700">{event.status}</td>
-                              <td className="py-3 pr-4">
+                              <td className="py-4 pr-4 font-medium text-gray-900">{event.hendelse}</td>
+                              <td className="py-4 pr-4 text-gray-700">{event.tidspunkt}</td>
+                              <td className="py-4 pr-4 text-gray-700">{event.draktnummer}</td>
+                              <td className="py-4 pr-4 text-gray-700">{event.status}</td>
+                              <td className="py-4 pr-4">
                                 {isPosted && event.renderedImageUrl ? (
-                                  <img
-                                    src={event.renderedImageUrl}
-                                    alt="Story"
-                                    className="h-12 w-12 rounded-md object-cover"
-                                  />
+                                  <button
+                                    type="button"
+                                    className="btn-secondary whitespace-nowrap"
+                                    onClick={() => openPreview(event.renderedImageUrl)}
+                                  >
+                                    View story
+                                  </button>
                                 ) : (
                                   <span className="text-gray-400">—</span>
                                 )}
@@ -175,6 +185,31 @@ export default function HendelserPage() {
           </div>
         )}
       </main>
+      {previewUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+          onClick={closePreview}
+        >
+          <div
+            className="relative max-h-[90vh] max-w-[90vw] rounded-xl bg-gray-900/90 p-4 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={closePreview}
+              className="absolute right-3 top-3 text-white/80 hover:text-white"
+              aria-label="Close preview"
+            >
+              ✕
+            </button>
+            <img
+              src={previewUrl}
+              alt="Story preview"
+              className="max-h-[80vh] max-w-[80vw] rounded-lg object-contain"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
