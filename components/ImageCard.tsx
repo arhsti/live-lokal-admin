@@ -64,7 +64,7 @@ export default function ImageCard({
             <textarea
               value={description}
               onChange={(e) => onDescriptionChange(e.target.value)}
-              className="input w-full mt-2 text-sm bg-slate-100/50 border-transparent focus:border-gray-300"
+              className="input w-full mt-2 text-sm"
               rows={3}
               style={{ minHeight: 60 }}
             />
@@ -83,7 +83,7 @@ export default function ImageCard({
                 max={99}
                 value={number}
                 onChange={(e) => onNumberChange(e.target.value.replace(/\D/g, ''))}
-                className="input w-full mt-2 text-sm bg-slate-100/50 border-transparent focus:border-gray-300 h-9"
+                className="input w-full mt-2 text-sm h-9"
               />
             </div>
             <div>
@@ -96,7 +96,7 @@ export default function ImageCard({
               <select
                 value={eventType}
                 onChange={(e) => onEventChange(e.target.value)}
-                className="input w-full mt-2 text-sm bg-slate-100/50 border-transparent focus:border-gray-300 h-9"
+                className="input w-full mt-2 text-sm h-9"
               >
                 <option value="Mål">Mål</option>
                 <option value="Kort">Kort</option>

@@ -213,7 +213,7 @@ export default function ImagesPage() {
   return (
     <div>
       <Header title="Bildebibliotek" />
-      <main className="container-base space-y-10">
+      <main className="container-base space-y-10" style={{ maxWidth: 1400 }}>
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4">
@@ -278,7 +278,12 @@ export default function ImagesPage() {
         {loading ? (
           <div className="text-sm text-gray-600">Laster bilder...</div>
         ) : (
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div
+            className="grid gap-6"
+            style={{
+              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+            }}
+          >
             {filteredImages.map((image) => {
               const current = editing[image.id] || {
                 number: image.tags?.number || '',
@@ -314,7 +319,7 @@ export default function ImagesPage() {
                   extraActions={image.tags?.type === 'rendered' ? null : (
                     <button
                       type="button"
-                      className="btn-secondary whitespace-nowrap flex-1 flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-900"
+                      className="h-9 whitespace-nowrap flex-1 flex items-center justify-center gap-2 rounded-lg border border-[rgba(31,41,55,0.2)] bg-white text-sm font-medium text-gray-900"
                       onClick={() => setPreviewUrl(image.imageUrl)}
                     >
                       <Instagram className="h-4 w-4" />
