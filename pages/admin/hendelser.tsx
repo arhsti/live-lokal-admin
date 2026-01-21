@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Header from '../../components/Header';
 
 interface MatchEvent {
@@ -106,6 +106,15 @@ export default function HendelserPage() {
 
   const closePreview = () => setPreviewUrl(null);
 
+  const groupedEvents = useMemo(() => groupEventsByMatch(events), [events]);
+  const eventTypeColor = (value: string) => {
+    const lower = value.toLowerCase();
+    if (lower.includes('mål')) return 'bg-emerald-500';
+    if (lower.includes('kort')) return 'bg-yellow-500';
+    if (lower.includes('bytte')) return 'bg-blue-500';
+    return 'bg-gray-400';
+  };
+
   return (
     <div>
       <Header title="Hendelser" />
@@ -126,7 +135,7 @@ export default function HendelserPage() {
             ) : (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {Object.entries(groupEventsByMatch(events)).map(([matchId, matchEvents]) => {
+                  {Object.entries(groupedEvents).map(([matchId, matchEvents]) => {
                     const isActive = activeMatchId === matchId;
                     return (
                       <button
@@ -143,7 +152,13 @@ export default function HendelserPage() {
                           <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">{matchEvents.length} hendelser</span>
                         </div>
                         <div className="mt-6 flex items-center justify-between border-t border-gray-200 pt-4 text-sm text-gray-600">
-                          <span>{isActive ? 'Skjul hendelser' : 'Vis hendelser'}</span>
+                          <span className="flex items-center gap-2">
+                            {isActive ? 'Skjul hendelser' : 'Vis hendelser'}
+                            {!isActive && <span className="relative flex h-2 w-2">
+                              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
+                              <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500"></span>
+                            </span>}
+                          </span>
                           <span className="text-gray-400">→</span>
                         </div>
                       </button>
@@ -156,7 +171,7 @@ export default function HendelserPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <h2 className="text-lg font-semibold text-gray-900">Match: {activeMatchId}</h2>
-                        <p className="text-xs text-gray-500">{groupEventsByMatch(events)[activeMatchId]?.length || 0} hendelser</p>
+                        <p className="text-xs text-gray-500">{groupedEvents[activeMatchId]?.length || 0} hendelser</p>
                       </div>
                     </div>
                     <div className="overflow-x-auto">
@@ -172,15 +187,26 @@ export default function HendelserPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {(groupEventsByMatch(events)[activeMatchId] || []).map((event) => {
+                          {(groupedEvents[activeMatchId] || []).map((event) => {
                             const isPosted = event.status === 'posted';
                             const isPosting = !!posting[event.id];
                             return (
                               <tr key={event.id} className="border-t border-gray-100">
-                                <td className="py-4 pr-6 font-medium text-gray-900">{event.hendelse}</td>
-                                <td className="py-4 pr-6 text-gray-700">{event.tidspunkt}</td>
-                                <td className="py-4 pr-6 text-gray-700">{event.draktnummer}</td>
-                                <td className="py-4 pr-6 text-gray-700">{event.status}</td>
+                                <td className="py-4 pr-6">
+                                  <div className="flex items-center gap-2 font-medium text-gray-900">
+                                    <span className={`h-2 w-2 rounded-full ${eventTypeColor(event.hendelse)}`} />
+                                    {event.hendelse}
+                                  </div>
+                                </td>
+                                <td className="py-4 pr-6 font-mono text-gray-700">{event.tidspunkt}</td>
+                                <td className="py-4 pr-6 text-gray-700">#{event.draktnummer}</td>
+                                <td className="py-4 pr-6">
+                                  {isPosted ? (
+                                    <span className="badge bg-emerald-50 text-emerald-700">Publisert</span>
+                                  ) : (
+                                    <span className="badge border border-gray-200 bg-transparent text-gray-600">Utkast</span>
+                                  )}
+                                </td>
                                 <td className="py-4 pr-6 text-center">
                                   {isPosted && event.renderedImageUrl ? (
                                     <button
@@ -200,7 +226,7 @@ export default function HendelserPage() {
                                     onClick={() => handlePost(event)}
                                     disabled={isPosting || isPosted}
                                   >
-                                    {isPosted ? 'Publisert' : (isPosting ? 'Sender...' : 'Post story')}
+                                    {isPosted ? 'Posted ✓' : (isPosting ? 'Sender...' : 'Post')}
                                   </button>
                                   {postErrors[event.id] && (
                                     <div className="text-xs text-red-500 mt-2">{postErrors[event.id]}</div>
@@ -246,6 +272,10 @@ export default function HendelserPage() {
               alt="Story preview"
               className="h-full w-full object-contain"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/20" />
+            <div className="absolute bottom-6 left-6 text-white">
+              <div className="text-xs font-semibold uppercase tracking-wide">Live Lokal</div>
+            </div>
           </div>
         </div>
       )}

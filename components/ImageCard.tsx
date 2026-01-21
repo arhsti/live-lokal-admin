@@ -32,7 +32,7 @@ export default function ImageCard({
 }: ImageCardProps) {
   return (
     <div className="card overflow-hidden transition-shadow hover:shadow-soft">
-      <div className="bg-gray-100" style={{ height: 190 }}>
+      <div className="bg-gray-100" style={{ aspectRatio: '4 / 3' }}>
         {imageUrl ? (
           <img
             src={imageUrl}
@@ -40,7 +40,7 @@ export default function ImageCard({
             style={{
               width: '100%',
               height: '100%',
-              objectFit: 'contain',
+              objectFit: 'cover',
               display: 'block',
             }}
           />
@@ -94,6 +94,8 @@ export default function ImageCard({
                 <option value="Mål">Mål</option>
                 <option value="Kort">Kort</option>
                 <option value="Bytte">Bytte</option>
+                <option value="Kampstart">Kampstart</option>
+                <option value="Slutt">Slutt</option>
                 <option value="Alle">Alle</option>
               </select>
             </div>

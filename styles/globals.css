@@ -4,7 +4,7 @@
 
 :root {
   --accent: #1f2937;
-  --bg: #f5f6f8;
+  --bg: #f8fafc;
   --card: #ffffff;
   --text: #111827;
   --muted: #6b7280;
@@ -51,6 +51,17 @@ html, body {
   border-radius: 0.7rem;
   font-weight: 600;
   box-shadow: 0 6px 16px rgba(17, 24, 39, 0.18);
+  transition: opacity 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+.btn-primary:hover,
+.btn-secondary:hover {
+  opacity: 0.9;
+}
+
+.btn-primary:active,
+.btn-secondary:active {
+  transform: scale(0.98);
 }
 
 .btn-secondary {
@@ -60,6 +71,7 @@ html, body {
   padding: 0.6rem 1rem;
   border-radius: 0.7rem;
   font-weight: 600;
+  transition: opacity 160ms ease, transform 160ms ease;
 }
 
 .no-underline {

@@ -7,6 +7,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -34,7 +35,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen w-full relative overflow-hidden bg-gray-50 flex items-center justify-center px-6 py-12">
-      <div className="absolute inset-x-0 top-0 h-56 bg-gradient-to-b from-gray-200/70 to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-56 bg-gradient-to-b from-gray-900/5 to-transparent" />
       <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-gray-300/40 blur-3xl" />
       <div className="absolute top-1/3 -left-24 h-56 w-56 rounded-full bg-gray-200/40 blur-3xl" />
 
@@ -62,14 +63,23 @@ export default function LoginPage() {
           </div>
           <div>
             <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">Passord</label>
-            <input
-              type="password"
-              className="input w-full mt-2 box-border"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Passord"
-              required
-            />
+            <div className="relative mt-2">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                className="input w-full pr-16 box-border"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Passord"
+                required
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-500 hover:text-gray-800"
+                onClick={() => setShowPassword((prev) => !prev)}
+              >
+                {showPassword ? 'Skjul' : 'Vis'}
+              </button>
+            </div>
           </div>
           {error && <div className="text-sm text-red-500">{error}</div>}
           <button className="btn-primary w-full" disabled={loading}>

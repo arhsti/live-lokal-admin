@@ -38,9 +38,9 @@ export default function Header({ title }: HeaderProps) {
   };
 
   return (
-    <header className="w-full bg-gray-100/80 border-b border-gray-200">
+    <header className="w-full bg-white/80 border-b border-gray-200 backdrop-blur">
       <div className="container-base flex items-center justify-between">
-        <Link href="/admin" className="text-gray-900 font-semibold link-reset">
+        <Link href="/admin" className="text-gray-900 font-semibold tracking-tight link-reset">
           {clubName ? `Live Lokal – ${clubName}` : (club ? `Live Lokal – Klubb ${club}` : 'Live Lokal')}
         </Link>
         <div className="text-sm font-medium text-gray-700">{title}</div>
@@ -48,7 +48,7 @@ export default function Header({ title }: HeaderProps) {
           <button
             type="button"
             onClick={() => setMenuOpen((open) => !open)}
-            className="text-xl text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-200/60"
+            className="text-xl text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-200/60 transition"
             aria-haspopup="menu"
             aria-expanded={menuOpen}
             aria-label="Open menu"

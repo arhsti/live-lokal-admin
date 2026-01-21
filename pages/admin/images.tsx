@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Header from '../../components/Header';
 import ImageCard from '../../components/ImageCard';
@@ -6,6 +6,7 @@ import ImageCard from '../../components/ImageCard';
 interface ImageData {
   id: string;
   imageUrl: string;
+  created_at?: string;
   tags?: { number: string; eventType?: string; type?: 'processed' | 'rendered'; description?: string };
 }
 
@@ -21,11 +22,45 @@ export default function ImagesPage() {
   const [posting, setPosting] = useState<Record<string, boolean>>({});
   const [postErrors, setPostErrors] = useState<Record<string, string | null>>({});
   const [postSuccess, setPostSuccess] = useState<Record<string, boolean>>({});
+  const [searchValue, setSearchValue] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [sortBy, setSortBy] = useState<'newest' | 'number' | 'event'>('newest');
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
 
   useEffect(() => {
     loadImages();
   }, []);
+
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedSearch(searchValue.trim()), 200);
+    return () => clearTimeout(id);
+  }, [searchValue]);
+
+  const filteredImages = useMemo(() => {
+    const list = [...images];
+    const filtered = debouncedSearch
+      ? list.filter((image) => (image.tags?.number || '').includes(debouncedSearch))
+      : list;
+
+    if (sortBy === 'number') {
+      return filtered.sort((a, b) => {
+        const an = parseInt(a.tags?.number || '0', 10) || 0;
+        const bn = parseInt(b.tags?.number || '0', 10) || 0;
+        return an - bn;
+      });
+    }
+    if (sortBy === 'event') {
+      return filtered.sort((a, b) => (a.tags?.eventType || '').localeCompare(b.tags?.eventType || ''));
+    }
+
+    return filtered.sort((a, b) => {
+      const at = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const bt = b.created_at ? new Date(b.created_at).getTime() : 0;
+      if (bt !== at) return bt - at;
+      return b.id.localeCompare(a.id);
+    });
+  }, [images, debouncedSearch, sortBy]);
 
   async function loadImages() {
     setLoading(true);
@@ -184,6 +219,28 @@ export default function ImagesPage() {
             <p className="text-base text-gray-600">Administrer og tagg bilder fra kamper</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2">
+              <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Søk draktnr</span>
+              <input
+                className="bg-transparent text-sm outline-none w-20"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                placeholder="10"
+                inputMode="numeric"
+              />
+            </div>
+            <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2">
+              <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Sorter</span>
+              <select
+                className="bg-transparent text-sm outline-none"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+              >
+                <option value="newest">Nyeste</option>
+                <option value="number">Draktnummer</option>
+                <option value="event">Hendelse</option>
+              </select>
+            </div>
             <form ref={formRef} onSubmit={handleUpload} encType="multipart/form-data" className="hidden">
               <input
                 id="file-input"
@@ -213,12 +270,9 @@ export default function ImagesPage() {
           <div className="text-sm text-gray-600">Laster bilder...</div>
         ) : (
           <div
-            className="grid gap-6 md:gap-8"
-            style={{
-              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-            }}
+            className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
           >
-            {images.map((image) => {
+            {filteredImages.map((image) => {
               const current = editing[image.id] || {
                 number: image.tags?.number || '',
                 eventType: image.tags?.eventType || 'Alle',
@@ -252,9 +306,13 @@ export default function ImagesPage() {
                   success={saveSuccess[image.id] || postSuccess[image.id]}
                   extraActions={image.tags?.type === 'rendered' ? null : (
                     <>
-                      <Link href={`/admin/render?imageId=${encodeURIComponent(image.id)}`} className="btn-secondary no-underline whitespace-nowrap">
-                        Bruk i story
-                      </Link>
+                      <button
+                        type="button"
+                        className="btn-secondary whitespace-nowrap"
+                        onClick={() => setPreviewUrl(image.imageUrl)}
+                      >
+                        Story
+                      </button>
                       <button
                         type="button"
                         className="btn-primary whitespace-nowrap"
@@ -271,6 +329,35 @@ export default function ImagesPage() {
           </div>
         )}
       </main>
+      {previewUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6"
+          onClick={() => setPreviewUrl(null)}
+        >
+          <div
+            className="relative w-full max-w-[420px] aspect-[9/16] rounded-2xl bg-black shadow-soft overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setPreviewUrl(null)}
+              className="absolute right-4 top-4 h-8 w-8 rounded-full bg-black/60 text-white/90 hover:text-white"
+              aria-label="Close preview"
+            >
+              ✕
+            </button>
+            <img
+              src={previewUrl}
+              alt="Story preview"
+              className="h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
+            <div className="absolute bottom-6 left-6 text-white">
+              <div className="text-sm font-semibold uppercase tracking-wide">Live Lokal</div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
