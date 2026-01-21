@@ -43,33 +43,33 @@ export default function Admin() {
   }
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-[hsl(220_25%_15%)]">Oversikt</h1>
-        <p className="text-[hsl(220_10%_55%)] text-lg">Velkommen tilbake, Admin.</p>
+    <div className="space-y-6 max-w-5xl mx-auto">
+      <div className="space-y-1">
+        <h1 className="text-2xl font-bold tracking-tight text-[hsl(220_25%_15%)]">Oversikt</h1>
+        <p className="text-[hsl(220_10%_55%)] text-sm">Velkommen tilbake, Admin.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-6">
         <Link href="/admin/images" className="block">
           <Card className="group cursor-pointer hover:shadow-lg transition-all duration-300 border border-[hsl(220_13%_91%/0.6)] hover:border-[hsl(220_25%_15%/0.2)] h-full flex flex-col">
-            <CardContent className="p-8 flex-1 flex flex-col items-start space-y-4">
-              <div className="h-14 w-14 rounded-2xl bg-[hsl(210_20%_94%)] text-[hsl(220_25%_15%)] flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-300">
-                <ImageIcon className="h-7 w-7" />
+            <CardContent className="p-6 flex-1 flex flex-col items-start space-y-3">
+              <div className="h-10 w-10 rounded-xl bg-[hsl(210_20%_94%)] text-[hsl(220_25%_15%)] flex items-center justify-center">
+                <ImageIcon className="h-5 w-5" />
               </div>
               <div className="space-y-2">
-                <h2 className="text-2xl font-bold group-hover:text-[hsl(220_25%_15%)] transition-colors">Bilder</h2>
-                <p className="text-[hsl(220_10%_55%)]">
+                <h2 className="text-lg font-semibold group-hover:text-[hsl(220_25%_15%)] transition-colors">Bilder</h2>
+                <p className="text-[hsl(220_10%_55%)] text-sm">
                   Administrer bildebiblioteket, last opp nye bilder og koble dem til spillere.
                 </p>
               </div>
             </CardContent>
-            <CardFooter className="px-8 pb-8 pt-0 flex justify-between items-center">
-              <span className="text-sm font-medium bg-[hsl(210_20%_94%)] px-3 py-1 rounded-full text-[hsl(220_25%_15%)]">
+            <CardFooter className="px-6 pb-6 pt-0 flex justify-between items-center">
+              <span className="text-xs font-medium bg-[hsl(210_20%_94%)] px-3 py-1 rounded-full text-[hsl(220_25%_15%)]">
                 {imageCount === null ? '—' : `${imageCount} bilder`}
               </span>
               <Button
                 variant="ghost"
-                className="group-hover:translate-x-1 transition-transform p-0 hover:bg-transparent text-[hsl(220_25%_15%)] font-semibold"
+                className="group-hover:translate-x-1 transition-transform p-0 hover:bg-transparent text-[hsl(220_25%_15%)] text-sm font-semibold"
               >
                 Åpne <ArrowUpRight className="ml-2 h-4 w-4" />
               </Button>
@@ -79,24 +79,24 @@ export default function Admin() {
 
         <Link href="/admin/hendelser" className="block">
           <Card className="group cursor-pointer hover:shadow-lg transition-all duration-300 border border-[hsl(220_13%_91%/0.6)] hover:border-[hsl(220_25%_15%/0.2)] h-full flex flex-col">
-            <CardContent className="p-8 flex-1 flex flex-col items-start space-y-4">
-              <div className="h-14 w-14 rounded-2xl bg-[hsl(210_20%_94%)] text-[hsl(220_25%_15%)] flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-300">
-                <Calendar className="h-7 w-7" />
+            <CardContent className="p-6 flex-1 flex flex-col items-start space-y-3">
+              <div className="h-10 w-10 rounded-xl bg-[hsl(210_20%_94%)] text-[hsl(220_25%_15%)] flex items-center justify-center">
+                <Calendar className="h-5 w-5" />
               </div>
               <div className="space-y-2">
-                <h2 className="text-2xl font-bold group-hover:text-[hsl(220_25%_15%)] transition-colors">Hendelser</h2>
-                <p className="text-[hsl(220_10%_55%)]">
+                <h2 className="text-lg font-semibold group-hover:text-[hsl(220_25%_15%)] transition-colors">Hendelser</h2>
+                <p className="text-[hsl(220_10%_55%)] text-sm">
                   Se kampoversikt, rediger hendelser og publiser stories direkte.
                 </p>
               </div>
             </CardContent>
-            <CardFooter className="px-8 pb-8 pt-0 flex justify-between items-center">
-              <span className="text-sm font-medium bg-[hsl(210_20%_94%)] px-3 py-1 rounded-full text-[hsl(220_25%_15%)]">
+            <CardFooter className="px-6 pb-6 pt-0 flex justify-between items-center">
+              <span className="text-xs font-medium bg-[hsl(210_20%_94%)] px-3 py-1 rounded-full text-[hsl(220_25%_15%)]">
                 {matchCount === null ? '—' : `${matchCount} aktive kamper`}
               </span>
               <Button
                 variant="ghost"
-                className="group-hover:translate-x-1 transition-transform p-0 hover:bg-transparent text-[hsl(220_25%_15%)] font-semibold"
+                className="group-hover:translate-x-1 transition-transform p-0 hover:bg-transparent text-[hsl(220_25%_15%)] text-sm font-semibold"
               >
                 Administrer <ArrowUpRight className="ml-2 h-4 w-4" />
               </Button>
