@@ -50,8 +50,8 @@ export default function Admin() {
           <p className="text-base text-gray-600">Velg område for å administrere innhold.</p>
         </div>
 
-        <div className="grid gap-10 md:grid-cols-2">
-          <div className="card admin-card-large shadow-soft flex flex-col gap-7 transition-transform hover:-translate-y-1 hover:border-gray-300">
+        <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
+          <div className="card admin-card-large shadow-soft flex flex-col gap-6 transition-transform hover:-translate-y-1 hover:border-gray-300">
             <div className="h-12 w-12 rounded-2xl bg-gray-100 text-gray-900 flex items-center justify-center">
               <ImageIcon className="h-6 w-6" />
             </div>
@@ -71,7 +71,7 @@ export default function Admin() {
             </div>
           </div>
 
-          <div className="card admin-card-large shadow-soft flex flex-col gap-7 transition-transform hover:-translate-y-1 hover:border-gray-300">
+          <div className="card admin-card-large shadow-soft flex flex-col gap-6 transition-transform hover:-translate-y-1 hover:border-gray-300">
             <div className="h-12 w-12 rounded-2xl bg-gray-100 text-gray-900 flex items-center justify-center">
               <Calendar className="h-6 w-6" />
             </div>

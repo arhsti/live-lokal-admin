@@ -134,7 +134,7 @@ export default function HendelserPage() {
               <div className="card admin-card text-sm text-gray-600">Ingen hendelser funnet.</div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
                   {Object.entries(groupedEvents).map(([matchId, matchEvents]) => {
                     const isActive = activeMatchId === matchId;
                     return (

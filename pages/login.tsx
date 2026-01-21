@@ -39,7 +39,7 @@ export default function LoginPage() {
       <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-gray-300/40 blur-3xl" />
       <div className="absolute top-1/3 -left-24 h-56 w-56 rounded-full bg-gray-200/40 blur-3xl" />
 
-      <div className="card admin-card shadow-soft w-full max-w-[400px] space-y-7 box-border bg-white/90 backdrop-blur-sm">
+      <div className="card admin-card shadow-soft w-full max-w-[400px] space-y-6 box-border bg-white/90 backdrop-blur-sm">
         <div className="text-center space-y-4">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-gray-900 text-white font-semibold">
             LL
@@ -48,7 +48,7 @@ export default function LoginPage() {
           <p className="text-sm text-gray-500">Automatisk generering og publisering av kamp-hendelser</p>
           <p className="text-xs text-gray-600">Logg inn for å administrere klubben.</p>
         </div>
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
             <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">FIKS ID (5 siffer)</label>
             <input
