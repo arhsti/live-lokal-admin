@@ -26,6 +26,7 @@ export default function ImagesPage() {
   const [searchValue, setSearchValue] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sortBy, setSortBy] = useState<'newest' | 'number' | 'event'>('newest');
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
 
   useEffect(() => {
@@ -277,7 +278,7 @@ export default function ImagesPage() {
         {loading ? (
           <div className="text-sm text-gray-600">Laster bilder...</div>
         ) : (
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredImages.map((image) => {
               const current = editing[image.id] || {
                 number: image.tags?.number || '',
@@ -313,12 +314,11 @@ export default function ImagesPage() {
                   extraActions={image.tags?.type === 'rendered' ? null : (
                     <button
                       type="button"
-                      className="btn-secondary whitespace-nowrap flex-1 flex items-center justify-center gap-2 bg-white border border-gray-200"
-                      onClick={() => handlePostStory(image)}
-                      disabled={!!posting[image.id] || !!saving[image.id]}
+                      className="btn-secondary whitespace-nowrap flex-1 flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-900"
+                      onClick={() => setPreviewUrl(image.imageUrl)}
                     >
                       <Instagram className="h-4 w-4" />
-                      {posting[image.id] ? 'Sender...' : 'Story'}
+                      Story
                     </button>
                   )}
                 />
@@ -327,6 +327,35 @@ export default function ImagesPage() {
           </div>
         )}
       </main>
+      {previewUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6"
+          onClick={() => setPreviewUrl(null)}
+        >
+          <div
+            className="relative w-full max-w-[420px] aspect-[9/16] rounded-2xl bg-black shadow-soft overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setPreviewUrl(null)}
+              className="absolute right-4 top-4 h-8 w-8 rounded-full bg-black/60 text-white/90 hover:text-white"
+              aria-label="Close preview"
+            >
+              ✕
+            </button>
+            <img
+              src={previewUrl}
+              alt="Story preview"
+              className="h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
+            <div className="absolute bottom-6 left-6 text-white">
+              <div className="text-xs font-semibold uppercase tracking-wide">Live Lokal</div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -32,21 +32,26 @@ export default function ImageCard({
   extraActions,
 }: ImageCardProps) {
   return (
-    <div className="card overflow-hidden transition-shadow hover:shadow-soft">
-      <div className="bg-gray-100" style={{ aspectRatio: '9 / 16' }}>
+    <div className="card group overflow-hidden transition-shadow hover:shadow-soft">
+      <div className="bg-gray-100 rounded-t-xl overflow-hidden">
         {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt="Image"
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              display: 'block',
-            }}
-          />
+          <div className="relative" style={{ aspectRatio: '4 / 3' }}>
+            <img
+              src={imageUrl}
+              alt="Image"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block',
+                transition: 'transform 500ms ease',
+              }}
+              className="group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-black/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+          </div>
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-500">
+          <div className="w-full h-full flex items-center justify-center text-gray-500" style={{ aspectRatio: '4 / 3' }}>
             Ingen bilde
           </div>
         )}
@@ -55,17 +60,18 @@ export default function ImageCard({
       <div className="p-5 space-y-4">
         <div className="space-y-4">
           <div>
-            <label className="text-[11px] font-semibold uppercase tracking-widest text-gray-500">Beskrivelse</label>
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Beskrivelse</label>
             <textarea
               value={description}
               onChange={(e) => onDescriptionChange(e.target.value)}
-              className="input w-full mt-2 text-sm bg-white border border-gray-200"
-              rows={2}
+              className="input w-full mt-2 text-sm bg-slate-100/50 border-transparent focus:border-gray-300"
+              rows={3}
+              style={{ minHeight: 60 }}
             />
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className="text-[11px] font-semibold uppercase tracking-widest text-gray-500 flex items-center gap-3">
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 flex items-center gap-3">
                 Draktnummer
                 <Tooltip text="Bilde tilknyttet spiller. Dette vil velges når en hendelse om denne spilleren skjer.">
                   <span className="text-[13px] text-gray-700 font-semibold">ℹ</span>
@@ -77,11 +83,11 @@ export default function ImageCard({
                 max={99}
                 value={number}
                 onChange={(e) => onNumberChange(e.target.value.replace(/\D/g, ''))}
-                className="input w-full mt-2 text-sm bg-white border border-gray-200"
+                className="input w-full mt-2 text-sm bg-slate-100/50 border-transparent focus:border-gray-300 h-9"
               />
             </div>
             <div>
-              <label className="text-[11px] font-semibold uppercase tracking-widest text-gray-500 flex items-center gap-3">
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 flex items-center gap-3">
                 Hendelse
                 <Tooltip text="Velg hvilken type hendelse som dette bildet skal brukes til">
                   <span className="text-[13px] text-gray-700 font-semibold">ℹ</span>
@@ -90,7 +96,7 @@ export default function ImageCard({
               <select
                 value={eventType}
                 onChange={(e) => onEventChange(e.target.value)}
-                className="input w-full mt-2 text-sm bg-white border border-gray-200"
+                className="input w-full mt-2 text-sm bg-slate-100/50 border-transparent focus:border-gray-300 h-9"
               >
                 <option value="Mål">Mål</option>
                 <option value="Kort">Kort</option>
@@ -106,7 +112,7 @@ export default function ImageCard({
           <button
             onClick={onSave}
             disabled={saving}
-            className="btn-secondary whitespace-nowrap flex-1 flex items-center justify-center gap-2 text-sm"
+            className="btn-secondary whitespace-nowrap flex-1 flex items-center justify-center gap-2 text-sm h-9"
           >
             <Save className="h-4 w-4" />
             {saving ? 'Lagrer...' : 'Lagre'}
