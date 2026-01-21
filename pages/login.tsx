@@ -1,5 +1,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import { AuthLayout, AuthCard } from '@/components/AuthLayout';
+import BrandBadge from '@/components/BrandBadge';
+import PasswordField from '@/components/PasswordField';
+import { Label } from '@/components/ui/Label';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+import { cn } from '@/components/ui/utils';
+import { layout, spacing, typography, status } from '@/styles/tokens';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,59 +42,45 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden bg-gray-50 flex items-center justify-center px-6 py-12">
-      <div className="absolute inset-x-0 top-0 h-56 bg-gradient-to-b from-gray-900/5 to-transparent" />
-      <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-gray-300/40 blur-3xl" />
-      <div className="absolute top-1/3 -left-24 h-56 w-56 rounded-full bg-gray-200/40 blur-3xl" />
-
-      <div className="card admin-card shadow-soft w-full max-w-[400px] space-y-6 box-border bg-white/90 backdrop-blur-sm">
-        <div className="text-center space-y-4">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-gray-900 text-white font-semibold">
-            LL
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight">Live Lokal</h1>
-          <p className="text-sm text-gray-500">Automatisk generering og publisering av kamp-hendelser</p>
-          <p className="text-xs text-gray-600">Logg inn for å administrere klubben.</p>
-        </div>
-        <form className="space-y-5" onSubmit={handleSubmit}>
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">FIKS ID (5 siffer)</label>
-            <input
-              className="input w-full mt-2 box-border"
-              value={fiksid}
-              onChange={(e) => setFiksid(e.target.value)}
-              placeholder="FIKS-ID (5 siffer)"
-              inputMode="numeric"
-              pattern="\d{5}"
-              required
-            />
-          </div>
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">Passord</label>
-            <div className="relative mt-2">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                className="input w-full pr-16 box-border"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Passord"
-                required
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-500 hover:text-gray-800"
-                onClick={() => setShowPassword((prev) => !prev)}
-              >
-                {showPassword ? 'Skjul' : 'Vis'}
-              </button>
+    <AuthLayout>
+      <AuthCard>
+        <div className={cn(layout.col, spacing.stack)}>
+          <div className={cn(layout.col, spacing.stackTight)}>
+            <BrandBadge text="LL" />
+            <div className={cn(layout.col, spacing.field)}>
+              <h1 className={typography.cardTitle}>Live Lokal</h1>
+              <p className={typography.subtitle}>Automatisk generering og publisering av kamp-hendelser</p>
+              <p className={typography.bodyStrong}>Logg inn for å administrere klubben.</p>
             </div>
           </div>
-          {error && <div className="text-sm text-red-500">{error}</div>}
-          <button className="btn-primary w-full" disabled={loading}>
-            {loading ? 'Logger inn...' : 'Logg inn'}
-          </button>
-        </form>
-      </div>
-    </div>
+          <form className={spacing.stack} onSubmit={handleSubmit}>
+            <div className={cn(layout.col, spacing.field)}>
+              <Label>FIKS ID (5 siffer)</Label>
+              <Input
+                className={layout.wFull}
+                value={fiksid}
+                onChange={(e) => setFiksid(e.target.value)}
+                placeholder="FIKS-ID (5 siffer)"
+                inputMode="numeric"
+                pattern="\d{5}"
+                required
+              />
+            </div>
+            <PasswordField
+              label="Passord"
+              value={password}
+              show={showPassword}
+              onToggle={() => setShowPassword((prev) => !prev)}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Passord"
+            />
+            {error && <div className={status.error}>{error}</div>}
+            <Button className={layout.wFull} disabled={loading}>
+              {loading ? 'Logger inn...' : 'Logg inn'}
+            </Button>
+          </form>
+        </div>
+      </AuthCard>
+    </AuthLayout>
   );
 }

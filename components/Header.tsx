@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { cn } from '@/components/ui/utils';
+import { container, header as headerTokens } from '@/styles/tokens';
 
 interface HeaderProps {
   title: string;
@@ -38,17 +40,17 @@ export default function Header({ title }: HeaderProps) {
   };
 
   return (
-    <header className="w-full bg-white/80 border-b border-gray-200 backdrop-blur">
-      <div className="container-base flex items-center justify-between py-4">
-        <Link href="/admin" className="text-gray-900 font-semibold tracking-tight link-reset">
+    <header className={headerTokens.wrapper}>
+      <div className={cn(container.base, headerTokens.inner)}>
+        <Link href="/admin" className={headerTokens.brand}>
           {clubName ? `Live Lokal – ${clubName}` : (club ? `Live Lokal – Klubb ${club}` : 'Live Lokal')}
         </Link>
-        <div className="text-sm font-medium text-gray-700">{title}</div>
+        <div className={headerTokens.title}>{title}</div>
         <div className="relative" ref={menuRef}>
           <button
             type="button"
             onClick={() => setMenuOpen((open) => !open)}
-            className="text-xl text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-200/60 transition"
+            className={headerTokens.menuButton}
             aria-haspopup="menu"
             aria-expanded={menuOpen}
             aria-label="Open menu"
@@ -56,13 +58,10 @@ export default function Header({ title }: HeaderProps) {
             ☰
           </button>
           {menuOpen && (
-            <div
-              className="absolute right-0 mt-3 w-48 rounded-xl border border-gray-200 bg-white shadow-soft p-2"
-              role="menu"
-            >
+            <div className={headerTokens.menu} role="menu">
               <Link
                 href="/admin/innstillinger"
-                className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 link-reset rounded-lg"
+                className={headerTokens.menuItem}
                 role="menuitem"
                 onClick={() => setMenuOpen(false)}
               >
@@ -70,7 +69,7 @@ export default function Header({ title }: HeaderProps) {
               </Link>
               <button
                 type="button"
-                className="block w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-lg"
+                className={headerTokens.menuItemButton}
                 role="menuitem"
                 onClick={async () => {
                   setMenuOpen(false);

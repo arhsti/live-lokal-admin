@@ -1,5 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
-import Header from '../../components/Header';
+import Header from '@/components/Header';
+import StoryPreviewModal from '@/components/StoryPreviewModal';
+import EventTypeDot from '@/components/EventTypeDot';
+import { Card, CardContent } from '@/components/ui/Card';
+import { EventGrid } from '@/components/ui/Grid';
+import { SelectableCard } from '@/components/ui/SelectableCard';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { DividerRow } from '@/components/ui/DividerRow';
+import { PulseDot } from '@/components/ui/PulseDot';
+import { Table, TableHead, TableBody, TableRow, TableHeaderRow, TableHeaderCell, TableCell } from '@/components/ui/Table';
+import { cn } from '@/components/ui/utils';
+import { container, layout, spacing, typography, status } from '@/styles/tokens';
 
 interface MatchEvent {
   id: string;
@@ -107,178 +119,147 @@ export default function HendelserPage() {
   const closePreview = () => setPreviewUrl(null);
 
   const groupedEvents = useMemo(() => groupEventsByMatch(events), [events]);
-  const eventTypeColor = (value: string) => {
-    const lower = value.toLowerCase();
-    if (lower.includes('mål')) return 'bg-emerald-500';
-    if (lower.includes('kort')) return 'bg-yellow-500';
-    if (lower.includes('bytte')) return 'bg-blue-500';
-    return 'bg-gray-400';
-  };
 
   return (
     <div>
       <Header title="Hendelser" />
-      <main className="container-base space-y-12">
-        <div className="space-y-3">
-          <h1 className="text-3xl font-extrabold tracking-tight">Hendelser</h1>
-          <p className="text-base text-gray-600">Oversikt over kamp-hendelser.</p>
+      <main className={cn(container.base, spacing.sectionXXL)}>
+        <div className={cn(layout.col, spacing.stackTight)}>
+          <h1 className={typography.pageTitle}>Hendelser</h1>
+          <p className={typography.lead}>Oversikt over kamp-hendelser.</p>
         </div>
 
-        {error && <div className="text-sm text-red-500">{error}</div>}
+        {error && <div className={status.error}>{error}</div>}
 
         {loading ? (
-          <div className="text-sm text-gray-600">Laster hendelser...</div>
+          <div className={status.muted}>Laster hendelser...</div>
         ) : (
-          <div className="space-y-14">
+          <div className={cn(layout.col, spacing.sectionMega)}>
             {events.length === 0 ? (
-              <div className="card admin-card text-sm text-gray-600">Ingen hendelser funnet.</div>
+              <Card>
+                <CardContent className={status.muted}>Ingen hendelser funnet.</CardContent>
+              </Card>
             ) : (
               <>
-                <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
+                <EventGrid>
                   {Object.entries(groupedEvents).map(([matchId, matchEvents]) => {
                     const isActive = activeMatchId === matchId;
                     return (
-                      <button
+                      <SelectableCard
                         key={matchId}
                         type="button"
+                        active={isActive}
                         onClick={() => setActiveMatchId(isActive ? null : matchId)}
-                        className={`card admin-card-large text-left transition-all border-2 ${isActive ? 'border-gray-900 shadow-soft' : 'border-transparent hover:border-gray-200'}`}
                       >
-                        <div className="flex items-start justify-between gap-6">
-                          <div className="space-y-2">
-                            <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Match</div>
-                            <div className="text-2xl font-bold text-gray-900">{matchId}</div>
+                        <CardContent className={cn(layout.col, spacing.gap6)}>
+                          <div className={cn(layout.rowBetween, spacing.gap6)}>
+                            <div className={cn(layout.col, spacing.field)}>
+                              <div className={typography.label}>Match</div>
+                              <div className={typography.cardTitle}>{matchId}</div>
+                            </div>
+                            <Badge>{matchEvents.length} hendelser</Badge>
                           </div>
-                          <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">{matchEvents.length} hendelser</span>
-                        </div>
-                        <div className="mt-6 flex items-center justify-between border-t border-gray-200 pt-4 text-sm text-gray-600">
-                          <span className="flex items-center gap-2">
-                            {isActive ? 'Skjul hendelser' : 'Vis hendelser'}
-                            {!isActive && <span className="relative flex h-2 w-2">
-                              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
-                              <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500"></span>
-                            </span>}
-                          </span>
-                          <span className="text-gray-400">→</span>
-                        </div>
-                      </button>
+                          <DividerRow>
+                            <span className={cn(layout.row, spacing.inlineTight)}>
+                              {isActive ? 'Skjul hendelser' : 'Vis hendelser'}
+                              {!isActive && <PulseDot />}
+                            </span>
+                            <span>→</span>
+                          </DividerRow>
+                        </CardContent>
+                      </SelectableCard>
                     );
                   })}
-                </div>
+                </EventGrid>
 
                 {activeMatchId ? (
-                  <div className="card admin-card shadow-soft space-y-7">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h2 className="text-lg font-semibold text-gray-900">Match: {activeMatchId}</h2>
-                        <p className="text-xs text-gray-500">{groupedEvents[activeMatchId]?.length || 0} hendelser</p>
+                  <Card>
+                    <CardContent className={cn(layout.col, spacing.stack)}>
+                      <div className={cn(layout.rowBetween, spacing.inline)}>
+                        <div>
+                          <h2 className={typography.bodyStrong}>Match: {activeMatchId}</h2>
+                          <p className={typography.subtitle}>{groupedEvents[activeMatchId]?.length || 0} hendelser</p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full text-sm">
-                        <thead>
-                          <tr className="text-left text-gray-500 bg-gray-50">
-                            <th className="py-3 pr-6">Hendelse</th>
-                            <th className="py-3 pr-6">Tidspunkt</th>
-                            <th className="py-3 pr-6">Draktnummer</th>
-                            <th className="py-3 pr-6">Status</th>
-                            <th className="py-3 pr-6 text-center">Preview</th>
-                            <th className="py-3 text-center">Action</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {(groupedEvents[activeMatchId] || []).map((event) => {
-                            const isPosted = event.status === 'posted';
-                            const isPosting = !!posting[event.id];
-                            return (
-                              <tr key={event.id} className="border-t border-gray-100">
-                                <td className="py-4 pr-6">
-                                  <div className="flex items-center gap-2 font-medium text-gray-900">
-                                    <span className={`h-2 w-2 rounded-full ${eventTypeColor(event.hendelse)}`} />
-                                    {event.hendelse}
-                                  </div>
-                                </td>
-                                <td className="py-4 pr-6 font-mono text-gray-700">{event.tidspunkt}</td>
-                                <td className="py-4 pr-6 text-gray-700">#{event.draktnummer}</td>
-                                <td className="py-4 pr-6">
-                                  {isPosted ? (
-                                    <span className="badge bg-emerald-50 text-emerald-700">Publisert</span>
-                                  ) : (
-                                    <span className="badge border border-gray-200 bg-transparent text-gray-600">Utkast</span>
-                                  )}
-                                </td>
-                                <td className="py-4 pr-6 text-center">
-                                  {isPosted && event.renderedImageUrl ? (
-                                    <button
-                                      type="button"
-                                      className="btn-secondary whitespace-nowrap mx-auto"
-                                      onClick={() => openPreview(event.renderedImageUrl)}
+                      <div className={layout.overflowXAuto}>
+                        <Table>
+                          <TableHead>
+                            <TableHeaderRow>
+                              <TableHeaderCell>Hendelse</TableHeaderCell>
+                              <TableHeaderCell>Tidspunkt</TableHeaderCell>
+                              <TableHeaderCell>Draktnummer</TableHeaderCell>
+                              <TableHeaderCell>Status</TableHeaderCell>
+                              <TableHeaderCell align="center">Preview</TableHeaderCell>
+                              <TableHeaderCell align="center" padded={false}>Action</TableHeaderCell>
+                            </TableHeaderRow>
+                          </TableHead>
+                          <TableBody>
+                            {(groupedEvents[activeMatchId] || []).map((event) => {
+                              const isPosted = event.status === 'posted';
+                              const isPosting = !!posting[event.id];
+                              return (
+                                <TableRow key={event.id}>
+                                  <TableCell>
+                                    <div className={cn(layout.row, spacing.inlineTight)}>
+                                      <EventTypeDot type={event.hendelse} />
+                                      <span>{event.hendelse}</span>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className={typography.mono}>{event.tidspunkt}</TableCell>
+                                  <TableCell className={typography.bodyStrong}>#{event.draktnummer}</TableCell>
+                                  <TableCell>
+                                    {isPosted ? (
+                                      <Badge variant="success">Publisert</Badge>
+                                    ) : (
+                                      <Badge variant="outline">Utkast</Badge>
+                                    )}
+                                  </TableCell>
+                                  <TableCell align="center">
+                                    {isPosted && event.renderedImageUrl ? (
+                                      <Button
+                                        type="button"
+                                        variant="secondary"
+                                        onClick={() => openPreview(event.renderedImageUrl)}
+                                      >
+                                        View story
+                                      </Button>
+                                    ) : (
+                                      <span className={status.muted}>—</span>
+                                    )}
+                                  </TableCell>
+                                  <TableCell align="center" padded={false}>
+                                    <Button
+                                      onClick={() => handlePost(event)}
+                                      disabled={isPosting || isPosted}
                                     >
-                                      View story
-                                    </button>
-                                  ) : (
-                                    <span className="text-gray-400">—</span>
-                                  )}
-                                </td>
-                                <td className="py-3 text-center">
-                                  <button
-                                    className="btn-primary whitespace-nowrap"
-                                    onClick={() => handlePost(event)}
-                                    disabled={isPosting || isPosted}
-                                  >
-                                    {isPosted ? 'Posted ✓' : (isPosting ? 'Sender...' : 'Post')}
-                                  </button>
-                                  {postErrors[event.id] && (
-                                    <div className="text-xs text-red-500 mt-2">{postErrors[event.id]}</div>
-                                  )}
-                                  {postSuccess[event.id] && (
-                                    <div className="text-xs text-green-600 mt-2">Publisert ✓</div>
-                                  )}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+                                      {isPosted ? 'Posted ✓' : (isPosting ? 'Sender...' : 'Post')}
+                                    </Button>
+                                    {postErrors[event.id] && (
+                                      <div className={status.error}>{postErrors[event.id]}</div>
+                                    )}
+                                    {postSuccess[event.id] && (
+                                      <div className={status.success}>Publisert ✓</div>
+                                    )}
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ) : (
-                  <div className="card admin-card text-sm text-gray-600">Velg en kamp for å vise hendelser.</div>
+                  <Card>
+                    <CardContent className={status.muted}>Velg en kamp for å vise hendelser.</CardContent>
+                  </Card>
                 )}
               </>
             )}
           </div>
         )}
       </main>
-      {previewUrl && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6"
-          onClick={closePreview}
-        >
-          <div
-            className="relative w-full max-w-[420px] aspect-[9/16] rounded-2xl bg-black shadow-soft overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              onClick={closePreview}
-              className="absolute right-4 top-4 h-8 w-8 rounded-full bg-black/60 text-white/90 hover:text-white"
-              aria-label="Close preview"
-            >
-              ✕
-            </button>
-            <img
-              src={previewUrl}
-              alt="Story preview"
-              className="h-full w-full object-contain"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/20" />
-            <div className="absolute bottom-6 left-6 text-white">
-              <div className="text-xs font-semibold uppercase tracking-wide">Live Lokal</div>
-            </div>
-          </div>
-        </div>
-      )}
+      <StoryPreviewModal open={!!previewUrl} imageUrl={previewUrl} onClose={closePreview} fit="contain" />
     </div>
   );
 }

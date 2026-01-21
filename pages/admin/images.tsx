@@ -1,8 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
 import { ArrowUpDown, ChevronLeft, Plus, Search, Instagram } from 'lucide-react';
-import Header from '../../components/Header';
-import ImageCard from '../../components/ImageCard';
+import Header from '@/components/Header';
+import ImageCard from '@/components/ImageCard';
+import StoryPreviewModal from '@/components/StoryPreviewModal';
+import { Button } from '@/components/ui/Button';
+import { ImageGrid } from '@/components/ui/Grid';
+import { InlineField } from '@/components/ui/InlineField';
+import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
+import { IconLink } from '@/components/ui/IconLink';
+import { cn } from '@/components/ui/utils';
+import { container, layout, spacing, typography, sizes, status, icon } from '@/styles/tokens';
 
 interface ImageData {
   id: string;
@@ -213,77 +221,70 @@ export default function ImagesPage() {
   return (
     <div>
       <Header title="Bildebibliotek" />
-      <main className="container-base space-y-10" style={{ maxWidth: 1400 }}>
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <Link href="/admin" className="h-10 w-10 rounded-full border border-gray-200 bg-white flex items-center justify-center hover:shadow-sm">
-                <ChevronLeft className="h-5 w-5 text-gray-600" />
-              </Link>
-              <h1 className="text-3xl font-extrabold tracking-tight">Bildebibliotek</h1>
+      <main className={cn(container.wide, spacing.sectionXL)}>
+        <div className={cn(layout.col, spacing.stack)}>
+          <div className={cn(layout.rowBetweenWrap, spacing.inline)}>
+            <div className={cn(layout.row, spacing.inline)}>
+              <IconLink href="/admin" aria-label="Tilbake">
+                <ChevronLeft className={icon.md} />
+              </IconLink>
+              <h1 className={typography.pageTitle}>Bildebibliotek</h1>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2">
-              <Search className="h-4 w-4 text-gray-400" />
-              <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Søk draktnr:</span>
-              <input
-                className="bg-transparent text-sm outline-none w-20"
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                placeholder="F.eks. 10"
-                inputMode="numeric"
-              />
-            </div>
-            <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2">
-              <ArrowUpDown className="h-4 w-4 text-gray-400" />
-              <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Sorter:</span>
-              <select
-                className="bg-transparent text-sm outline-none"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+            <div className={cn(layout.rowWrap, spacing.inline)}>
+              <InlineField icon={<Search className={icon.sm} />} label="Søk draktnr:">
+                <Input
+                  className={sizes.inputNarrow}
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  placeholder="F.eks. 10"
+                  inputMode="numeric"
+                />
+              </InlineField>
+              <InlineField icon={<ArrowUpDown className={icon.sm} />} label="Sorter:">
+                <Select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                >
+                  <option value="newest">Nyeste</option>
+                  <option value="number">Draktnummer</option>
+                  <option value="event">Hendelse</option>
+                </Select>
+              </InlineField>
+              <form ref={formRef} onSubmit={handleUpload} encType="multipart/form-data" className={layout.hidden}>
+                <input
+                  id="file-input"
+                  type="file"
+                  name="file"
+                  accept="image/jpeg,image/png"
+                  required
+                  onChange={() => {
+                    try {
+                      formRef.current?.requestSubmit();
+                    } catch (e) {}
+                  }}
+                />
+              </form>
+              <Button
+                onClick={() => {
+                  const el = document.getElementById('file-input') as HTMLInputElement | null;
+                  el?.click();
+                }}
+                disabled={uploading}
               >
-                <option value="newest">Nyeste</option>
-                <option value="number">Draktnummer</option>
-                <option value="event">Hendelse</option>
-              </select>
-            </div>
-            <form ref={formRef} onSubmit={handleUpload} encType="multipart/form-data" className="hidden">
-              <input
-                id="file-input"
-                type="file"
-                name="file"
-                accept="image/jpeg,image/png"
-                required
-                onChange={() => { try { formRef.current?.requestSubmit(); } catch (e) {} }}
-              />
-            </form>
-            <button
-              onClick={() => {
-                const el = document.getElementById('file-input') as HTMLInputElement | null;
-                el?.click();
-              }}
-              className="btn-primary flex items-center gap-2"
-              disabled={uploading}
-            >
-              <Plus className="h-4 w-4" />
-              {uploading ? 'Laster opp...' : 'Last opp'}
-            </button>
+                <Plus className={icon.sm} />
+                {uploading ? 'Laster opp...' : 'Last opp'}
+              </Button>
             </div>
           </div>
-          <p className="text-base text-gray-600">Administrer og tagg bilder fra kamper</p>
+          <p className={typography.subtitle}>Administrer og tagg bilder fra kamper</p>
         </div>
 
-        {uploadError && <div className="text-sm text-red-500">{uploadError}</div>}
+        {uploadError && <div className={status.error}>{uploadError}</div>}
 
         {loading ? (
-          <div className="text-sm text-gray-600">Laster bilder...</div>
+          <div className={status.muted}>Laster bilder...</div>
         ) : (
-          <div
-            className="grid gap-6"
-            style={{
-              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            }}
-          >
+          <ImageGrid>
             {filteredImages.map((image) => {
               const current = editing[image.id] || {
                 number: image.tags?.number || '',
@@ -317,50 +318,23 @@ export default function ImagesPage() {
                   error={saveErrors[image.id] || postErrors[image.id]}
                   success={saveSuccess[image.id] || postSuccess[image.id]}
                   extraActions={image.tags?.type === 'rendered' ? null : (
-                    <button
+                    <Button
                       type="button"
-                      className="h-9 whitespace-nowrap flex-1 flex items-center justify-center gap-2 rounded-lg border border-[rgba(31,41,55,0.2)] bg-white text-sm font-medium text-gray-900"
+                      variant="outline"
                       onClick={() => setPreviewUrl(image.imageUrl)}
+                      className={layout.flex1}
                     >
-                      <Instagram className="h-4 w-4" />
+                      <Instagram className={icon.sm} />
                       Story
-                    </button>
+                    </Button>
                   )}
                 />
               );
             })}
-          </div>
+          </ImageGrid>
         )}
       </main>
-      {previewUrl && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6"
-          onClick={() => setPreviewUrl(null)}
-        >
-          <div
-            className="relative w-full max-w-[420px] aspect-[9/16] rounded-2xl bg-black shadow-soft overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              onClick={() => setPreviewUrl(null)}
-              className="absolute right-4 top-4 h-8 w-8 rounded-full bg-black/60 text-white/90 hover:text-white"
-              aria-label="Close preview"
-            >
-              ✕
-            </button>
-            <img
-              src={previewUrl}
-              alt="Story preview"
-              className="h-full w-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
-            <div className="absolute bottom-6 left-6 text-white">
-              <div className="text-xs font-semibold uppercase tracking-wide">Live Lokal</div>
-            </div>
-          </div>
-        </div>
-      )}
+      <StoryPreviewModal open={!!previewUrl} imageUrl={previewUrl} onClose={() => setPreviewUrl(null)} />
     </div>
   );
 }

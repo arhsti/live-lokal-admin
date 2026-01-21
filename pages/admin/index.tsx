@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { Calendar, Image as ImageIcon } from 'lucide-react';
-import Header from '../../components/Header';
+import Header from '@/components/Header';
+import { Card, CardContent } from '@/components/ui/Card';
+import { DashboardGrid } from '@/components/ui/Grid';
+import { IconBadge } from '@/components/ui/IconBadge';
+import { Badge } from '@/components/ui/Badge';
+import { LinkButton } from '@/components/ui/LinkButton';
+import { cn } from '@/components/ui/utils';
+import { container, spacing, typography, layout, icon, effects } from '@/styles/tokens';
 
 export default function Admin() {
   const [imageCount, setImageCount] = useState<number | null>(null);
@@ -44,51 +50,47 @@ export default function Admin() {
   return (
     <div>
       <Header title="Admin" />
-      <main className="container-base space-y-12">
-        <div className="space-y-3">
-          <h1 className="text-3xl font-extrabold tracking-tight">Oversikt</h1>
-          <p className="text-base text-gray-600">Velg område for å administrere innhold.</p>
+      <main className={cn(container.base, spacing.sectionXXL)}>
+        <div className={cn(layout.col, spacing.stackTight)}>
+          <h1 className={typography.pageTitle}>Oversikt</h1>
+          <p className={typography.lead}>Velg område for å administrere innhold.</p>
         </div>
 
-        <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
-          <div className="card admin-card-large shadow-soft flex flex-col gap-6 transition-transform hover:-translate-y-1 hover:border-gray-300">
-            <div className="h-12 w-12 rounded-2xl bg-gray-100 text-gray-900 flex items-center justify-center">
-              <ImageIcon className="h-6 w-6" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between gap-4">
-                <h2 className="text-2xl font-bold">Bilder</h2>
-                <div className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                  {imageCount === null ? '—' : `${imageCount} bilder`}
+        <DashboardGrid>
+          <Card className={cn(layout.col, effects.cardHover)}>
+            <CardContent className={cn(layout.col, spacing.gap6)}>
+              <IconBadge>
+                <ImageIcon className={icon.lg} />
+              </IconBadge>
+              <div className={cn(layout.col, spacing.field)}>
+                <div className={cn(layout.rowBetween, spacing.inline)}>
+                  <h2 className={typography.cardTitle}>Bilder</h2>
+                  <Badge>{imageCount === null ? '—' : `${imageCount} bilder`}</Badge>
                 </div>
+                <p className={typography.subtitle}>Last opp og administrer bilder som brukes i stories.</p>
               </div>
-              <p className="text-sm text-gray-600">Last opp og administrer bilder som brukes i stories.</p>
-            </div>
-            <div className="mt-auto flex justify-end">
-              <Link href="/admin/images" className="btn-primary inline-block no-underline whitespace-nowrap">
-                Åpne bilder
-              </Link>
-            </div>
-          </div>
+              <div className={cn(layout.row, layout.mtAuto)}>
+                <LinkButton href="/admin/images">Åpne bilder</LinkButton>
+              </div>
+            </CardContent>
+          </Card>
 
-          <div className="card admin-card-large shadow-soft flex flex-col gap-6 transition-transform hover:-translate-y-1 hover:border-gray-300">
-            <div className="h-12 w-12 rounded-2xl bg-gray-100 text-gray-900 flex items-center justify-center">
-              <Calendar className="h-6 w-6" />
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold">Hendelser</h2>
-              <p className="text-sm text-gray-600">Motta og publiser kamp-hendelser.</p>
-              <div className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full inline-flex">
-                {matchCount === null ? '—' : `${matchCount} aktive kamper`}
+          <Card className={cn(layout.col, effects.cardHover)}>
+            <CardContent className={cn(layout.col, spacing.gap6)}>
+              <IconBadge>
+                <Calendar className={icon.lg} />
+              </IconBadge>
+              <div className={cn(layout.col, spacing.field)}>
+                <h2 className={typography.cardTitle}>Hendelser</h2>
+                <p className={typography.subtitle}>Motta og publiser kamp-hendelser.</p>
+                <Badge>{matchCount === null ? '—' : `${matchCount} aktive kamper`}</Badge>
               </div>
-            </div>
-            <div className="mt-auto flex justify-end">
-              <Link href="/admin/hendelser" className="btn-primary inline-block no-underline whitespace-nowrap">
-                Administrer hendelser
-              </Link>
-            </div>
-          </div>
-        </div>
+              <div className={cn(layout.row, layout.mtAuto)}>
+                <LinkButton href="/admin/hendelser">Administrer hendelser</LinkButton>
+              </div>
+            </CardContent>
+          </Card>
+        </DashboardGrid>
       </main>
     </div>
   );

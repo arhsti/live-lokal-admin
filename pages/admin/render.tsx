@@ -1,6 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
-import Header from '../../components/Header';
+import Header from '@/components/Header';
+import StoryPreviewFrame from '@/components/StoryPreviewFrame';
+import { Card, CardContent } from '@/components/ui/Card';
+import { Select } from '@/components/ui/Select';
+import { Input } from '@/components/ui/Input';
+import { Label } from '@/components/ui/Label';
+import { Button } from '@/components/ui/Button';
+import { AnchorButton } from '@/components/ui/AnchorButton';
+import { SplitGrid } from '@/components/ui/SplitGrid';
+import { cn } from '@/components/ui/utils';
+import { container, layout, spacing, typography, status } from '@/styles/tokens';
 
 interface ImageItem {
   id: string;
@@ -117,131 +127,112 @@ export default function RenderPage() {
   return (
     <div>
       <Header title="Render story" />
-      <main className="container-base space-y-6">
-        <div>
-          <h1 className="text-3xl font-extrabold">Render story</h1>
-          <p className="text-sm text-gray-600 mt-1">Lag en story med valgt bilde og tekst.</p>
+      <main className={cn(container.base, spacing.section)}>
+        <div className={cn(layout.col, spacing.stackTight)}>
+          <h1 className={typography.pageTitle}>Render story</h1>
+          <p className={typography.subtitle}>Lag en story med valgt bilde og tekst.</p>
         </div>
-        <div className="card p-6 space-y-4">
-          <label className="text-xs text-gray-500">Velg bilde</label>
-          <select
-            className="input w-full"
-            value={selectedId || ''}
-            onChange={(e) => {
-              const nextId = e.target.value || null;
-              setSelectedId(nextId);
-              setResult(null);
-              if (!nextId) {
-                setImage(null);
-                router.push('/admin/render', undefined, { shallow: true });
-                return;
-              }
-              router.push({ pathname: '/admin/render', query: { imageId: nextId } }, undefined, { shallow: true });
-            }}
-            disabled={listLoading}
-          >
-            <option value="">Velg bilde</option>
-            {allImages.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.tags?.number ? `#${item.tags.number} — ` : ''}{item.tags?.eventType || 'Alle'}
-              </option>
-            ))}
-          </select>
-          {listError && <div className="text-sm text-red-500">{listError}</div>}
-        </div>
+        <Card>
+          <CardContent className={spacing.stack}>
+            <Label>Velg bilde</Label>
+            <Select
+              className={layout.wFull}
+              value={selectedId || ''}
+              onChange={(e) => {
+                const nextId = e.target.value || null;
+                setSelectedId(nextId);
+                setResult(null);
+                if (!nextId) {
+                  setImage(null);
+                  router.push('/admin/render', undefined, { shallow: true });
+                  return;
+                }
+                router.push({ pathname: '/admin/render', query: { imageId: nextId } }, undefined, { shallow: true });
+              }}
+              disabled={listLoading}
+            >
+              <option value="">Velg bilde</option>
+              {allImages.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.tags?.number ? `#${item.tags.number} — ` : ''}{item.tags?.eventType || 'Alle'}
+                </option>
+              ))}
+            </Select>
+            {listError && <div className={status.error}>{listError}</div>}
+          </CardContent>
+        </Card>
 
         {!selectedId && !loading && (
-          <div className="text-sm text-gray-600">Velg et bilde for å lage story</div>
+          <div className={status.muted}>Velg et bilde for å lage story</div>
         )}
 
         {loading && selectedId && (
-          <div className="text-sm text-gray-600">Laster bildet...</div>
+          <div className={status.muted}>Laster bildet...</div>
         )}
 
-        {error && <div className="text-sm text-red-500">{error}</div>}
+        {error && <div className={status.error}>{error}</div>}
 
         {image && !loading && (
-          <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-            <div className="card p-6">
-              <div className="bg-gray-100 relative" style={{ height: 520 }}>
-                <img
-                  src={image.imageUrl}
-                  alt="Preview"
-                  style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
-                />
-                {overlayUrl && (
-                  <img
-                    src={overlayUrl}
-                    alt="Text overlay"
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'contain',
-                      pointerEvents: 'none',
-                    }}
-                  />
-                )}
-              </div>
-            </div>
+          <SplitGrid>
+            <Card>
+              <CardContent>
+                <StoryPreviewFrame imageUrl={image.imageUrl} overlayUrl={overlayUrl} />
+              </CardContent>
+            </Card>
 
-            <div className="card p-6 space-y-5">
-              <div>
-                <label className="text-xs text-gray-500">Stilling</label>
-                <input
-                  className="input w-full mt-1"
-                  value={stilling}
-                  onChange={(e) => setStilling(e.target.value)}
-                  placeholder="1-2"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-gray-500">Hendelse</label>
-                <input
-                  className="input w-full mt-1"
-                  value={hendelse}
-                  onChange={(e) => setHendelse(e.target.value)}
-                  placeholder="Skriv hendelse"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-gray-500">Beskrivelse</label>
-                <input
-                  className="input w-full mt-1"
-                  value={beskrivelse}
-                  onChange={(e) => setBeskrivelse(e.target.value)}
-                  placeholder="Skriv beskrivelse"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-gray-500">Tidspunkt</label>
-                <input
-                  className="input w-full mt-1"
-                  value={tidspunkt}
-                  onChange={(e) => setTidspunkt(e.target.value)}
-                  placeholder="Skriv tidspunkt"
-                />
-              </div>
-              <button
-                className="btn-primary w-full"
-                disabled={rendering}
-                onClick={renderStory}
-              >
-                {rendering ? 'Genererer...' : 'Generer story'}
-              </button>
-              {result && (
-                <a
-                  href={result}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn-secondary inline-block"
+            <Card>
+              <CardContent className={spacing.stack}>
+                <div className={cn(layout.col, spacing.field)}>
+                  <Label>Stilling</Label>
+                  <Input
+                    className={layout.wFull}
+                    value={stilling}
+                    onChange={(e) => setStilling(e.target.value)}
+                    placeholder="1-2"
+                  />
+                </div>
+                <div className={cn(layout.col, spacing.field)}>
+                  <Label>Hendelse</Label>
+                  <Input
+                    className={layout.wFull}
+                    value={hendelse}
+                    onChange={(e) => setHendelse(e.target.value)}
+                    placeholder="Skriv hendelse"
+                  />
+                </div>
+                <div className={cn(layout.col, spacing.field)}>
+                  <Label>Beskrivelse</Label>
+                  <Input
+                    className={layout.wFull}
+                    value={beskrivelse}
+                    onChange={(e) => setBeskrivelse(e.target.value)}
+                    placeholder="Skriv beskrivelse"
+                  />
+                </div>
+                <div className={cn(layout.col, spacing.field)}>
+                  <Label>Tidspunkt</Label>
+                  <Input
+                    className={layout.wFull}
+                    value={tidspunkt}
+                    onChange={(e) => setTidspunkt(e.target.value)}
+                    placeholder="Skriv tidspunkt"
+                  />
+                </div>
+                <Button
+                  className={layout.wFull}
+                  disabled={rendering}
+                  onClick={renderStory}
                 >
-                  Åpne ferdig bilde
-                </a>
-              )}
-            </div>
-          </div>
+                  {rendering ? 'Genererer...' : 'Generer story'}
+                </Button>
+                {result && (
+                  <AnchorButton href={result} target="_blank" rel="noreferrer">
+                    Åpne ferdig bilde
+                  </AnchorButton>
+                )}
+              </CardContent>
+            </Card>
+          </SplitGrid>
         )}
       </main>
     </div>
