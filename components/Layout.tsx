@@ -76,7 +76,7 @@ export default function Layout({ children }: LayoutProps) {
         </div>
       </header>
 
-      <main className="flex-1 container mx-auto px-4 py-8 md:py-12 animate-in fade-in duration-500">
+      <main className={cn("flex-1 animate-in fade-in duration-500", container.base)}>
         {children}
       </main>
     </div>

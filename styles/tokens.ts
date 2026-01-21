@@ -77,9 +77,9 @@ export const layout = {
 };
 
 export const container = {
-  base: "mx-auto w-full max-w-5xl px-4 py-8 md:py-12",
-  wide: "mx-auto w-full max-w-5xl px-4 py-8 md:py-12",
-  header: "mx-auto w-full max-w-5xl px-4",
+  base: "mx-auto w-full max-w-4xl px-6 md:px-10 py-8 md:py-12",
+  wide: "mx-auto w-full max-w-4xl px-6 md:px-10 py-8 md:py-12",
+  header: "mx-auto w-full max-w-4xl px-6 md:px-10",
 };
 
 export const header = {
