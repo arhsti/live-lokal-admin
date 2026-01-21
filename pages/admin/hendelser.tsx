@@ -132,7 +132,7 @@ export default function HendelserPage() {
   const groupedEvents = useMemo(() => groupEventsByMatch(events), [events]);
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-8 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center space-x-4">
         <Link href="/admin">
           <Button variant="outline" uiSize="icon" className="h-10 w-10 rounded-full">

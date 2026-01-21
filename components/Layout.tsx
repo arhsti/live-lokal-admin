@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Menu, Settings, LogOut } from 'lucide-react';
 import { Button } from './ui/Button';
 import { cn } from './ui/utils';
-import { container, header } from '@/styles/tokens';
+import { header } from '@/styles/tokens';
 
 interface LayoutProps {
   children: ReactNode;
@@ -32,7 +32,7 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-[hsl(210_20%_98%)] flex flex-col font-sans text-[hsl(220_25%_15%)]">
       <header className={header.wrapper}>
-        <div className={cn(container.header, header.inner)}>
+        <div className={cn('w-full px-6 md:px-10 lg:px-16', header.inner)}>
           <Link href="/admin" className={cn(header.brand, 'text-[hsl(220_25%_15%)] hover:opacity-80 transition-opacity')}>
             Live Lokal
           </Link>
@@ -76,7 +76,7 @@ export default function Layout({ children }: LayoutProps) {
         </div>
       </header>
 
-      <main className={cn("flex-1 animate-in fade-in duration-500", container.base)}>
+      <main className="flex-1 w-full px-6 md:px-10 lg:px-16 py-8 md:py-12 animate-in fade-in duration-500">
         {children}
       </main>
     </div>
