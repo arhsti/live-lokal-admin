@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Eye } from 'lucide-react';
 import Header from '@/components/Header';
 import StoryPreviewModal from '@/components/StoryPreviewModal';
 import EventTypeDot from '@/components/EventTypeDot';
@@ -11,7 +12,7 @@ import { DividerRow } from '@/components/ui/DividerRow';
 import { PulseDot } from '@/components/ui/PulseDot';
 import { Table, TableHead, TableBody, TableRow, TableHeaderRow, TableHeaderCell, TableCell } from '@/components/ui/Table';
 import { cn } from '@/components/ui/utils';
-import { container, layout, spacing, typography, status } from '@/styles/tokens';
+import { container, layout, spacing, typography, status, sizes } from '@/styles/tokens';
 
 interface MatchEvent {
   id: string;
@@ -123,7 +124,7 @@ export default function HendelserPage() {
   return (
     <div>
       <Header title="Hendelser" />
-      <main className={cn(container.base, spacing.sectionXXL)}>
+      <main className={cn(container.base, spacing.section)}>
         <div className={cn(layout.col, spacing.stackTight)}>
           <h1 className={typography.pageTitle}>Hendelser</h1>
           <p className={typography.lead}>Oversikt over kamp-hendelser.</p>
@@ -134,7 +135,7 @@ export default function HendelserPage() {
         {loading ? (
           <div className={status.muted}>Laster hendelser...</div>
         ) : (
-          <div className={cn(layout.col, spacing.sectionMega)}>
+          <div className={cn(layout.col, spacing.section)}>
             {events.length === 0 ? (
               <Card>
                 <CardContent className={status.muted}>Ingen hendelser funnet.</CardContent>
@@ -218,10 +219,12 @@ export default function HendelserPage() {
                                     {isPosted && event.renderedImageUrl ? (
                                       <Button
                                         type="button"
-                                        variant="secondary"
+                                        variant="outline"
                                         onClick={() => openPreview(event.renderedImageUrl)}
+                                        className={sizes.iconButton}
+                                        aria-label="Preview story"
                                       >
-                                        View story
+                                        <Eye className="h-4 w-4" />
                                       </Button>
                                     ) : (
                                       <span className={status.muted}>—</span>
@@ -259,7 +262,7 @@ export default function HendelserPage() {
           </div>
         )}
       </main>
-      <StoryPreviewModal open={!!previewUrl} imageUrl={previewUrl} onClose={closePreview} fit="contain" />
+      <StoryPreviewModal open={!!previewUrl} imageUrl={previewUrl} onClose={closePreview} />
     </div>
   );
 }

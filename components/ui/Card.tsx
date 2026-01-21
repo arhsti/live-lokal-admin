@@ -9,7 +9,13 @@ interface CardProps {
 
 export function Card({ children, className }: CardProps) {
   return (
-    <div className={cn('bg-white border border-[#e2e8f0] shadow-soft', radius.card, className)}>
+    <div
+      className={cn(
+        'bg-[hsl(0_0%_100%)] border border-[hsl(220_13%_91%)] shadow-soft',
+        radius.card,
+        className,
+      )}
+    >
       {children}
     </div>
   );
@@ -21,5 +27,5 @@ interface CardContentProps {
 }
 
 export function CardContent({ children, className }: CardContentProps) {
-  return <div className={cn('p-5', className)}>{children}</div>;
+  return <div className={cn('p-6', className)}>{children}</div>;
 }

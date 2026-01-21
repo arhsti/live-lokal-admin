@@ -13,12 +13,11 @@ export function InlineField({ icon, label, children, className }: InlineFieldPro
   return (
     <div
       className={cn(
-        'inline-flex items-center gap-2 rounded-xl border border-[#e2e8f0] bg-white px-3 py-2',
-        radius.card,
+        'inline-flex items-center gap-3 rounded-lg border border-[hsl(220_13%_91%/0.5)] bg-[hsl(210_20%_94%/0.5)] px-3 py-1',
         className,
       )}
     >
-      {icon ? <span className="text-gray-400">{icon}</span> : null}
+      {icon ? <span className="inline-flex">{icon}</span> : null}
       <span className={typography.label}>{label}</span>
       {children}
     </div>

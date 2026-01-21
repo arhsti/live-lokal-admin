@@ -17,7 +17,7 @@ export function Modal({ open, onClose, children, className }: ModalProps) {
       onClick={onClose}
     >
       <div
-        className={cn('relative w-full max-w-[420px] aspect-[9/16] bg-black shadow-soft overflow-hidden', radius.card, className)}
+        className={cn('relative w-full max-w-[400px] aspect-[9/16] bg-black shadow-soft overflow-hidden', radius.card, className)}
         onClick={(event) => event.stopPropagation()}
       >
         {children}

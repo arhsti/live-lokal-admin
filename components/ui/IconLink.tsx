@@ -13,7 +13,7 @@ export function IconLink({ children, className, ...props }: IconLinkProps) {
     <Link
       {...props}
       className={cn(
-        'inline-flex items-center justify-center h-10 w-10 border border-[#e2e8f0] bg-white shadow-sm',
+        'inline-flex items-center justify-center h-10 w-10 border border-[hsl(220_13%_91%)] bg-white shadow-sm',
         radius.button,
         className,
       )}

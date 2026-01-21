@@ -24,11 +24,15 @@ interface TableRowProps {
 }
 
 export function TableHeaderRow({ children, className }: TableRowProps) {
-  return <tr className={cn('text-left text-gray-500 bg-gray-50', className)}>{children}</tr>;
+  return (
+    <tr className={cn('text-left text-[hsl(220_10%_55%)] bg-[hsl(210_20%_94%/0.5)]', className)}>
+      {children}
+    </tr>
+  );
 }
 
 export function TableRow({ children, className }: TableRowProps) {
-  return <tr className={cn('border-t border-gray-100', className)}>{children}</tr>;
+  return <tr className={cn('border-t border-[hsl(220_13%_91%)]', className)}>{children}</tr>;
 }
 
 interface TableCellProps {

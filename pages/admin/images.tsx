@@ -221,7 +221,7 @@ export default function ImagesPage() {
   return (
     <div>
       <Header title="Bildebibliotek" />
-      <main className={cn(container.wide, spacing.sectionXL)}>
+      <main className={cn(container.base, spacing.section)}>
         <div className={cn(layout.col, spacing.stack)}>
           <div className={cn(layout.rowBetweenWrap, spacing.inline)}>
             <div className={cn(layout.row, spacing.inline)}>
@@ -238,12 +238,14 @@ export default function ImagesPage() {
                   onChange={(e) => setSearchValue(e.target.value)}
                   placeholder="F.eks. 10"
                   inputMode="numeric"
+                  uiSize="sm"
                 />
               </InlineField>
               <InlineField icon={<ArrowUpDown className={icon.sm} />} label="Sorter:">
                 <Select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                  uiSize="sm"
                 >
                   <option value="newest">Nyeste</option>
                   <option value="number">Draktnummer</option>

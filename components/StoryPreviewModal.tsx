@@ -7,10 +7,9 @@ interface StoryPreviewModalProps {
   open: boolean;
   imageUrl: string | null;
   onClose: () => void;
-  fit?: 'cover' | 'contain';
 }
 
-export default function StoryPreviewModal({ open, imageUrl, onClose, fit = 'cover' }: StoryPreviewModalProps) {
+export default function StoryPreviewModal({ open, imageUrl, onClose }: StoryPreviewModalProps) {
   if (!imageUrl) return null;
 
   return (
@@ -26,7 +25,7 @@ export default function StoryPreviewModal({ open, imageUrl, onClose, fit = 'cove
       <img
         src={imageUrl}
         alt="Story preview"
-        className={cn(modal.imageBase, fit === 'contain' ? 'object-contain' : 'object-cover', radius.card)}
+        className={cn(modal.imageBase, radius.card)}
       />
       <div className={modal.gradient} />
       <div className={modal.labelWrap}>

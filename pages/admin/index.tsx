@@ -50,7 +50,7 @@ export default function Admin() {
   return (
     <div>
       <Header title="Admin" />
-      <main className={cn(container.base, spacing.sectionXXL)}>
+      <main className={cn(container.base, spacing.section)}>
         <div className={cn(layout.col, spacing.stackTight)}>
           <h1 className={typography.pageTitle}>Oversikt</h1>
           <p className={typography.lead}>Velg område for å administrere innhold.</p>
@@ -58,7 +58,7 @@ export default function Admin() {
 
         <DashboardGrid>
           <Card className={cn(layout.col, effects.cardHover)}>
-            <CardContent className={cn(layout.col, spacing.gap6)}>
+            <CardContent className={cn(layout.col, spacing.cardLarge, spacing.gap6)}>
               <IconBadge>
                 <ImageIcon className={icon.lg} />
               </IconBadge>
@@ -76,7 +76,7 @@ export default function Admin() {
           </Card>
 
           <Card className={cn(layout.col, effects.cardHover)}>
-            <CardContent className={cn(layout.col, spacing.gap6)}>
+            <CardContent className={cn(layout.col, spacing.cardLarge, spacing.gap6)}>
               <IconBadge>
                 <Calendar className={icon.lg} />
               </IconBadge>

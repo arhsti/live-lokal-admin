@@ -7,6 +7,8 @@ import { Input } from './ui/Input';
 import { Select } from './ui/Select';
 import { Textarea } from './ui/Textarea';
 import { Card, CardContent } from './ui/Card';
+import { cn } from './ui/utils';
+import { color, effects, spacing } from '@/styles/tokens';
 
 interface ImageCardProps {
   imageUrl: string;
@@ -38,8 +40,8 @@ export default function ImageCard({
   extraActions,
 }: ImageCardProps) {
   return (
-    <Card className="group overflow-hidden transition-shadow hover:shadow-soft">
-      <div className="bg-gray-100 rounded-t-xl overflow-hidden">
+    <Card className={cn('group overflow-hidden', effects.imageCardHover)}>
+      <div className={cn(color.secondaryBg, 'rounded-t-xl overflow-hidden')}>
         {imageUrl ? (
           <div className="relative aspect-[4/3]">
             <img
@@ -50,13 +52,13 @@ export default function ImageCard({
             <div className="absolute inset-0 bg-black/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
           </div>
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-500 aspect-[4/3]">
+          <div className={cn('w-full h-full flex items-center justify-center aspect-[4/3]', color.mutedText)}>
             Ingen bilde
           </div>
         )}
       </div>
 
-      <CardContent className="space-y-4">
+      <CardContent className={cn(spacing.card, 'space-y-4')}>
         <div className="space-y-4">
           <div>
             <Label>Beskrivelse</Label>
@@ -71,7 +73,7 @@ export default function ImageCard({
               <Label className="flex items-center gap-3">
                 Draktnummer
                 <Tooltip text="Bilde tilknyttet spiller. Dette vil velges når en hendelse om denne spilleren skjer.">
-                  <span className="text-[13px] text-gray-700 font-semibold">ℹ</span>
+                  <span className={cn('text-[13px] font-semibold', color.primaryText)}>ℹ</span>
                 </Tooltip>
               </Label>
               <Input
@@ -86,7 +88,7 @@ export default function ImageCard({
               <Label className="flex items-center gap-3">
                 Hendelse
                 <Tooltip text="Velg hvilken type hendelse som dette bildet skal brukes til">
-                  <span className="text-[13px] text-gray-700 font-semibold">ℹ</span>
+                  <span className={cn('text-[13px] font-semibold', color.primaryText)}>ℹ</span>
                 </Tooltip>
               </Label>
               <Select value={eventType} onChange={(e) => onEventChange(e.target.value)}>

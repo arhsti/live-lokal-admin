@@ -11,9 +11,9 @@ interface AnchorButtonProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
 }
 
 const variantClasses: Record<Variant, string> = {
-  primary: 'bg-[#1f2937] text-white shadow-md',
-  secondary: 'bg-[#f3f4f6] text-gray-900 border border-[#e2e8f0]',
-  outline: 'bg-white text-gray-900 border border-[rgba(31,41,55,0.2)]',
+  primary: 'bg-[hsl(220_25%_15%)] text-white shadow-md',
+  secondary: 'bg-[hsl(210_20%_94%)] text-[hsl(220_25%_15%)] border border-[hsl(220_13%_91%)]',
+  outline: 'bg-white text-[hsl(220_25%_15%)] border border-[hsl(220_25%_15%/0.2)]',
 };
 
 export function AnchorButton({ children, className, variant = 'secondary', ...props }: AnchorButtonProps) {

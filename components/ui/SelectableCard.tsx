@@ -12,9 +12,11 @@ export function SelectableCard({ active = false, className, children, ...props }
     <button
       {...props}
       className={cn(
-        'w-full text-left bg-white border-2 shadow-soft transition-all',
+        'w-full text-left bg-white border-2 transition-all',
         radius.card,
-        active ? 'border-gray-900' : 'border-transparent hover:border-gray-200',
+        active
+          ? 'border-[hsl(220_25%_15%)] ring-2 ring-[hsl(220_25%_15%/0.05)] shadow-md'
+          : 'border-transparent hover:border-[hsl(220_25%_15%/0.2)]',
         className,
       )}
     >

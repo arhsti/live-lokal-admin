@@ -10,8 +10,8 @@ interface BadgeProps {
 }
 
 const variantClasses: Record<Variant, string> = {
-  default: 'bg-gray-100 text-gray-500',
-  outline: 'border border-gray-200 bg-transparent text-gray-600',
+  default: 'bg-[hsl(210_20%_94%)] text-[hsl(220_10%_55%)]',
+  outline: 'border border-[hsl(220_13%_91%)] bg-transparent text-[hsl(220_10%_55%)]',
   success: 'bg-emerald-50 text-emerald-700',
 };
 

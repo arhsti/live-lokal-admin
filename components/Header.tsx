@@ -41,7 +41,7 @@ export default function Header({ title }: HeaderProps) {
 
   return (
     <header className={headerTokens.wrapper}>
-      <div className={cn(container.base, headerTokens.inner)}>
+      <div className={cn(container.header, headerTokens.inner)}>
         <Link href="/admin" className={headerTokens.brand}>
           {clubName ? `Live Lokal – ${clubName}` : (club ? `Live Lokal – Klubb ${club}` : 'Live Lokal')}
         </Link>

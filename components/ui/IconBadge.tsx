@@ -8,7 +8,12 @@ interface IconBadgeProps {
 
 export function IconBadge({ children, className }: IconBadgeProps) {
   return (
-    <div className={cn('flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-100 text-gray-900', className)}>
+    <div
+      className={cn(
+        'flex h-14 w-14 items-center justify-center rounded-2xl bg-[hsl(210_20%_94%)] text-[hsl(220_25%_15%)]',
+        className,
+      )}
+    >
       {children}
     </div>
   );
