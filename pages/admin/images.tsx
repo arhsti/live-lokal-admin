@@ -213,17 +213,15 @@ export default function ImagesPage() {
     <div>
       <Header title="Bildebibliotek" />
       <main className="container-base space-y-10">
-        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/admin" className="h-10 w-10 rounded-full border border-gray-200 bg-white flex items-center justify-center hover:shadow-sm">
-              <ChevronLeft className="h-5 w-5 text-gray-600" />
-            </Link>
-            <div className="space-y-1">
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <Link href="/admin" className="h-10 w-10 rounded-full border border-gray-200 bg-white flex items-center justify-center hover:shadow-sm">
+                <ChevronLeft className="h-5 w-5 text-gray-600" />
+              </Link>
               <h1 className="text-3xl font-extrabold tracking-tight">Bildebibliotek</h1>
-              <p className="text-base text-gray-600">Administrer og tagg bilder fra kamper</p>
             </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2">
               <Search className="h-4 w-4 text-gray-400" />
               <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Søk draktnr:</span>
@@ -269,7 +267,9 @@ export default function ImagesPage() {
               <Plus className="h-4 w-4" />
               {uploading ? 'Laster opp...' : 'Last opp'}
             </button>
+            </div>
           </div>
+          <p className="text-base text-gray-600">Administrer og tagg bilder fra kamper</p>
         </div>
 
         {uploadError && <div className="text-sm text-red-500">{uploadError}</div>}
@@ -277,9 +277,7 @@ export default function ImagesPage() {
         {loading ? (
           <div className="text-sm text-gray-600">Laster bilder...</div>
         ) : (
-          <div
-            className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
-          >
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
             {filteredImages.map((image) => {
               const current = editing[image.id] || {
                 number: image.tags?.number || '',

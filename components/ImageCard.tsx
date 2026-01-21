@@ -52,15 +52,15 @@ export default function ImageCard({
         )}
       </div>
 
-      <div className="p-6 space-y-5">
-        <div className="space-y-5">
+      <div className="p-5 space-y-4">
+        <div className="space-y-4">
           <div>
             <label className="text-[11px] font-semibold uppercase tracking-widest text-gray-500">Beskrivelse</label>
             <textarea
               value={description}
               onChange={(e) => onDescriptionChange(e.target.value)}
               className="input w-full mt-2 text-sm bg-white border border-gray-200"
-              rows={3}
+              rows={2}
             />
           </div>
           <div className="grid gap-4 md:grid-cols-2">
@@ -106,7 +106,7 @@ export default function ImageCard({
           <button
             onClick={onSave}
             disabled={saving}
-            className="btn-secondary whitespace-nowrap flex-1 flex items-center justify-center gap-2"
+            className="btn-secondary whitespace-nowrap flex-1 flex items-center justify-center gap-2 text-sm"
           >
             <Save className="h-4 w-4" />
             {saving ? 'Lagrer...' : 'Lagre'}
