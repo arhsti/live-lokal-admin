@@ -43,7 +43,7 @@ export default function Admin() {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 w-full">
       <div className="space-y-1">
         <h1 className="text-2xl font-bold tracking-tight text-[hsl(220_25%_15%)]">Oversikt</h1>
         <p className="text-[hsl(220_10%_55%)] text-sm">Velkommen tilbake, Admin.</p>
