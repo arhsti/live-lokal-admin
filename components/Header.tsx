@@ -39,7 +39,7 @@ export default function Header({ title }: HeaderProps) {
 
   return (
     <header className="w-full bg-white/80 border-b border-gray-200 backdrop-blur">
-      <div className="container-base flex items-center justify-between">
+      <div className="container-base flex items-center justify-between py-4">
         <Link href="/admin" className="text-gray-900 font-semibold tracking-tight link-reset">
           {clubName ? `Live Lokal – ${clubName}` : (club ? `Live Lokal – Klubb ${club}` : 'Live Lokal')}
         </Link>

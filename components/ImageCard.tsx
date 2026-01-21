@@ -33,7 +33,7 @@ export default function ImageCard({
 }: ImageCardProps) {
   return (
     <div className="card overflow-hidden transition-shadow hover:shadow-soft">
-      <div className="bg-gray-100" style={{ aspectRatio: '4 / 3' }}>
+      <div className="bg-gray-100" style={{ aspectRatio: '9 / 16' }}>
         {imageUrl ? (
           <img
             src={imageUrl}

@@ -278,7 +278,7 @@ export default function ImagesPage() {
           <div className="text-sm text-gray-600">Laster bilder...</div>
         ) : (
           <div
-            className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+            className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
           >
             {filteredImages.map((image) => {
               const current = editing[image.id] || {
