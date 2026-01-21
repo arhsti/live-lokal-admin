@@ -31,8 +31,8 @@ export default function ImageCard({
   extraActions,
 }: ImageCardProps) {
   return (
-    <div className="card">
-      <div className="bg-gray-100" style={{ height: 180 }}>
+    <div className="card overflow-hidden transition-shadow hover:shadow-soft">
+      <div className="bg-gray-100" style={{ height: 190 }}>
         {imageUrl ? (
           <img
             src={imageUrl}
@@ -51,10 +51,10 @@ export default function ImageCard({
         )}
       </div>
 
-      <div className="p-6 space-y-4">
-        <div className="space-y-4">
+      <div className="p-6 space-y-5">
+        <div className="space-y-5">
           <div>
-            <label className="text-xs text-gray-500">Beskrivelse</label>
+            <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">Beskrivelse</label>
             <textarea
               value={description}
               onChange={(e) => onDescriptionChange(e.target.value)}
@@ -64,7 +64,7 @@ export default function ImageCard({
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className="text-xs text-gray-500 flex items-center gap-3">
+              <label className="text-xs font-semibold uppercase tracking-wide text-gray-500 flex items-center gap-3">
                 Draktnummer
                 <Tooltip text="Bilde tilknyttet spiller. Dette vil velges når en hendelse om denne spilleren skjer.">
                   <span className="text-[13px] text-gray-700 font-semibold">ℹ</span>
@@ -80,7 +80,7 @@ export default function ImageCard({
               />
             </div>
             <div>
-              <label className="text-xs text-gray-500 flex items-center gap-3">
+              <label className="text-xs font-semibold uppercase tracking-wide text-gray-500 flex items-center gap-3">
                 Hendelse
                 <Tooltip text="Velg hvilken type hendelse som dette bildet skal brukes til">
                   <span className="text-[13px] text-gray-700 font-semibold">ℹ</span>
@@ -99,7 +99,7 @@ export default function ImageCard({
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-3 flex-nowrap">
+        <div className="flex items-center gap-3 flex-nowrap pt-1">
           <button
             onClick={onSave}
             disabled={saving}

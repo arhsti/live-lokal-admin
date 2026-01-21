@@ -178,12 +178,12 @@ export default function ImagesPage() {
     <div>
       <Header title="Bildebibliotek" />
       <main className="container-base space-y-10">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-extrabold">Bildebibliotek</h1>
-            <p className="text-sm text-gray-600 mt-1">Upload and manage images</p>
+        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-extrabold tracking-tight">Bildebibliotek</h1>
+            <p className="text-base text-gray-600">Administrer og tagg bilder fra kamper</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <form ref={formRef} onSubmit={handleUpload} encType="multipart/form-data" className="hidden">
               <input
                 id="file-input"
@@ -213,10 +213,9 @@ export default function ImagesPage() {
           <div className="text-sm text-gray-600">Laster bilder...</div>
         ) : (
           <div
-            className="grid"
+            className="grid gap-6 md:gap-8"
             style={{
-              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-              gap: '2.5vw',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
             }}
           >
             {images.map((image) => {

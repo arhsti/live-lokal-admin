@@ -110,9 +110,9 @@ export default function HendelserPage() {
     <div>
       <Header title="Hendelser" />
       <main className="container-base space-y-10">
-        <div>
-          <h1 className="text-3xl font-extrabold">Hendelser</h1>
-          <p className="text-sm text-gray-600 mt-1">Oversikt over kamp-hendelser.</p>
+        <div className="space-y-2">
+          <h1 className="text-3xl font-extrabold tracking-tight">Hendelser</h1>
+          <p className="text-base text-gray-600">Oversikt over kamp-hendelser.</p>
         </div>
 
         {error && <div className="text-sm text-red-500">{error}</div>}
@@ -125,29 +125,34 @@ export default function HendelserPage() {
               <div className="card admin-card text-sm text-gray-600">Ingen hendelser funnet.</div>
             ) : (
               <>
-                <div className="flex flex-wrap gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {Object.entries(groupEventsByMatch(events)).map(([matchId, matchEvents]) => {
                     const isActive = activeMatchId === matchId;
                     return (
-                      <div key={matchId} className="card admin-card-large flex min-w-[240px] flex-1 items-center justify-between gap-6">
-                        <div>
-                          <div className="text-base font-semibold text-gray-900">Match {matchId}</div>
-                          <div className="text-sm text-gray-500">{matchEvents.length} hendelser</div>
+                      <button
+                        key={matchId}
+                        type="button"
+                        onClick={() => setActiveMatchId(isActive ? null : matchId)}
+                        className={`card admin-card-large text-left transition-all border-2 ${isActive ? 'border-gray-900 shadow-soft' : 'border-transparent hover:border-gray-200'}`}
+                      >
+                        <div className="flex items-start justify-between gap-6">
+                          <div className="space-y-2">
+                            <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Match</div>
+                            <div className="text-2xl font-bold text-gray-900">{matchId}</div>
+                          </div>
+                          <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">{matchEvents.length} hendelser</span>
                         </div>
-                        <button
-                          type="button"
-                          className="btn-secondary whitespace-nowrap"
-                          onClick={() => setActiveMatchId(isActive ? null : matchId)}
-                        >
-                          {isActive ? 'Skjul hendelser' : 'Vis hendelser'}
-                        </button>
-                      </div>
+                        <div className="mt-6 flex items-center justify-between border-t border-gray-200 pt-4 text-sm text-gray-600">
+                          <span>{isActive ? 'Skjul hendelser' : 'Vis hendelser'}</span>
+                          <span className="text-gray-400">→</span>
+                        </div>
+                      </button>
                     );
                   })}
                 </div>
 
                 {activeMatchId ? (
-                  <div className="card admin-card space-y-6">
+                  <div className="card admin-card shadow-soft space-y-6">
                     <div className="flex items-center justify-between">
                       <div>
                         <h2 className="text-lg font-semibold text-gray-900">Match: {activeMatchId}</h2>
@@ -221,17 +226,17 @@ export default function HendelserPage() {
       </main>
       {previewUrl && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6"
           onClick={closePreview}
         >
           <div
-            className="relative max-h-[90vh] max-w-[90vw] rounded-xl bg-gray-900/90 p-4 shadow-xl"
+            className="relative w-full max-w-[420px] aspect-[9/16] rounded-2xl bg-black shadow-soft overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"
               onClick={closePreview}
-              className="absolute right-3 top-3 text-white/80 hover:text-white"
+              className="absolute right-4 top-4 h-8 w-8 rounded-full bg-black/60 text-white/90 hover:text-white"
               aria-label="Close preview"
             >
               ✕
@@ -239,7 +244,7 @@ export default function HendelserPage() {
             <img
               src={previewUrl}
               alt="Story preview"
-              className="max-h-[80vh] max-w-[80vw] rounded-lg object-contain"
+              className="h-full w-full object-contain"
             />
           </div>
         </div>
