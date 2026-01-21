@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { ArrowUpDown, ChevronLeft, Plus, Search, Instagram } from 'lucide-react';
 import Header from '../../components/Header';
 import ImageCard from '../../components/ImageCard';
 
@@ -25,7 +26,6 @@ export default function ImagesPage() {
   const [searchValue, setSearchValue] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sortBy, setSortBy] = useState<'newest' | 'number' | 'event'>('newest');
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
 
   useEffect(() => {
@@ -214,23 +214,30 @@ export default function ImagesPage() {
       <Header title="Bildebibliotek" />
       <main className="container-base space-y-10">
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-extrabold tracking-tight">Bildebibliotek</h1>
-            <p className="text-base text-gray-600">Administrer og tagg bilder fra kamper</p>
+          <div className="flex items-center gap-4">
+            <Link href="/admin" className="h-10 w-10 rounded-full border border-gray-200 bg-white flex items-center justify-center hover:shadow-sm">
+              <ChevronLeft className="h-5 w-5 text-gray-600" />
+            </Link>
+            <div className="space-y-1">
+              <h1 className="text-3xl font-extrabold tracking-tight">Bildebibliotek</h1>
+              <p className="text-base text-gray-600">Administrer og tagg bilder fra kamper</p>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2">
-              <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Søk draktnr</span>
+            <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2">
+              <Search className="h-4 w-4 text-gray-400" />
+              <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Søk draktnr:</span>
               <input
                 className="bg-transparent text-sm outline-none w-20"
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
-                placeholder="10"
+                placeholder="F.eks. 10"
                 inputMode="numeric"
               />
             </div>
-            <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2">
-              <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Sorter</span>
+            <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2">
+              <ArrowUpDown className="h-4 w-4 text-gray-400" />
+              <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">Sorter:</span>
               <select
                 className="bg-transparent text-sm outline-none"
                 value={sortBy}
@@ -256,10 +263,11 @@ export default function ImagesPage() {
                 const el = document.getElementById('file-input') as HTMLInputElement | null;
                 el?.click();
               }}
-              className="btn-primary"
+              className="btn-primary flex items-center gap-2"
               disabled={uploading}
             >
-              {uploading ? 'Uploading...' : 'Upload image'}
+              <Plus className="h-4 w-4" />
+              {uploading ? 'Laster opp...' : 'Last opp'}
             </button>
           </div>
         </div>
@@ -305,23 +313,15 @@ export default function ImagesPage() {
                   error={saveErrors[image.id] || postErrors[image.id]}
                   success={saveSuccess[image.id] || postSuccess[image.id]}
                   extraActions={image.tags?.type === 'rendered' ? null : (
-                    <>
-                      <button
-                        type="button"
-                        className="btn-secondary whitespace-nowrap"
-                        onClick={() => setPreviewUrl(image.imageUrl)}
-                      >
-                        Story
-                      </button>
-                      <button
-                        type="button"
-                        className="btn-primary whitespace-nowrap"
-                        onClick={() => handlePostStory(image)}
-                        disabled={!!posting[image.id] || !!saving[image.id]}
-                      >
-                        {posting[image.id] ? 'Sender...' : 'Send til publisering'}
-                      </button>
-                    </>
+                    <button
+                      type="button"
+                      className="btn-secondary whitespace-nowrap flex-1 flex items-center justify-center gap-2 bg-white border border-gray-200"
+                      onClick={() => handlePostStory(image)}
+                      disabled={!!posting[image.id] || !!saving[image.id]}
+                    >
+                      <Instagram className="h-4 w-4" />
+                      {posting[image.id] ? 'Sender...' : 'Story'}
+                    </button>
                   )}
                 />
               );
@@ -329,35 +329,6 @@ export default function ImagesPage() {
           </div>
         )}
       </main>
-      {previewUrl && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6"
-          onClick={() => setPreviewUrl(null)}
-        >
-          <div
-            className="relative w-full max-w-[420px] aspect-[9/16] rounded-2xl bg-black shadow-soft overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              onClick={() => setPreviewUrl(null)}
-              className="absolute right-4 top-4 h-8 w-8 rounded-full bg-black/60 text-white/90 hover:text-white"
-              aria-label="Close preview"
-            >
-              ✕
-            </button>
-            <img
-              src={previewUrl}
-              alt="Story preview"
-              className="h-full w-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
-            <div className="absolute bottom-6 left-6 text-white">
-              <div className="text-sm font-semibold uppercase tracking-wide">Live Lokal</div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { Save } from 'lucide-react';
 import Tooltip from './Tooltip';
 
 interface ImageCardProps {
@@ -54,17 +55,17 @@ export default function ImageCard({
       <div className="p-6 space-y-5">
         <div className="space-y-5">
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">Beskrivelse</label>
+            <label className="text-[11px] font-semibold uppercase tracking-widest text-gray-500">Beskrivelse</label>
             <textarea
               value={description}
               onChange={(e) => onDescriptionChange(e.target.value)}
-              className="input w-full mt-2 text-sm"
+              className="input w-full mt-2 text-sm bg-white border border-gray-200"
               rows={3}
             />
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className="text-xs font-semibold uppercase tracking-wide text-gray-500 flex items-center gap-3">
+              <label className="text-[11px] font-semibold uppercase tracking-widest text-gray-500 flex items-center gap-3">
                 Draktnummer
                 <Tooltip text="Bilde tilknyttet spiller. Dette vil velges når en hendelse om denne spilleren skjer.">
                   <span className="text-[13px] text-gray-700 font-semibold">ℹ</span>
@@ -76,11 +77,11 @@ export default function ImageCard({
                 max={99}
                 value={number}
                 onChange={(e) => onNumberChange(e.target.value.replace(/\D/g, ''))}
-                className="input w-full mt-2 text-sm"
+                className="input w-full mt-2 text-sm bg-white border border-gray-200"
               />
             </div>
             <div>
-              <label className="text-xs font-semibold uppercase tracking-wide text-gray-500 flex items-center gap-3">
+              <label className="text-[11px] font-semibold uppercase tracking-widest text-gray-500 flex items-center gap-3">
                 Hendelse
                 <Tooltip text="Velg hvilken type hendelse som dette bildet skal brukes til">
                   <span className="text-[13px] text-gray-700 font-semibold">ℹ</span>
@@ -89,7 +90,7 @@ export default function ImageCard({
               <select
                 value={eventType}
                 onChange={(e) => onEventChange(e.target.value)}
-                className="input w-full mt-2 text-sm"
+                className="input w-full mt-2 text-sm bg-white border border-gray-200"
               >
                 <option value="Mål">Mål</option>
                 <option value="Kort">Kort</option>
@@ -105,11 +106,16 @@ export default function ImageCard({
           <button
             onClick={onSave}
             disabled={saving}
-            className="btn-secondary whitespace-nowrap"
+            className="btn-secondary whitespace-nowrap flex-1 flex items-center justify-center gap-2"
           >
-            {saving ? 'Saving...' : 'Save'}
+            <Save className="h-4 w-4" />
+            {saving ? 'Lagrer...' : 'Lagre'}
           </button>
-          {extraActions}
+          {extraActions ? (
+            <div className="flex flex-1 items-center gap-2">
+              {extraActions}
+            </div>
+          ) : null}
         </div>
         {error && <div className="text-sm text-red-500">{error}</div>}
         {success && <div className="text-sm text-green-600">Lagret ✓</div>}
