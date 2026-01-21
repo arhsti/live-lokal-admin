@@ -1,18 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Eye } from 'lucide-react';
-import Header from '@/components/Header';
+import Link from 'next/link';
+import { ChevronLeft, ChevronDown, ChevronUp, Eye, Send, CheckCircle2 } from 'lucide-react';
 import StoryPreviewModal from '@/components/StoryPreviewModal';
 import EventTypeDot from '@/components/EventTypeDot';
 import { Card, CardContent } from '@/components/ui/Card';
-import { EventGrid } from '@/components/ui/Grid';
-import { SelectableCard } from '@/components/ui/SelectableCard';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { DividerRow } from '@/components/ui/DividerRow';
-import { PulseDot } from '@/components/ui/PulseDot';
-import { Table, TableHead, TableBody, TableRow, TableHeaderRow, TableHeaderCell, TableCell } from '@/components/ui/Table';
-import { cn } from '@/components/ui/utils';
-import { container, layout, spacing, typography, status, sizes } from '@/styles/tokens';
+import { Table, TableBody, TableHead, TableHeaderRow, TableHeaderCell, TableRow, TableCell } from '@/components/ui/Table';
+import { status, icon } from '@/styles/tokens';
 
 interface MatchEvent {
   id: string;
@@ -33,6 +28,12 @@ export default function HendelserPage() {
   const [postErrors, setPostErrors] = useState<Record<string, string | null>>({});
   const [postSuccess, setPostSuccess] = useState<Record<string, boolean>>({});
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewMeta, setPreviewMeta] = useState<{
+    badgeText?: string;
+    title?: string;
+    subtitle?: string;
+    footerTitle?: string;
+  } | null>(null);
   const [activeMatchId, setActiveMatchId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -112,157 +113,200 @@ export default function HendelserPage() {
     }
   }
 
-  const openPreview = (url: string | null | undefined) => {
-    if (!url) return;
-    setPreviewUrl(url);
+  const openPreview = (event: MatchEvent) => {
+    if (!event.renderedImageUrl) return;
+    setPreviewUrl(event.renderedImageUrl);
+    setPreviewMeta({
+      badgeText: `${event.tidspunkt} • ${event.hendelse.toUpperCase()}`,
+      title: `Spiller #${event.draktnummer}`,
+      subtitle: `#${event.draktnummer}`,
+      footerTitle: 'Live Lokal IL',
+    });
   };
 
-  const closePreview = () => setPreviewUrl(null);
+  const closePreview = () => {
+    setPreviewUrl(null);
+    setPreviewMeta(null);
+  };
 
   const groupedEvents = useMemo(() => groupEventsByMatch(events), [events]);
 
   return (
-    <div>
-      <Header title="Hendelser" />
-      <main className={cn(container.base, spacing.section)}>
-        <div className={cn(layout.col, spacing.stackTight)}>
-          <h1 className={typography.pageTitle}>Hendelser</h1>
-          <p className={typography.lead}>Oversikt over kamp-hendelser.</p>
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex items-center space-x-4">
+        <Link href="/admin">
+          <Button variant="outline" uiSize="icon" className="h-10 w-10 rounded-full">
+            <ChevronLeft className={icon.md} />
+          </Button>
+        </Link>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Hendelser</h1>
+          <p className="text-[hsl(220_10%_55%)]">Oversikt over kamper og live-oppdateringer</p>
         </div>
+      </div>
 
-        {error && <div className={status.error}>{error}</div>}
+      {error && <div className={status.error}>{error}</div>}
 
-        {loading ? (
-          <div className={status.muted}>Laster hendelser...</div>
-        ) : (
-          <div className={cn(layout.col, spacing.section)}>
-            {events.length === 0 ? (
-              <Card>
-                <CardContent className={status.muted}>Ingen hendelser funnet.</CardContent>
-              </Card>
-            ) : (
-              <>
-                <EventGrid>
-                  {Object.entries(groupedEvents).map(([matchId, matchEvents]) => {
-                    const isActive = activeMatchId === matchId;
-                    return (
-                      <SelectableCard
-                        key={matchId}
-                        type="button"
-                        active={isActive}
-                        onClick={() => setActiveMatchId(isActive ? null : matchId)}
-                      >
-                        <CardContent className={cn(layout.col, spacing.gap6)}>
-                          <div className={cn(layout.rowBetween, spacing.gap6)}>
-                            <div className={cn(layout.col, spacing.field)}>
-                              <div className={typography.label}>Match</div>
-                              <div className={typography.cardTitle}>{matchId}</div>
-                            </div>
-                            <Badge>{matchEvents.length} hendelser</Badge>
-                          </div>
-                          <DividerRow>
-                            <span className={cn(layout.row, spacing.inlineTight)}>
-                              {isActive ? 'Skjul hendelser' : 'Vis hendelser'}
-                              {!isActive && <PulseDot />}
-                            </span>
-                            <span>→</span>
-                          </DividerRow>
-                        </CardContent>
-                      </SelectableCard>
-                    );
-                  })}
-                </EventGrid>
-
-                {activeMatchId ? (
-                  <Card>
-                    <CardContent className={cn(layout.col, spacing.stack)}>
-                      <div className={cn(layout.rowBetween, spacing.inline)}>
-                        <div>
-                          <h2 className={typography.bodyStrong}>Match: {activeMatchId}</h2>
-                          <p className={typography.subtitle}>{groupedEvents[activeMatchId]?.length || 0} hendelser</p>
+      {loading ? (
+        <div className={status.muted}>Laster hendelser...</div>
+      ) : (
+        <>
+          <div className="flex flex-col gap-6">
+            {Object.entries(groupedEvents).map(([matchId, matchEvents]) => {
+              const isActive = activeMatchId === matchId;
+              const firstTime = matchEvents[0]?.tidspunkt || 'FT';
+              const isFinished = firstTime === 'FT';
+              return (
+                <Card
+                  key={matchId}
+                  className={`cursor-pointer transition-all duration-300 border-2 ${isActive ? 'border-[hsl(220_25%_15%)] ring-2 ring-[hsl(220_25%_15%/0.05)] shadow-md' : 'border-transparent hover:border-[hsl(220_13%_91%)]'}`}
+                  onClick={() => setActiveMatchId(isActive ? null : matchId)}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start mb-6">
+                      <div className="space-y-1">
+                        <span className="text-xs font-bold uppercase tracking-wider text-[hsl(220_10%_55%)] bg-[hsl(210_20%_94%)] px-2 py-1 rounded-md">
+                          Eliteserien
+                        </span>
+                        <div className="text-sm text-[hsl(220_10%_55%)] font-medium pt-2">
+                          {isFinished ? 'Ferdigspilt' : `Spilles nå • ${firstTime}`}
                         </div>
                       </div>
-                      <div className={layout.overflowXAuto}>
-                        <Table>
-                          <TableHead>
-                            <TableHeaderRow>
-                              <TableHeaderCell>Hendelse</TableHeaderCell>
-                              <TableHeaderCell>Tidspunkt</TableHeaderCell>
-                              <TableHeaderCell>Draktnummer</TableHeaderCell>
-                              <TableHeaderCell>Status</TableHeaderCell>
-                              <TableHeaderCell align="center">Preview</TableHeaderCell>
-                              <TableHeaderCell align="center" padded={false}>Action</TableHeaderCell>
-                            </TableHeaderRow>
-                          </TableHead>
-                          <TableBody>
-                            {(groupedEvents[activeMatchId] || []).map((event) => {
-                              const isPosted = event.status === 'posted';
-                              const isPosting = !!posting[event.id];
-                              return (
-                                <TableRow key={event.id}>
-                                  <TableCell>
-                                    <div className={cn(layout.row, spacing.inlineTight)}>
-                                      <EventTypeDot type={event.hendelse} />
-                                      <span>{event.hendelse}</span>
-                                    </div>
-                                  </TableCell>
-                                  <TableCell className={typography.mono}>{event.tidspunkt}</TableCell>
-                                  <TableCell className={typography.bodyStrong}>#{event.draktnummer}</TableCell>
-                                  <TableCell>
-                                    {isPosted ? (
-                                      <Badge variant="success">Publisert</Badge>
-                                    ) : (
-                                      <Badge variant="outline">Utkast</Badge>
-                                    )}
-                                  </TableCell>
-                                  <TableCell align="center">
-                                    {isPosted && event.renderedImageUrl ? (
-                                      <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() => openPreview(event.renderedImageUrl)}
-                                        className={sizes.iconButton}
-                                        aria-label="Preview story"
-                                      >
-                                        <Eye className="h-4 w-4" />
-                                      </Button>
-                                    ) : (
-                                      <span className={status.muted}>—</span>
-                                    )}
-                                  </TableCell>
-                                  <TableCell align="center" padded={false}>
-                                    <Button
-                                      onClick={() => handlePost(event)}
-                                      disabled={isPosting || isPosted}
-                                    >
-                                      {isPosted ? 'Posted ✓' : (isPosting ? 'Sender...' : 'Post')}
-                                    </Button>
-                                    {postErrors[event.id] && (
-                                      <div className={status.error}>{postErrors[event.id]}</div>
-                                    )}
-                                    {postSuccess[event.id] && (
-                                      <div className={status.success}>Publisert ✓</div>
-                                    )}
-                                  </TableCell>
-                                </TableRow>
-                              );
-                            })}
-                          </TableBody>
-                        </Table>
+                      {!isFinished && (
+                        <span className="relative flex h-3 w-3">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex justify-between items-center mb-6">
+                      <div className="text-center flex-1">
+                        <div className="text-lg font-bold truncate">Hjemme</div>
                       </div>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <Card>
-                    <CardContent className={status.muted}>Velg en kamp for å vise hendelser.</CardContent>
-                  </Card>
-                )}
-              </>
-            )}
+                      <div className="bg-[hsl(210_20%_94%)] px-4 py-2 rounded-lg font-mono text-2xl font-bold mx-2">
+                        {matchId}
+                      </div>
+                      <div className="text-center flex-1">
+                        <div className="text-lg font-bold truncate">Borte</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-sm pt-2 border-t border-[hsl(220_13%_91%/0.5)] mt-2">
+                      <span className="text-[hsl(220_10%_55%)] font-medium">
+                        {matchEvents.length} hendelser registrert
+                      </span>
+                      <Button
+                        variant="ghost"
+                        uiSize="sm"
+                        className={`gap-2 ${isActive ? 'text-[hsl(220_25%_15%)]' : 'text-[hsl(220_10%_55%)]'}`}
+                      >
+                        {isActive ? 'Skjul hendelser' : 'Vis hendelser'}
+                        {isActive ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
-        )}
-      </main>
-      <StoryPreviewModal open={!!previewUrl} imageUrl={previewUrl} onClose={closePreview} />
+
+          {activeMatchId ? (
+            <div className="animate-in fade-in zoom-in-95 duration-300">
+              <Card className="border-[hsl(220_13%_91%/0.6)] shadow-soft overflow-hidden">
+                <Table>
+                  <TableHead className="bg-[hsl(210_20%_94%/0.3)]">
+                    <TableHeaderRow className="hover:bg-transparent">
+                      <TableHeaderCell className="w-[100px]">Tid</TableHeaderCell>
+                      <TableHeaderCell className="w-[150px]">Type</TableHeaderCell>
+                      <TableHeaderCell>Beskrivelse</TableHeaderCell>
+                      <TableHeaderCell className="w-[100px]">Status</TableHeaderCell>
+                      <TableHeaderCell className="w-[120px] text-center">Preview</TableHeaderCell>
+                      <TableHeaderCell className="w-[140px] text-center">Handling</TableHeaderCell>
+                    </TableHeaderRow>
+                  </TableHead>
+                  <TableBody>
+                    {(groupedEvents[activeMatchId] || []).map((event) => {
+                      const isPosted = event.status === 'posted';
+                      const isPosting = !!posting[event.id];
+                      return (
+                        <TableRow key={event.id} className="group">
+                          <TableCell className="font-mono font-medium text-lg text-[hsl(220_10%_55%)]">
+                            {event.tidspunkt}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <EventTypeDot type={event.hendelse} />
+                              <span className="font-semibold">{event.hendelse}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium">{event.hendelse}</div>
+                            <div className="text-sm text-[hsl(220_10%_55%)]">
+                              Spiller #{event.draktnummer}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={isPosted ? 'secondary' : 'outline'} className="font-normal">
+                              {isPosted ? 'Publisert' : 'Utkast'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {event.renderedImageUrl ? (
+                              <Button
+                                variant="ghost"
+                                uiSize="sm"
+                                className="h-8 w-8 p-0 rounded-full hover:bg-[hsl(210_20%_94%)]"
+                                onClick={() => openPreview(event)}
+                              >
+                                <Eye className="h-4 w-4 text-[hsl(220_10%_55%)] group-hover:text-[hsl(220_25%_15%)] transition-colors" />
+                              </Button>
+                            ) : (
+                              <span className={status.muted}>—</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {isPosted ? (
+                              <Button disabled variant="ghost" uiSize="sm" className="text-green-600 font-medium">
+                                <CheckCircle2 className="mr-1 h-4 w-4" /> Posted
+                              </Button>
+                            ) : (
+                              <Button
+                                uiSize="sm"
+                                className="w-full bg-[hsl(220_25%_15%)] hover:bg-[hsl(220_25%_15%/0.9)] text-white shadow-sm"
+                                onClick={() => handlePost(event)}
+                                disabled={isPosting}
+                              >
+                                <Send className="mr-2 h-3 w-3" /> {isPosting ? 'Sender...' : 'Post'}
+                              </Button>
+                            )}
+                            {postErrors[event.id] && (
+                              <div className={status.error}>{postErrors[event.id]}</div>
+                            )}
+                            {postSuccess[event.id] && (
+                              <div className={status.success}>Publisert ✓</div>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </Card>
+            </div>
+          ) : null}
+        </>
+      )}
+
+      <StoryPreviewModal
+        open={!!previewUrl}
+        imageUrl={previewUrl}
+        onClose={closePreview}
+        badgeText={previewMeta?.badgeText}
+        title={previewMeta?.title}
+        subtitle={previewMeta?.subtitle}
+        footerTitle={previewMeta?.footerTitle}
+      />
     </div>
   );
 }

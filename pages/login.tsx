@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import { AuthLayout, AuthCard } from '@/components/AuthLayout';
+import { AuthLayout } from '@/components/AuthLayout';
 import BrandBadge from '@/components/BrandBadge';
 import PasswordField from '@/components/PasswordField';
 import { Label } from '@/components/ui/Label';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { cn } from '@/components/ui/utils';
-import { layout, spacing, typography, status } from '@/styles/tokens';
+import { layout, typography, status, auth } from '@/styles/tokens';
+import { ArrowRight } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -43,44 +45,58 @@ export default function LoginPage() {
 
   return (
     <AuthLayout>
-      <AuthCard>
-        <div className={cn(layout.col, spacing.stack)}>
-          <div className={cn(layout.col, spacing.stackTight)}>
-            <BrandBadge text="LL" />
-            <div className={cn(layout.col, spacing.field)}>
-              <h1 className={typography.cardTitle}>Live Lokal</h1>
-              <p className={typography.subtitle}>Automatisk generering og publisering av kamp-hendelser</p>
-              <p className={typography.bodyStrong}>Logg inn for å administrere klubben.</p>
-            </div>
-          </div>
-          <form className={spacing.stack} onSubmit={handleSubmit}>
-            <div className={cn(layout.col, spacing.field)}>
-              <Label>FIKS ID (5 siffer)</Label>
+      <Card className={auth.card}>
+        <CardHeader className={cn(layout.textCenter, 'pb-8 pt-8')}>
+          <BrandBadge text="LL" />
+          <CardTitle className="text-2xl font-bold tracking-tight">Live Lokal</CardTitle>
+          <CardDescription className="mt-2 text-balance">
+            Automatisk generering og publisering av kamp-hendelser
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label className={typography.formLabel}>FIKS-ID</Label>
               <Input
-                className={layout.wFull}
                 value={fiksid}
                 onChange={(e) => setFiksid(e.target.value)}
-                placeholder="FIKS-ID (5 siffer)"
+                placeholder="12345"
                 inputMode="numeric"
                 pattern="\d{5}"
                 required
+                uiSize="lg"
+                className="bg-[hsl(210_20%_94%/0.3)] border-transparent focus:border-[hsl(220_25%_15%/0.2)] focus:bg-white transition-all font-mono"
               />
             </div>
-            <PasswordField
-              label="Passord"
-              value={password}
-              show={showPassword}
-              onToggle={() => setShowPassword((prev) => !prev)}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Passord"
-            />
+
+            <div className="space-y-2">
+              <PasswordField
+                label="Passord"
+                value={password}
+                show={showPassword}
+                onToggle={() => setShowPassword((prev) => !prev)}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+              />
+            </div>
+
             {error && <div className={status.error}>{error}</div>}
-            <Button className={layout.wFull} disabled={loading}>
-              {loading ? 'Logger inn...' : 'Logg inn'}
+            <Button
+              type="submit"
+              uiSize="lg"
+              className="w-full text-base font-medium shadow-md hover:shadow-lg transition-all"
+              disabled={loading}
+            >
+              {loading ? 'Logg inn...' : 'Logg inn'}
+              {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
             </Button>
           </form>
-        </div>
-      </AuthCard>
+        </CardContent>
+      </Card>
+
+      <div className="absolute bottom-8 text-center text-xs text-[hsl(220_10%_55%)]">
+        &copy; 2026 Live Lokal AS. Alle rettigheter reservert.
+      </div>
     </AuthLayout>
   );
 }

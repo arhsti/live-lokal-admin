@@ -1,6 +1,5 @@
 import { ReactNode } from 'react';
-import { Save } from 'lucide-react';
-import Tooltip from './Tooltip';
+import { Save, Instagram } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Label } from './ui/Label';
 import { Input } from './ui/Input';
@@ -8,7 +7,7 @@ import { Select } from './ui/Select';
 import { Textarea } from './ui/Textarea';
 import { Card, CardContent } from './ui/Card';
 import { cn } from './ui/utils';
-import { color, effects, spacing } from '@/styles/tokens';
+import { effects, imageCard } from '@/styles/tokens';
 
 interface ImageCardProps {
   imageUrl: string;
@@ -40,58 +39,54 @@ export default function ImageCard({
   extraActions,
 }: ImageCardProps) {
   return (
-    <Card className={cn('group overflow-hidden', effects.imageCardHover)}>
-      <div className={cn(color.secondaryBg, 'rounded-t-xl overflow-hidden')}>
+    <Card className={cn('overflow-hidden border-[hsl(220_13%_91%/0.6)]', effects.imageCardHover)}>
+      <div className={cn(imageCard.imageWrap, 'rounded-t-xl')}>
         {imageUrl ? (
-          <div className="relative aspect-[4/3]">
-            <img
-              src={imageUrl}
-              alt="Image"
-              className="h-full w-full object-cover block transition-transform duration-500 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-black/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-          </div>
+          <img
+            src={imageUrl}
+            alt="Image"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          />
         ) : (
-          <div className={cn('w-full h-full flex items-center justify-center aspect-[4/3]', color.mutedText)}>
+          <div className="w-full h-full flex items-center justify-center text-[hsl(220_10%_55%)]">
             Ingen bilde
           </div>
         )}
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
       </div>
 
-      <CardContent className={cn(spacing.card, 'space-y-4')}>
-        <div className="space-y-4">
-          <div>
-            <Label>Beskrivelse</Label>
+      <CardContent className="p-5 space-y-4">
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label className={imageCard.label}>Beskrivelse</Label>
             <Textarea
               value={description}
               onChange={(e) => onDescriptionChange(e.target.value)}
               rows={3}
+              className={imageCard.textarea}
             />
           </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <Label className="flex items-center gap-3">
-                Draktnummer
-                <Tooltip text="Bilde tilknyttet spiller. Dette vil velges når en hendelse om denne spilleren skjer.">
-                  <span className={cn('text-[13px] font-semibold', color.primaryText)}>ℹ</span>
-                </Tooltip>
-              </Label>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className={imageCard.label}>Draktnr</Label>
               <Input
                 type="number"
                 min={1}
                 max={99}
                 value={number}
                 onChange={(e) => onNumberChange(e.target.value.replace(/\D/g, ''))}
+                className={imageCard.input}
+                uiSize="sm"
               />
             </div>
-            <div>
-              <Label className="flex items-center gap-3">
-                Hendelse
-                <Tooltip text="Velg hvilken type hendelse som dette bildet skal brukes til">
-                  <span className={cn('text-[13px] font-semibold', color.primaryText)}>ℹ</span>
-                </Tooltip>
-              </Label>
-              <Select value={eventType} onChange={(e) => onEventChange(e.target.value)}>
+            <div className="space-y-1.5">
+              <Label className={imageCard.label}>Hendelse</Label>
+              <Select
+                value={eventType}
+                onChange={(e) => onEventChange(e.target.value)}
+                className={imageCard.select}
+                uiSize="sm"
+              >
                 <option value="Mål">Mål</option>
                 <option value="Kort">Kort</option>
                 <option value="Bytte">Bytte</option>
@@ -102,16 +97,33 @@ export default function ImageCard({
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-3 flex-nowrap pt-1">
-          <Button variant="secondary" onClick={onSave} disabled={saving} className="flex-1">
-            <Save className="h-4 w-4" />
+        <div className="pt-2 flex gap-2">
+          <Button
+            variant="secondary"
+            uiSize="sm"
+            onClick={onSave}
+            disabled={saving}
+            className={cn('flex-1', imageCard.button)}
+          >
+            <Save className="h-3 w-3" />
             {saving ? 'Lagrer...' : 'Lagre'}
           </Button>
-          {extraActions ? (
-            <div className="flex flex-1 items-center gap-2">
-              {extraActions}
-            </div>
-          ) : null}
+          {extraActions !== undefined ? (
+            extraActions ? (
+              <div className="flex flex-1 items-center gap-2">
+                {extraActions}
+              </div>
+            ) : null
+          ) : (
+            <Button
+              variant="outline"
+              uiSize="sm"
+              className={cn('flex-1', imageCard.button, imageCard.buttonOutline)}
+            >
+              <Instagram className="h-3 w-3" />
+              Story
+            </Button>
+          )}
         </div>
         {error && <div className="text-sm text-red-500">{error}</div>}
         {success && <div className="text-sm text-green-600">Lagret ✓</div>}

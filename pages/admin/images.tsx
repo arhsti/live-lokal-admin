@@ -1,16 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowUpDown, ChevronLeft, Plus, Search, Instagram } from 'lucide-react';
-import Header from '@/components/Header';
+import { ArrowUpDown, ChevronLeft, Plus, Instagram } from 'lucide-react';
+import Link from 'next/link';
 import ImageCard from '@/components/ImageCard';
 import StoryPreviewModal from '@/components/StoryPreviewModal';
 import { Button } from '@/components/ui/Button';
 import { ImageGrid } from '@/components/ui/Grid';
-import { InlineField } from '@/components/ui/InlineField';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { IconLink } from '@/components/ui/IconLink';
 import { cn } from '@/components/ui/utils';
-import { container, layout, spacing, typography, sizes, status, icon } from '@/styles/tokens';
+import { layout, typography, status, icon, filterBar, imageCard } from '@/styles/tokens';
 
 interface ImageData {
   id: string;
@@ -219,66 +217,75 @@ export default function ImagesPage() {
   };
 
   return (
-    <div>
-      <Header title="Bildebibliotek" />
-      <main className={cn(container.base, spacing.section)}>
-        <div className={cn(layout.col, spacing.stack)}>
-          <div className={cn(layout.rowBetweenWrap, spacing.inline)}>
-            <div className={cn(layout.row, spacing.inline)}>
-              <IconLink href="/admin" aria-label="Tilbake">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center space-x-4">
+            <Link href="/admin">
+              <Button variant="outline" uiSize="icon" className="h-10 w-10 rounded-full">
                 <ChevronLeft className={icon.md} />
-              </IconLink>
-              <h1 className={typography.pageTitle}>Bildebibliotek</h1>
-            </div>
-            <div className={cn(layout.rowWrap, spacing.inline)}>
-              <InlineField icon={<Search className={icon.sm} />} label="Søk draktnr:">
-                <Input
-                  className={sizes.inputNarrow}
-                  value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
-                  placeholder="F.eks. 10"
-                  inputMode="numeric"
-                  uiSize="sm"
-                />
-              </InlineField>
-              <InlineField icon={<ArrowUpDown className={icon.sm} />} label="Sorter:">
-                <Select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                  uiSize="sm"
-                >
-                  <option value="newest">Nyeste</option>
-                  <option value="number">Draktnummer</option>
-                  <option value="event">Hendelse</option>
-                </Select>
-              </InlineField>
-              <form ref={formRef} onSubmit={handleUpload} encType="multipart/form-data" className={layout.hidden}>
-                <input
-                  id="file-input"
-                  type="file"
-                  name="file"
-                  accept="image/jpeg,image/png"
-                  required
-                  onChange={() => {
-                    try {
-                      formRef.current?.requestSubmit();
-                    } catch (e) {}
-                  }}
-                />
-              </form>
-              <Button
-                onClick={() => {
-                  const el = document.getElementById('file-input') as HTMLInputElement | null;
-                  el?.click();
-                }}
-                disabled={uploading}
-              >
-                <Plus className={icon.sm} />
-                {uploading ? 'Laster opp...' : 'Last opp'}
               </Button>
+            </Link>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Bildebibliotek</h1>
+              <p className={typography.subtitle}>Administrer og tagg bilder fra kamper</p>
             </div>
           </div>
-          <p className={typography.subtitle}>Administrer og tagg bilder fra kamper</p>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <div className={filterBar.wrap}>
+              <span className={filterBar.label}>Søk draktnr:</span>
+              <Input
+                placeholder="F.eks. 10"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                className="w-[80px] shadow-none font-mono text-sm"
+                uiSize="sm"
+                variant="filter"
+              />
+            </div>
+
+            <div className={filterBar.wrap}>
+              <ArrowUpDown className={icon.smMuted} />
+              <span className={filterBar.label}>Sorter:</span>
+              <Select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                className="w-[120px] shadow-none text-sm"
+                uiSize="sm"
+                variant="filter"
+              >
+                <option value="newest">Nyeste</option>
+                <option value="number">Draktnummer</option>
+                <option value="event">Hendelse</option>
+              </Select>
+            </div>
+
+            <form ref={formRef} onSubmit={handleUpload} encType="multipart/form-data" className={layout.hidden}>
+              <input
+                id="file-input"
+                type="file"
+                name="file"
+                accept="image/jpeg,image/png"
+                required
+                onChange={() => {
+                  try {
+                    formRef.current?.requestSubmit();
+                  } catch (e) {}
+                }}
+              />
+            </form>
+            <Button
+              className="shadow-sm"
+              onClick={() => {
+                const el = document.getElementById('file-input') as HTMLInputElement | null;
+                el?.click();
+              }}
+              disabled={uploading}
+            >
+              <Plus className={icon.sm} />
+              {uploading ? 'Laster opp...' : 'Last opp'}
+            </Button>
+          </div>
         </div>
 
         {uploadError && <div className={status.error}>{uploadError}</div>}
@@ -323,10 +330,11 @@ export default function ImagesPage() {
                     <Button
                       type="button"
                       variant="outline"
+                      uiSize="sm"
                       onClick={() => setPreviewUrl(image.imageUrl)}
-                      className={layout.flex1}
+                      className={cn('flex-1', imageCard.button, imageCard.buttonOutline)}
                     >
-                      <Instagram className={icon.sm} />
+                      <Instagram className="h-3 w-3" />
                       Story
                     </Button>
                   )}
@@ -335,7 +343,7 @@ export default function ImagesPage() {
             })}
           </ImageGrid>
         )}
-      </main>
+      
       <StoryPreviewModal open={!!previewUrl} imageUrl={previewUrl} onClose={() => setPreviewUrl(null)} />
     </div>
   );

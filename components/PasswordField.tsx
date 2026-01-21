@@ -2,7 +2,7 @@ import { ChangeEvent } from 'react';
 import { Input } from './ui/Input';
 import { Label } from './ui/Label';
 import { TextButton } from './ui/TextButton';
-import { passwordField } from '@/styles/tokens';
+import { passwordField, typography } from '@/styles/tokens';
 
 interface PasswordFieldProps {
   label: string;
@@ -16,11 +16,12 @@ interface PasswordFieldProps {
 export default function PasswordField({ label, value, show, onToggle, onChange, placeholder }: PasswordFieldProps) {
   return (
     <div>
-      <Label>{label}</Label>
+      <Label className={typography.formLabel}>{label}</Label>
       <div className="relative mt-2">
         <Input
           type={show ? 'text' : 'password'}
           className={passwordField.input}
+          uiSize="lg"
           value={value}
           onChange={onChange}
           placeholder={placeholder}

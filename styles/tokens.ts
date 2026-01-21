@@ -22,10 +22,11 @@ export const radius = {
 
 export const typography = {
   pageTitle: "text-3xl font-heading font-bold tracking-tight",
-  lead: "text-base text-[hsl(220_10%_55%)]",
+  lead: "text-lg text-[hsl(220_10%_55%)]",
   subtitle: "text-sm text-[hsl(220_10%_55%)]",
   cardTitle: "text-2xl font-heading font-bold tracking-tight",
-  label: "text-[11px] font-semibold uppercase tracking-wider text-[hsl(220_10%_55%)]",
+  label: "text-[10px] font-bold uppercase tracking-wider text-[hsl(220_10%_55%)]",
+  formLabel: "text-xs font-semibold uppercase tracking-wider text-[hsl(220_10%_55%)]",
   body: "text-sm",
   bodyStrong: "text-sm text-[hsl(220_25%_15%)]",
   mono: "text-sm font-mono text-[hsl(220_25%_15%)]",
@@ -47,8 +48,12 @@ export const color = {
 
 export const sizes = {
   buttonHeight: "h-9",
+  buttonHeightSm: "h-8",
+  buttonHeightLg: "h-11",
+  buttonIcon: "h-10 w-10",
   inputHeight: "h-9",
   inputHeightSm: "h-8",
+  inputHeightLg: "h-11",
   inputNarrow: "w-20",
   textareaMinHeight: "min-h-[60px]",
   iconButton: "h-8 w-8 p-0",
@@ -68,6 +73,7 @@ export const layout = {
   overflowXAuto: "overflow-x-auto",
   maxWlg: "max-w-lg",
   wFull: "w-full",
+  textCenter: "text-center",
 };
 
 export const container = {
@@ -89,15 +95,15 @@ export const header = {
 
 export const brand = {
   badge:
-    "mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-[hsl(220_25%_15%)] text-white font-semibold",
+    "mx-auto mb-4 h-12 w-12 rounded-xl bg-[hsl(220_25%_15%)] text-white flex items-center justify-center font-heading font-bold text-xl",
 };
 
 export const auth = {
-  wrapper: "relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[hsl(210_20%_98%)] px-6 py-12",
-  glowTop: "absolute inset-x-0 top-0 h-56 bg-gradient-to-b from-[hsl(220_25%_15%/0.05)] to-transparent",
-  orbRight: "absolute -top-24 -right-24 h-64 w-64 rounded-full bg-[hsl(220_25%_15%/0.05)] blur-3xl",
-  orbLeft: "absolute top-1/3 -left-24 h-56 w-56 rounded-full bg-[hsl(210_20%_94%)]/40 blur-3xl",
-  card: "w-full max-w-[400px] bg-white/90 backdrop-blur-sm",
+  wrapper: "min-h-screen w-full flex items-center justify-center bg-[hsl(210_20%_98%)] p-4 relative overflow-hidden",
+  glowTop: "absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-[hsl(210_20%_94%/0.5)] to-transparent -z-10",
+  orbRight: "absolute -top-24 -right-24 w-96 h-96 rounded-full bg-[hsl(220_25%_15%/0.05)] blur-3xl",
+  orbLeft: "absolute top-1/3 -left-24 w-72 h-72 rounded-full bg-[hsl(150_20%_96%/0.2)] blur-3xl",
+  card: "w-full max-w-[400px] border-[hsl(220_13%_91%/0.6)] shadow-soft bg-white/90 backdrop-blur-sm",
   cardContent: "p-6",
 };
 
@@ -123,6 +129,24 @@ export const icon = {
 export const effects = {
   cardHover: "transition-all duration-300 hover:shadow-lg hover:border-[hsl(220_25%_15%/0.2)]",
   imageCardHover: "transition-shadow hover:shadow-md",
+};
+
+export const filterBar = {
+  wrap: "flex items-center gap-2 bg-[hsl(210_20%_94%/0.5)] px-3 py-1 rounded-lg border border-[hsl(220_13%_91%/0.5)]",
+  label: "text-sm font-medium text-[hsl(220_10%_55%)] whitespace-nowrap",
+};
+
+export const imageCard = {
+  label: "text-[10px] font-bold text-[hsl(220_10%_55%)] uppercase tracking-wider",
+  textarea:
+    "min-h-[50px] text-xs bg-[hsl(210_20%_94%/0.3)] border-transparent focus:bg-white focus:border-[hsl(220_25%_15%/0.1)] transition-all resize-none",
+  input:
+    "h-8 text-xs bg-[hsl(210_20%_94%/0.3)] border-transparent focus:bg-white focus:border-[hsl(220_25%_15%/0.1)] transition-all",
+  select:
+    "h-8 text-xs bg-[hsl(210_20%_94%/0.3)] border-transparent focus:bg-white focus:border-[hsl(220_25%_15%/0.1)] transition-all",
+  button: "h-8 text-[11px] font-semibold uppercase tracking-tight",
+  buttonOutline: "border-[hsl(220_25%_15%/0.2)] text-[hsl(220_25%_15%)] hover:bg-[hsl(220_25%_15%/0.05)]",
+  imageWrap: "aspect-[4/3] relative group cursor-pointer bg-[hsl(210_20%_94%/0.2)] overflow-hidden",
 };
 
 export const modal = {

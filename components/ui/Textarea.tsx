@@ -9,7 +9,7 @@ export function Textarea({ className, ...props }: TextareaProps) {
     <textarea
       {...props}
       className={cn(
-        'bg-[hsl(210_20%_94%/0.5)] border border-transparent focus:border-[hsl(220_25%_15%/0.2)] focus:bg-white outline-none',
+        'bg-[hsl(210_20%_94%/0.3)] border border-transparent focus:border-[hsl(220_25%_15%/0.2)] focus:bg-white transition-all outline-none',
         radius.input,
         typography.body,
         sizes.textareaMinHeight,
