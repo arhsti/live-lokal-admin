@@ -22,7 +22,7 @@ html, body {
 .container-base {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 2.5rem;
+  padding: 2.25rem;
 }
 
 .card {
@@ -37,11 +37,11 @@ html, body {
 }
 
 .admin-card {
-  padding: 2rem;
+  padding: 1.25rem;
 }
 
 .admin-card-large {
-  padding: 2.5rem;
+  padding: 1.5rem;
 }
 
 .btn-primary {

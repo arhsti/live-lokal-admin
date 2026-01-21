@@ -39,8 +39,8 @@ export default function LoginPage() {
       <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-gray-300/40 blur-3xl" />
       <div className="absolute top-1/3 -left-24 h-56 w-56 rounded-full bg-gray-200/40 blur-3xl" />
 
-      <div className="card admin-card-large shadow-soft w-full max-w-[400px] space-y-8 box-border bg-white/90 backdrop-blur-sm">
-        <div className="text-center space-y-3">
+      <div className="card admin-card shadow-soft w-full max-w-[400px] space-y-7 box-border bg-white/90 backdrop-blur-sm">
+        <div className="text-center space-y-4">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-gray-900 text-white font-semibold">
             LL
           </div>

@@ -39,7 +39,7 @@ export default function Header({ title }: HeaderProps) {
 
   return (
     <header className="w-full bg-white/80 border-b border-gray-200 backdrop-blur">
-      <div className="container-base flex items-center justify-between py-4">
+      <div className="container-base flex items-center justify-between py-5">
         <Link href="/admin" className="text-gray-900 font-semibold tracking-tight link-reset">
           {clubName ? `Live Lokal – ${clubName}` : (club ? `Live Lokal – Klubb ${club}` : 'Live Lokal')}
         </Link>
@@ -57,12 +57,12 @@ export default function Header({ title }: HeaderProps) {
           </button>
           {menuOpen && (
             <div
-              className="absolute right-0 mt-3 w-48 rounded-xl border border-gray-200 bg-white shadow-soft py-2"
+              className="absolute right-0 mt-3 w-48 rounded-xl border border-gray-200 bg-white shadow-soft p-2"
               role="menu"
             >
               <Link
                 href="/admin/innstillinger"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 link-reset"
+                className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 link-reset rounded-lg"
                 role="menuitem"
                 onClick={() => setMenuOpen(false)}
               >
@@ -70,7 +70,7 @@ export default function Header({ title }: HeaderProps) {
               </Link>
               <button
                 type="button"
-                className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                className="block w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-lg"
                 role="menuitem"
                 onClick={async () => {
                   setMenuOpen(false);

@@ -44,14 +44,14 @@ export default function Admin() {
   return (
     <div>
       <Header title="Admin" />
-      <main className="container-base space-y-10">
-        <div className="space-y-2">
+      <main className="container-base space-y-12">
+        <div className="space-y-3">
           <h1 className="text-3xl font-extrabold tracking-tight">Oversikt</h1>
           <p className="text-base text-gray-600">Velg område for å administrere innhold.</p>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-2">
-          <div className="card admin-card-large shadow-soft flex flex-col gap-6 transition-transform hover:-translate-y-1 hover:border-gray-300">
+        <div className="grid gap-10 md:grid-cols-2">
+          <div className="card admin-card-large shadow-soft flex flex-col gap-7 transition-transform hover:-translate-y-1 hover:border-gray-300">
             <div className="h-12 w-12 rounded-2xl bg-gray-100 text-gray-900 flex items-center justify-center">
               <ImageIcon className="h-6 w-6" />
             </div>
@@ -71,7 +71,7 @@ export default function Admin() {
             </div>
           </div>
 
-          <div className="card admin-card-large shadow-soft flex flex-col gap-6 transition-transform hover:-translate-y-1 hover:border-gray-300">
+          <div className="card admin-card-large shadow-soft flex flex-col gap-7 transition-transform hover:-translate-y-1 hover:border-gray-300">
             <div className="h-12 w-12 rounded-2xl bg-gray-100 text-gray-900 flex items-center justify-center">
               <Calendar className="h-6 w-6" />
             </div>

@@ -118,8 +118,8 @@ export default function HendelserPage() {
   return (
     <div>
       <Header title="Hendelser" />
-      <main className="container-base space-y-10">
-        <div className="space-y-2">
+      <main className="container-base space-y-12">
+        <div className="space-y-3">
           <h1 className="text-3xl font-extrabold tracking-tight">Hendelser</h1>
           <p className="text-base text-gray-600">Oversikt over kamp-hendelser.</p>
         </div>
@@ -129,12 +129,12 @@ export default function HendelserPage() {
         {loading ? (
           <div className="text-sm text-gray-600">Laster hendelser...</div>
         ) : (
-          <div className="space-y-12">
+          <div className="space-y-14">
             {events.length === 0 ? (
               <div className="card admin-card text-sm text-gray-600">Ingen hendelser funnet.</div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
                   {Object.entries(groupedEvents).map(([matchId, matchEvents]) => {
                     const isActive = activeMatchId === matchId;
                     return (
@@ -167,7 +167,7 @@ export default function HendelserPage() {
                 </div>
 
                 {activeMatchId ? (
-                  <div className="card admin-card shadow-soft space-y-6">
+                  <div className="card admin-card shadow-soft space-y-7">
                     <div className="flex items-center justify-between">
                       <div>
                         <h2 className="text-lg font-semibold text-gray-900">Match: {activeMatchId}</h2>
