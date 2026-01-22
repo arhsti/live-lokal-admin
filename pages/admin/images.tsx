@@ -232,6 +232,11 @@ export default function ImagesPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
+            <Link href="/admin/images-v2">
+              <Button variant="outline" className="shadow-sm">
+                Try new image view
+              </Button>
+            </Link>
             <div className={filterBar.wrap}>
               <span className={filterBar.label}>Søk draktnr:</span>
               <Input
