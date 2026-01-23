@@ -28,9 +28,20 @@ export function ImageLibrary({
   const [sortBy, setSortBy] = useState('newest');
   const [hoveredImage, setHoveredImage] = useState<string | null>(null);
 
-  const filteredImages = images.filter((img) =>
-    searchQuery ? img.jerseyNumber.includes(searchQuery) : true
-  );
+  const filteredImages = images
+    .filter((img) =>
+      searchQuery ? img.jerseyNumber.includes(searchQuery) : true
+    )
+    .sort((a, b) => {
+      if (sortBy === 'newest') {
+        return b.id.localeCompare(a.id); // Assuming newer IDs are "larger"
+      } else if (sortBy === 'oldest') {
+        return a.id.localeCompare(b.id);
+      } else if (sortBy === 'jersey') {
+        return parseInt(a.jerseyNumber || '999') - parseInt(b.jerseyNumber || '999');
+      }
+      return 0;
+    });
 
   return (
     <div className="max-w-[1400px] mx-auto px-6 py-8">
