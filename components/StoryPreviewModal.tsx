@@ -143,21 +143,3 @@ export default function StoryPreviewModal({
     </>
   );
 }
-            {title ? (
-              <h2 className="text-4xl font-heading font-bold leading-tight">{title}</h2>
-            ) : null}
-            {subtitle ? (
-              <p className="text-xl text-white/80 mt-2">{subtitle}</p>
-            ) : null}
-          </div>
-        ) : (
-          <div />
-        )}
-        <div className="text-white pb-12">
-          <div className="text-2xl font-bold mb-2">{footerTitle || 'Live Lokal'}</div>
-          <div className="h-1 w-24 bg-white/50 rounded-full" />
-        </div>
-      </div>
-    </Modal>
-  );
-}
