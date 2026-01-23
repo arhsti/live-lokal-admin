@@ -54,16 +54,16 @@ export function ImageLibrary({
       </div>
 
       {/* Actions Bar */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-8">
+      <div className="flex flex-row gap-4 mb-8">
         <button
           onClick={onUpload}
-          className="flex items-center justify-center gap-2 px-6 py-3 bg-[#0EA5E9] text-white rounded-lg font-medium hover:opacity-90 active:scale-[0.98] transition-all"
+          className="flex items-center justify-center gap-2 px-6 py-3 bg-[#0EA5E9] text-white rounded-lg font-medium hover:opacity-90 active:scale-[0.98] transition-all whitespace-nowrap"
         >
           <Upload size={20} />
           Last opp bilde
         </button>
 
-        <div className="flex-1 relative">
+        <div className="flex-1 relative min-w-[200px]">
           <Search
             size={20}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]"
@@ -80,7 +80,7 @@ export function ImageLibrary({
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
-          className="px-4 py-3 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0EA5E9] focus:border-transparent transition-all"
+          className="px-4 py-3 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0EA5E9] focus:border-transparent transition-all min-w-[160px]"
         >
           <option value="newest">Nyeste først</option>
           <option value="oldest">Eldste først</option>
