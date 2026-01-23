@@ -89,11 +89,11 @@ export function ImageLibrary({
       </div>
 
       {/* Image Grid */}
-      <div className="grid gap-x-6 gap-y-8" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 280px))' }}>
+      <div className="grid gap-x-8 gap-y-10" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 260px))' }}>
         {filteredImages.map((image) => (
           <div
             key={image.id}
-            className="bg-white rounded-xl border border-[#E2E8F0] overflow-hidden shadow-sm hover:shadow-md transition-shadow w-[280px] max-w-[280px]"
+            className="bg-white rounded-xl border border-[#E2E8F0] overflow-hidden shadow-sm hover:shadow-md transition-shadow w-[260px] max-w-[260px]"
           >
             {/* Image */}
             <div
@@ -114,10 +114,10 @@ export function ImageLibrary({
             </div>
 
             {/* Content */}
-            <div className="p-5 space-y-4">
+            <div className="p-4 space-y-3">
               {/* Description */}
               <div>
-                <label className="block text-xs uppercase tracking-wide text-[#94A3B8] mb-2">
+                <label className="block text-xs uppercase tracking-wide text-[#94A3B8] mb-1.5">
                   Beskrivelse
                 </label>
                 <textarea
@@ -126,7 +126,7 @@ export function ImageLibrary({
                     onUpdateImage(image.id, { description: e.target.value })
                   }
                   placeholder="Beskriv bildet..."
-                  rows={2}
+                  rows={1}
                   className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0EA5E9] focus:border-transparent resize-none"
                 />
               </div>
@@ -134,7 +134,7 @@ export function ImageLibrary({
               {/* Jersey Number & Event Type */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs uppercase tracking-wide text-[#94A3B8] mb-2">
+                  <label className="block text-xs uppercase tracking-wide text-[#94A3B8] mb-1.5">
                     Draktnummer
                   </label>
                   <input
@@ -148,7 +148,7 @@ export function ImageLibrary({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs uppercase tracking-wide text-[#94A3B8] mb-2">
+                  <label className="block text-xs uppercase tracking-wide text-[#94A3B8] mb-1.5">
                     Hendelse
                   </label>
                   <select
@@ -168,7 +168,7 @@ export function ImageLibrary({
               </div>
 
               {/* Actions */}
-              <div className="flex gap-2 pt-2">
+              <div className="flex gap-2">
                 <button
                   onClick={() => onUpdateImage(image.id, {})}
                   className="flex-1 px-3 py-2 border border-[#E2E8F0] rounded-lg text-sm font-medium hover:bg-[#F8FAFC] active:scale-[0.98] transition-all"
