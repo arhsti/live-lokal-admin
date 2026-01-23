@@ -30,5 +30,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "Design-Dashboard", "design-specs-bundle"]
+  "exclude": ["node_modules", "Design-Dashboard", "design-specs-bundle", "styles_figma"]
 }
