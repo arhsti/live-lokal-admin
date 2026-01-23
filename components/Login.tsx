@@ -17,7 +17,7 @@ export function Login() {
       const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clubId, password }),
+        body: JSON.stringify({ fiksid_livelokal: clubId, password }),
       });
       
       if (response.ok) {
