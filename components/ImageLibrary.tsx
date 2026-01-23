@@ -89,7 +89,7 @@ export function ImageLibrary({
       </div>
 
       {/* Image Grid */}
-      <div className="grid gap-x-6 gap-y-8" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 320px))' }}>
+      <div className="grid gap-x-8 gap-y-10" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 320px))' }}>
         {filteredImages.map((image) => (
           <div
             key={image.id}
@@ -97,14 +97,14 @@ export function ImageLibrary({
           >
             {/* Image */}
             <div
-              className="relative aspect-[4/3] bg-[#F8FAFC] overflow-hidden group cursor-pointer"
+              className="relative aspect-[9/16] bg-[#1E293B] overflow-hidden group cursor-pointer"
               onMouseEnter={() => setHoveredImage(image.id)}
               onMouseLeave={() => setHoveredImage(null)}
             >
               <img
                 src={image.url}
                 alt={image.description || 'Player image'}
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
               />
               {hoveredImage === image.id && (
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
