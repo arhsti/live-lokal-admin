@@ -1,40 +1,43 @@
-import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { ChevronLeft, ChevronDown, ChevronUp, Eye, Send, CheckCircle2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import Header from '@/components/Header';
+import { Events } from '@/components/Events';
 import StoryPreviewModal from '@/components/StoryPreviewModal';
-import EventTypeDot from '@/components/EventTypeDot';
-import { Card, CardContent } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { Table, TableBody, TableHead, TableHeaderRow, TableHeaderCell, TableRow, TableCell } from '@/components/ui/Table';
-import { status, icon } from '@/styles/tokens';
 
 interface MatchEvent {
   id: string;
-  hendelse: string;
-  tidspunkt: string;
-  draktnummer: string;
-  objectId_match?: string;
-  createdAt: string;
-  status: 'pending' | 'posted' | 'failed';
-  renderedImageUrl?: string | null;
+  eventType: 'goal' | 'yellow' | 'red' | 'substitute';
+  time: string;
+  jerseyNumber: string;
+  status: 'draft' | 'published';
+  playerName?: string;
+  imageUrl?: string;
+}
+
+interface Match {
+  id: string;
+  name: string;
+  homeTeam: string;
+  awayTeam: string;
+  homeScore: number;
+  awayScore: number;
+  status: 'live' | 'finished';
+  events: MatchEvent[];
+}
+
+interface StoryPreview {
+  eventType: string;
+  time: string;
+  score: string;
+  imageUrl: string;
+  jerseyNumber: string;
+  playerName?: string;
+  teamName: string;
 }
 
 export default function HendelserPage() {
-  const [events, setEvents] = useState<MatchEvent[]>([]);
+  const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [posting, setPosting] = useState<Record<string, boolean>>({});
-  const [postErrors, setPostErrors] = useState<Record<string, string | null>>({});
-  const [postSuccess, setPostSuccess] = useState<Record<string, boolean>>({});
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [previewMeta, setPreviewMeta] = useState<{
-    badgeText?: string;
-    title?: string;
-    subtitle?: string;
-    footerTitle?: string;
-  } | null>(null);
-  const [activeMatchId, setActiveMatchId] = useState<string | null>(null);
+  const [storyPreview, setStoryPreview] = useState<StoryPreview | null>(null);
 
   useEffect(() => {
     loadEvents();
@@ -42,62 +45,139 @@ export default function HendelserPage() {
 
   async function loadEvents() {
     setLoading(true);
-    setError(null);
     try {
       const res = await fetch('/api/events');
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({ error: 'Kunne ikke laste hendelser' }));
-        setError(data.error || 'Kunne ikke laste hendelser');
-        return;
-      }
+      if (!res.ok) return;
+      
       const data = await res.json();
-      const list = Array.isArray(data) ? data : [];
-      setEvents(list);
-      const grouped = groupEventsByMatch(list);
-      const matchIds = Object.keys(grouped);
-      if (matchIds.length === 0) {
-        setActiveMatchId(null);
-      } else if (!activeMatchId || !grouped[activeMatchId]) {
-        setActiveMatchId(matchIds[0]);
-      }
-    } catch (_e) {
-      setError('Kunne ikke laste hendelser');
+      const rawEvents = Array.isArray(data) ? data : [];
+      
+      // Group events by match
+      const matchMap = new Map<string, any>();
+      
+      rawEvents.forEach((event: any) => {
+        const matchId = event.objectId_match || 'unknown';
+        
+        if (!matchMap.has(matchId)) {
+          matchMap.set(matchId, {
+            id: matchId,
+            name: 'Eliteserien - Runde 15', // TODO: Get from API
+            homeTeam: 'Hjemmelag', // TODO: Get from API
+            awayTeam: 'Bortelag', // TODO: Get from API
+            homeScore: 0, // TODO: Get from API
+            awayScore: 0, // TODO: Get from API
+            status: event.tidspunkt === 'FT' ? 'finished' : 'live',
+            events: [],
+          });
+        }
+        
+        const match = matchMap.get(matchId);
+        match.events.push({
+          id: event.id,
+          eventType: mapEventType(event.hendelse),
+          time: event.tidspunkt,
+          jerseyNumber: event.draktnummer,
+          status: event.status === 'posted' ? 'published' : 'draft',
+          playerName: undefined, // TODO: Get from API
+          imageUrl: event.renderedImageUrl || undefined,
+        });
+      });
+      
+      setMatches(Array.from(matchMap.values()));
+    } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }
   }
 
-  async function handlePost(event: MatchEvent) {
-    if (event.status === 'posted') {
-      return;
-    }
-    setPostErrors(prev => ({ ...prev, [event.id]: null }));
-    setPostSuccess(prev => ({ ...prev, [event.id]: false }));
-    setPosting(prev => ({ ...prev, [event.id]: true }));
+  function mapEventType(hendelse: string): 'goal' | 'yellow' | 'red' | 'substitute' {
+    const lower = hendelse.toLowerCase();
+    if (lower.includes('mål') || lower.includes('goal')) return 'goal';
+    if (lower.includes('gult') || lower.includes('yellow')) return 'yellow';
+    if (lower.includes('rødt') || lower.includes('red')) return 'red';
+    if (lower.includes('bytte') || lower.includes('substitute')) return 'substitute';
+    return 'goal';
+  }
 
+  const handleViewStory = (event: MatchEvent, match: Match) => {
+    setStoryPreview({
+      eventType: event.eventType,
+      time: event.time,
+      score: `${match.homeScore} - ${match.awayScore}`,
+      imageUrl: event.imageUrl || 'https://images.unsplash.com/photo-1657957746418-6a38df9e1ea7?w=1080',
+      jerseyNumber: event.jerseyNumber,
+      playerName: event.playerName,
+      teamName: match.homeTeam,
+    });
+  };
+
+  const handlePostStory = async (eventId: string) => {
     try {
-      const overlay = await createEventOverlayPng(event);
-      if (!overlay) {
-        throw new Error('Kunne ikke lage overlay');
-      }
-
-      const formData = new FormData();
-      formData.append('eventId', event.id);
-      formData.append('overlayPng', overlay, 'overlay.png');
-
-      const res = await fetch('/api/trigger-story', {
+      const res = await fetch('/api/events/post-story', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventId }),
       });
 
-      const data = await res.json().catch(() => ({ success: false, error: 'Publisering feilet' }));
-      if (!res.ok || data.success === false) {
-        setPostErrors(prev => ({ ...prev, [event.id]: data.error || 'Publisering feilet' }));
-        setEvents(prev => prev.map(item => item.id === event.id ? { ...item, status: 'failed' } : item));
-        return;
+      if (res.ok) {
+        setMatches((prev) =>
+          prev.map((match) => ({
+            ...match,
+            events: match.events.map((evt) =>
+              evt.id === eventId ? { ...evt, status: 'published' as const } : evt
+            ),
+          }))
+        );
+        alert('Story publisert til Instagram!');
+      } else {
+        alert('Kunne ikke publisere story');
       }
+    } catch (error) {
+      console.error(error);
+      alert('En feil oppstod');
+    }
+  };
 
-      setPostSuccess(prev => ({ ...prev, [event.id]: true }));
+  if (loading) {
+    return (
+      <>
+        <Header title="Hendelser" />
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <p className="text-[#64748B]">Laster...</p>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Header title="Hendelser" />
+      <main>
+        <Events
+          matches={matches}
+          onViewStory={handleViewStory}
+          onPostStory={handlePostStory}
+        />
+      </main>
+
+      {/* Story Preview Modal */}
+      {storyPreview && (
+        <StoryPreviewModal
+          isOpen={true}
+          onClose={() => setStoryPreview(null)}
+          eventType={storyPreview.eventType}
+          time={storyPreview.time}
+          score={storyPreview.score}
+          imageUrl={storyPreview.imageUrl}
+          jerseyNumber={storyPreview.jerseyNumber}
+          playerName={storyPreview.playerName}
+          teamName={storyPreview.teamName}
+        />
+      )}
+    </>
+  );
+}
       setEvents(prev => prev.map(item => item.id === event.id ? {
         ...item,
         status: 'posted',

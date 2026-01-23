@@ -1,16 +1,14 @@
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { Calendar, Image as ImageIcon, ArrowUpRight } from 'lucide-react';
-import { Card, CardContent, CardFooter } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import Header from '@/components/Header';
+import { Dashboard } from '@/components/Dashboard';
 
 export default function Admin() {
-  const [imageCount, setImageCount] = useState<number | null>(null);
-  const [matchCount, setMatchCount] = useState<number | null>(null);
+  const [imageCount, setImageCount] = useState<number>(0);
+  const [eventCount, setEventCount] = useState<number>(0);
 
   useEffect(() => {
     loadImageCount();
-    loadMatchCount();
+    loadEventCount();
   }, []);
 
   async function loadImageCount() {
@@ -18,36 +16,33 @@ export default function Admin() {
       const res = await fetch('/api/images');
       if (!res.ok) return;
       const data = await res.json();
-      setImageCount(Array.isArray(data) ? data.length : null);
+      setImageCount(Array.isArray(data) ? data.length : 0);
     } catch (_e) {
-      setImageCount(null);
+      setImageCount(0);
     }
   }
 
-  async function loadMatchCount() {
+  async function loadEventCount() {
     try {
       const res = await fetch('/api/events');
       if (!res.ok) return;
       const data = await res.json();
       if (!Array.isArray(data)) return;
-      const ids = new Set<string>();
-      data.forEach((event) => {
-        if (typeof event?.objectId_match === 'string' && event.objectId_match.trim()) {
-          ids.add(event.objectId_match.trim());
-        }
-      });
-      setMatchCount(ids.size);
+      setEventCount(data.length);
     } catch (_e) {
-      setMatchCount(null);
+      setEventCount(0);
     }
   }
 
   return (
-    <div className="space-y-6 w-full">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight text-[hsl(220_25%_15%)]">Oversikt</h1>
-        <p className="text-[hsl(220_10%_55%)] text-sm">Velkommen tilbake, Admin.</p>
-      </div>
+    <>
+      <Header title="Dashboard" />
+      <main>
+        <Dashboard imageCount={imageCount} eventCount={eventCount} />
+      </main>
+    </>
+  );
+}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-8">
         <Link href="/admin/images" className="block">

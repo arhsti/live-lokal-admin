@@ -1,53 +1,8 @@
-import { useState } from 'react';
-import { useRouter } from 'next/router';
-import { AuthLayout } from '@/components/AuthLayout';
-import BrandBadge from '@/components/BrandBadge';
-import PasswordField from '@/components/PasswordField';
-import { Label } from '@/components/ui/Label';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
-import { cn } from '@/components/ui/utils';
-import { layout, typography, status, auth } from '@/styles/tokens';
-import { ArrowRight } from 'lucide-react';
+import { Login } from '@/components/Login';
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [fiksid, setFiksid] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fiksid_livelokal: fiksid.trim(), password }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({ error: 'Login failed' }));
-        setError(data.error || 'Login failed');
-        return;
-      }
-      router.push('/admin');
-    } catch (_e) {
-      setError('Login failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <AuthLayout>
-      <Card className={auth.card}>
-        <CardHeader className={cn(layout.textCenter, 'pb-8 pt-8')}>
-          <BrandBadge text="LL" />
+  return <Login />;
+}
           <CardTitle className="text-2xl font-bold tracking-tight">Live Lokal</CardTitle>
           <CardDescription className="mt-2 text-balance">
             Automatisk generering og publisering av kamp-hendelser

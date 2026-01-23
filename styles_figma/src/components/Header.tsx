@@ -1,36 +1,15 @@
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
 import { Menu, X } from 'lucide-react';
+import { useState } from 'react';
 
 interface HeaderProps {
-  title?: string;
+  pageTitle?: string;
+  onNavigate: (page: string) => void;
+  onLogout: () => void;
+  clubName?: string;
 }
 
-export default function Header({ title }: HeaderProps) {
-  const [club, setClub] = useState<string | null>(null);
-  const [clubName, setClubName] = useState<string | null>(null);
+export function Header({ pageTitle, onNavigate, onLogout, clubName }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-    fetch('/api/club')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        setClub(data?.fiksid_livelokal || null);
-        setClubName(data?.clubName || null);
-      })
-      .catch(() => setClub(null));
-  }, []);
-
-  const handleLogout = async () => {
-    await fetch('/api/logout', { method: 'POST' });
-    window.location.href = '/login';
-  };
-
-  const handleNavigate = (path: string) => {
-    router.push(path);
-    setMenuOpen(false);
-  };
 
   return (
     <>
@@ -38,7 +17,10 @@ export default function Header({ title }: HeaderProps) {
         <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
           {/* Left: Logo */}
           <button
-            onClick={() => handleNavigate('/admin')}
+            onClick={() => {
+              onNavigate('dashboard');
+              setMenuOpen(false);
+            }}
             className="font-semibold text-lg hover:opacity-80 transition-opacity"
           >
             Live Lokal
@@ -46,8 +28,8 @@ export default function Header({ title }: HeaderProps) {
 
           {/* Center: Page Title */}
           <div className="absolute left-1/2 -translate-x-1/2">
-            {title && (
-              <h2 className="text-[#64748B]">{title}</h2>
+            {pageTitle && (
+              <h2 className="text-[#64748B]">{pageTitle}</h2>
             )}
           </div>
 
@@ -78,13 +60,19 @@ export default function Header({ title }: HeaderProps) {
               </div>
             )}
             <button
-              onClick={() => handleNavigate('/admin/innstillinger')}
+              onClick={() => {
+                onNavigate('settings');
+                setMenuOpen(false);
+              }}
               className="w-full px-4 py-3 text-left hover:bg-[#F8FAFC] transition-colors"
             >
               Innstillinger
             </button>
             <button
-              onClick={handleLogout}
+              onClick={() => {
+                onLogout();
+                setMenuOpen(false);
+              }}
               className="w-full px-4 py-3 text-left hover:bg-[#F8FAFC] transition-colors text-[#EF4444]"
             >
               Logg ut

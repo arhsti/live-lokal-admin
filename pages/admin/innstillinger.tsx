@@ -1,17 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Card, CardContent } from '@/components/ui/Card';
-import { Input } from '@/components/ui/Input';
-import { Label } from '@/components/ui/Label';
-import { Button } from '@/components/ui/Button';
-import { cn } from '@/components/ui/utils';
-import { layout, spacing, typography, status } from '@/styles/tokens';
+import Header from '@/components/Header';
+import { Settings } from '@/components/Settings';
 
 export default function InnstillingerPage() {
+  const [clubId, setClubId] = useState('');
   const [clubName, setClubName] = useState('');
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     loadSettings();
@@ -19,35 +13,60 @@ export default function InnstillingerPage() {
 
   async function loadSettings() {
     setLoading(true);
-    setError(null);
     try {
-      const res = await fetch('/api/club-settings');
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({ error: 'Kunne ikke hente innstillinger' }));
-        setError(data.error || 'Kunne ikke hente innstillinger');
-        return;
+      const res = await fetch('/api/club');
+      if (res.ok) {
+        const data = await res.json();
+        setClubId(data?.fiksid_livelokal || '');
+        setClubName(data?.clubName || '');
       }
-      const data = await res.json();
-      setClubName(data?.clubName || '');
-    } catch (_e) {
-      setError('Kunne ikke hente innstillinger');
+    } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }
   }
 
-  async function saveSettings(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSaving(true);
-    setError(null);
-    setSuccess(false);
+  async function handleUpdateClubName(name: string) {
     try {
       const res = await fetch('/api/club-settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clubName }),
+        body: JSON.stringify({ clubName: name }),
       });
-      if (!res.ok) {
+      
+      if (res.ok) {
+        setClubName(name);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  if (loading) {
+    return (
+      <>
+        <Header title="Innstillinger" />
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <p className="text-[#64748B]">Laster...</p>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Header title="Innstillinger" />
+      <main>
+        <Settings
+          clubId={clubId}
+          clubName={clubName}
+          onUpdateClubName={handleUpdateClubName}
+        />
+      </main>
+    </>
+  );
+}
         const data = await res.json().catch(() => ({ error: 'Kunne ikke lagre' }));
         setError(data.error || 'Kunne ikke lagre');
         return;

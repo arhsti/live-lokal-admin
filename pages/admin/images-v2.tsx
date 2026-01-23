@@ -1,45 +1,24 @@
-import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { ChevronLeft, Save } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
-import { Card } from '@/components/ui/Card';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import Header from '@/components/Header';
+import { ImageLibrary } from '@/components/ImageLibrary';
 
 interface ImageData {
   id: string;
-  imageUrl: string;
-  created_at?: string;
-  tags?: {
-    number: string;
-    eventType?: string;
-    description?: string;
-    type?: 'processed' | 'rendered';
-  };
+  url: string;
+  description: string;
+  jerseyNumber: string;
+  eventType: string;
 }
-
-const eventOptions = ['Mål', 'Kort', 'Bytte', 'Kampstart', 'Slutt', 'Alle'] as const;
 
 export default function ImagesV2Page() {
   const [images, setImages] = useState<ImageData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState<Record<string, { number: string; eventType: string; description: string }>>({});
-  const [saving, setSaving] = useState<Record<string, boolean>>({});
-  const [saveErrors, setSaveErrors] = useState<Record<string, string | null>>({});
-  const [saveSuccess, setSaveSuccess] = useState<Record<string, boolean>>({});
+  const router = useRouter();
 
   useEffect(() => {
     loadImages();
   }, []);
-
-  const sortedImages = useMemo(() => {
-    return [...images].sort((a, b) => {
-      const at = a.created_at ? new Date(a.created_at).getTime() : 0;
-      const bt = b.created_at ? new Date(b.created_at).getTime() : 0;
-      if (bt !== at) return bt - at;
-      return b.id.localeCompare(a.id);
-    });
-  }, [images]);
 
   async function loadImages() {
     setLoading(true);
@@ -47,7 +26,14 @@ export default function ImagesV2Page() {
       const res = await fetch('/api/images');
       if (res.ok) {
         const data = await res.json();
-        setImages(Array.isArray(data) ? data : []);
+        const mappedImages = Array.isArray(data) ? data.map((img: any) => ({
+          id: img.id,
+          url: img.imageUrl || img.url || '',
+          description: img.tags?.description || '',
+          jerseyNumber: img.tags?.number || '',
+          eventType: img.tags?.eventType || '',
+        })) : [];
+        setImages(mappedImages);
       }
     } catch (e) {
       console.error(e);
@@ -56,48 +42,74 @@ export default function ImagesV2Page() {
     }
   }
 
-  function getCurrent(image: ImageData) {
-    return editing[image.id] || {
-      number: image.tags?.number || '',
-      eventType: image.tags?.eventType || 'Alle',
-      description: image.tags?.description || '',
-    };
-  }
+  const handleUpload = () => {
+    alert('Last opp bilde-funksjonalitet vil bli implementert');
+  };
 
-  function updateEditing(image: ImageData, next: { number: string; eventType: string; description: string }) {
-    setEditing(prev => ({ ...prev, [image.id]: next }));
-    setSaveErrors(prev => ({ ...prev, [image.id]: null }));
-    setSaveSuccess(prev => ({ ...prev, [image.id]: false }));
-  }
-
-  async function handleSave(image: ImageData) {
-    const current = getCurrent(image);
-    const num = parseInt(String(current.number || ''), 10);
-    if (Number.isNaN(num) || num < 1 || num > 99) {
-      setSaveErrors(prev => ({ ...prev, [image.id]: 'Draktnummer må være et tall mellom 1 og 99' }));
-      return;
-    }
-
-    setSaveErrors(prev => ({ ...prev, [image.id]: null }));
-    setSaving(prev => ({ ...prev, [image.id]: true }));
-
+  const handleUpdateImage = async (id: string, data: Partial<ImageData>) => {
     try {
-      const res = await fetch(`/api/images/${encodeURIComponent(image.id)}`, {
+      const res = await fetch(`/api/images/${encodeURIComponent(id)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          number: String(num),
-          eventType: current.eventType,
-          description: current.description,
+          number: data.jerseyNumber,
+          eventType: data.eventType,
+          description: data.description,
         }),
       });
 
       if (res.ok) {
-        const updated = await res.json().catch(() => null);
-        setImages(prev => prev.map(im => im.id === image.id ? {
-          ...im,
-          tags: updated?.tags || {
-            number: String(num),
+        setImages(prev => prev.map(img => 
+          img.id === id ? { ...img, ...data } : img
+        ));
+        alert('Bilde oppdatert');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Kunne ikke oppdatere bilde');
+    }
+  };
+
+  const handleUseInStory = (id: string) => {
+    const image = images.find(img => img.id === id);
+    if (image) {
+      alert(`Bildet for spiller #${image.jerseyNumber} er nå klart for bruk i story`);
+    }
+  };
+
+  const handlePostStory = (id: string) => {
+    const image = images.find(img => img.id === id);
+    if (image) {
+      alert(`Story publisert for spiller #${image.jerseyNumber}!`);
+    }
+  };
+
+  if (loading) {
+    return (
+      <>
+        <Header title="Bildebibliotek" />
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <p className="text-[#64748B]">Laster...</p>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Header title="Bildebibliotek" />
+      <main>
+        <ImageLibrary
+          images={images}
+          onUpload={handleUpload}
+          onUpdateImage={handleUpdateImage}
+          onUseInStory={handleUseInStory}
+          onPostStory={handlePostStory}
+        />
+      </main>
+    </>
+  );
+}
             eventType: current.eventType,
             description: current.description,
           },
