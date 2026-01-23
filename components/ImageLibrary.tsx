@@ -78,11 +78,11 @@ export function ImageLibrary({
       </div>
 
       {/* Image Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-x-6 gap-y-8">
+      <div className="grid gap-x-6 gap-y-8" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 320px))' }}>
         {filteredImages.map((image) => (
           <div
             key={image.id}
-            className="bg-white rounded-xl border border-[#E2E8F0] overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+            className="bg-white rounded-xl border border-[#E2E8F0] overflow-hidden shadow-sm hover:shadow-md transition-shadow w-[320px] max-w-[320px]"
           >
             {/* Image */}
             <div
