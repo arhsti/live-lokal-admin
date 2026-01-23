@@ -82,7 +82,7 @@ export function ImageLibrary({
         {filteredImages.map((image) => (
           <div
             key={image.id}
-            className="bg-white rounded-xl border border-[#E2E8F0] overflow-hidden shadow-sm hover:shadow-md transition-shadow max-w-[350px] w-full mx-auto"
+            className="bg-white rounded-xl border border-[#E2E8F0] overflow-hidden shadow-sm hover:shadow-md transition-shadow"
           >
             {/* Image */}
             <div
