@@ -89,7 +89,7 @@ export function ImageLibrary({
       </div>
 
       {/* Image Grid */}
-      <div className="grid gap-8 justify-start" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 260px))' }}>
+      <div className="grid gap-8 justify-start" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 260px))' }} data-testid="image-grid">
         {filteredImages.map((image) => (
           <div
             key={image.id}

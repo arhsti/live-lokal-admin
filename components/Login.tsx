@@ -34,7 +34,7 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-[#F8FAFC] to-[#E2E8F0]">
+    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-[#F8FAFC] to-[#E2E8F0]" data-testid="main-container">
       <div className="w-full max-w-[400px] bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-8">
         {/* Logo/Title */}
         <div className="text-center mb-8">

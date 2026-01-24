@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "test:ui": "playwright test",
+    "test:ui:update": "playwright test --update-snapshots",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -20,6 +22,7 @@
     "zod": "^4.3.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

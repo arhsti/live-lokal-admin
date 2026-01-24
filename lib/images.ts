@@ -1,3 +1,28 @@
+// In-memory image store for dev/test seeding
+const _devImages: any[] = [];
+// ...existing code...
+// Dev/test only: Add an image to the in-memory store for seeding UI tests.
+function addImage({ key, url, width, height, clubId, createdAt }: { key: string; url: string; width: number; height: number; clubId: string; createdAt: string }) {
+  if (process.env.NODE_ENV !== 'development') return;
+  _devImages.push({
+    id: key.replace(/\.[^/.]+$/, ''),
+    imageUrl: url,
+    fiksid_livelokal: clubId,
+    created_at: createdAt,
+    tags: {
+      number: '',
+      eventType: 'Alle',
+      description: '',
+      type: 'processed',
+      sourceImageId: undefined,
+      fiksid_livelokal: clubId,
+    },
+    width,
+    height,
+  });
+}
+
+export { addImage };
 import { r2Get, r2List, r2Put, readBodyAsString } from './r2';
 
 export type EventType = 'Mål' | 'Kort' | 'Bytte' | 'Alle';
@@ -42,6 +67,9 @@ async function saveMeta(club: string, map: Record<string, ImageMeta>) {
 }
 
 export async function listImages(club: string): Promise<ImageItem[]> {
+  if (process.env.NODE_ENV === 'development' && _devImages.length > 0) {
+    return _devImages.filter(img => img.fiksid_livelokal === club);
+  }
   const processedList = await r2List(processedPrefix(club));
 
   const items = [...(processedList.Contents || [])]

@@ -1,5 +1,7 @@
+
 import { useState } from 'react';
 import { ChevronDown, ChevronRight, Eye } from 'lucide-react';
+
 
 interface MatchEvent {
   id: string;
@@ -28,6 +30,21 @@ interface EventsProps {
   onPostStory: (eventId: string) => void;
 }
 
+const getEventLabel = (type: string) => {
+  switch (type) {
+    case 'goal':
+      return 'Mål';
+    case 'yellow':
+      return 'Gult kort';
+    case 'red':
+      return 'Rødt kort';
+    case 'substitute':
+      return 'Bytte';
+    default:
+      return type;
+  }
+};
+
 export function Events({ matches, onViewStory, onPostStory }: EventsProps) {
   const [expandedMatch, setExpandedMatch] = useState<string | null>(
     matches[0]?.id || null
@@ -42,30 +59,14 @@ export function Events({ matches, onViewStory, onPostStory }: EventsProps) {
       case 'red':
         return 'bg-[#EF4444] text-white';
       case 'substitute':
-        return 'bg-[#0EA5E9] text-white';
+        return 'bg-[#6366F1] text-white';
       default:
-        return 'bg-[#94A3B8] text-white';
-    }
-  };
-
-  const getEventLabel = (type: string) => {
-    switch (type) {
-      case 'goal':
-        return 'Mål';
-      case 'yellow':
-        return 'Gult kort';
-      case 'red':
-        return 'Rødt kort';
-      case 'substitute':
-        return 'Bytte';
-      default:
-        return type;
+        return 'bg-[#E2E8F0] text-[#64748B]';
     }
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto px-6 py-8">
-      {/* Header */}
+    <div data-testid="events-container">
       <div className="mb-8">
         <h1 className="mb-2">Hendelser</h1>
         <p className="text-[#64748B]">
